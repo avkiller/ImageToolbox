@@ -18,12 +18,12 @@
 package com.t8rin.imagetoolbox.core.settings.domain
 
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface SettingsProvider {
 
-    suspend fun getSettingsState(): SettingsState
+    val settingsState: StateFlow<SettingsState>
 
-    fun getSettingsStateFlow(): Flow<SettingsState>
+    suspend fun getSettingsState(): SettingsState
 
 }
