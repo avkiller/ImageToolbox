@@ -26,7 +26,7 @@ import com.t8rin.imagetoolbox.core.domain.transformation.Transformation
 import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.ksp.annotations.FilterInject
 import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.Pixelate
-import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.PixelationLayer
+import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.PixelationCommands
 import com.t8rin.trickle.Trickle
 
 @FilterInject
@@ -34,42 +34,18 @@ internal class StrokePixelationFilter(
     override val value: Pair<Float, ColorModel> = 20f to Color.Black.toModel(),
 ) : Transformation<Bitmap>, Filter.StrokePixelation {
     override val cacheKey: String
-        get() = (value).hashCode().toString()
+        get() = value.hashCode().toString()
 
     override suspend fun transform(
         input: Bitmap,
         size: IntegerSize
-    ): Bitmap {
-        val pixelSize = value.first
-        return Pixelate.fromBitmap(
-            input = input,
-            layers = arrayOf(
-                PixelationLayer.Builder(PixelationLayer.Shape.Circle)
-                    .setResolution(pixelSize)
-                    .setSize(pixelSize / 5)
-                    .setOffset(pixelSize / 4)
-                    .build(),
-                PixelationLayer.Builder(PixelationLayer.Shape.Circle)
-                    .setResolution(pixelSize)
-                    .setSize(pixelSize / 4)
-                    .setOffset(pixelSize / 2)
-                    .build(),
-                PixelationLayer.Builder(PixelationLayer.Shape.Circle)
-                    .setResolution(pixelSize)
-                    .setSize(pixelSize / 3)
-                    .setOffset(pixelSize / 1.3f)
-                    .build(),
-                PixelationLayer.Builder(PixelationLayer.Shape.Circle)
-                    .setResolution(pixelSize)
-                    .setSize(pixelSize / 4)
-                    .setOffset(0f)
-                    .build()
-            )
-        ).let {
-            Trickle.drawColorBehind(
-                input = it,
-                color = value.second.colorInt
-            )
-        }
+    ): Bitmap = Pixelate.fromBitmap(
+        input = input,
+        layers = PixelationCommands.stroke(value.first)
+    ).let {
+        Trickle.drawColorBehind(
+            input = it,
+            color = value.second.colorInt
+        )
     }
 }

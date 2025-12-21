@@ -23,31 +23,22 @@ import com.t8rin.imagetoolbox.core.domain.transformation.Transformation
 import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.ksp.annotations.FilterInject
 import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.Pixelate
-import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.PixelationLayer
+import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.PixelationCommands
 
 @FilterInject
 internal class CirclePixelationFilter(
     override val value: Float = 24f,
 ) : Transformation<Bitmap>, Filter.CirclePixelation {
+
     override val cacheKey: String
-        get() = (value).hashCode().toString()
+        get() = value.hashCode().toString()
 
     override suspend fun transform(
         input: Bitmap,
         size: IntegerSize
-    ): Bitmap {
-        return Pixelate.fromBitmap(
-            input = input,
-            layers = arrayOf(
-                PixelationLayer.Builder(PixelationLayer.Shape.Circle)
-                    .setResolution(value)
-                    .build(),
-                PixelationLayer.Builder(PixelationLayer.Shape.Circle)
-                    .setResolution(value)
-                    .setSize(value / 3f)
-                    .setOffset(value / 2)
-                    .build()
-            )
-        )
-    }
+    ): Bitmap = Pixelate.fromBitmap(
+        input = input,
+        layers = PixelationCommands.circle(value)
+    )
+
 }

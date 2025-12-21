@@ -151,7 +151,9 @@ sealed class UiFilter<T : Any>(
                     UiTwilightShiftedFilter(),
                     UiAutoPerspectiveFilter(),
                     UiTurboFilter(),
-                    UiDeepGreenFilter()
+                    UiDeepGreenFilter(),
+                    UiLuminanceGradientFilter(),
+                    UiAverageDistanceFilter(),
                 ),
                 //Color
                 listOf(
@@ -270,7 +272,9 @@ sealed class UiFilter<T : Any>(
                     UiLookupFilter(),
                     UiConvolution3x3Filter(),
                     UiThresholdFilter(),
-                    UiDoGFilter()
+                    UiDoGFilter(),
+                    UiErrorLevelAnalysisFilter(),
+                    UiCopyMoveDetectionFilter()
                 ),
                 //Blur
                 listOf(
@@ -327,7 +331,16 @@ sealed class UiFilter<T : Any>(
                     UiPointillizeFilter(),
                     UiWeaveFilter(),
                     UiSmearFilter(),
-                    UiAsciiFilter()
+                    UiAsciiFilter(),
+                    UiSimpleWeavePixelizationFilter(),
+                    UiStaggeredPixelizationFilter(),
+                    UiCrossPixelizationFilter(),
+                    UiMicroMacroPixelizationFilter(),
+                    UiOrbitalPixelizationFilter(),
+                    UiVortexPixelizationFilter(),
+                    UiPulseGridPixelizationFilter(),
+                    UiNucleusPixelizationFilter(),
+                    UiRadialWeavePixelizationFilter()
                 ),
                 //Distortion
                 listOf(
@@ -391,7 +404,7 @@ sealed class UiFilter<T : Any>(
         val sortedGroupedEntries
             get() = groupedEntries.map { list ->
                 list.sortedBy { appContext.getString(it.title) }
-        }
+            }
     }
 
 }

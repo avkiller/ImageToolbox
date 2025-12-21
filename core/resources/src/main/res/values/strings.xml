@@ -1874,4 +1874,22 @@
     <string name="generative_inpaint">Generative Inpainting</string>
     <string name="generative_inpaint_sub">Allows you to remove objects in an image using an AI model, without relying on OpenCV. To use this feature, app will download the required model (~200 MB) from GitHub</string>
     <string name="generative_inpaint_ready_sub">Allows you to remove objects in an image using an AI model, without relying on OpenCV. This could be a long running operation</string>
+    <string name="error_level_analysis">Error Level Analysis</string>
+    <string name="luminance_gradient">Luminance Gradient</string>
+    <string name="average_distance">Average Distance</string>
+    <string name="copy_move_detection">Copy Move Detection</string>
+    <string name="retain">Retain</string>
+    <string name="coefficent">Coefficent</string>
+    <string name="clipboard_data_is_too_large">Clipboard data is too large</string>
+    <string name="data_is_too_large_to_copy">Data is too large to copy</string>
+    <string name="simple_weave_pixelization">Simple Weave Pixelization</string>
+    <string name="staggered_pixelization">Staggered Pixelization</string>
+    <string name="cross_pixelization">Cross Pixelization</string>
+    <string name="micro_macro_pixelization">Micro Macro Pixelization</string>
+    <string name="orbital_pixelization">Orbital Pixelization</string>
+    <string name="vortex_pixelization">Vortex Pixelization</string>
+    <string name="pulse_grid_pixelization">Pulse Grid Pixelization</string>
+    <string name="nucleus_pixelization">Nucleus Pixelization</string>
+    <string name="radial_weave_pixelization">Radial Weave Pixelization</string>
+    <string name="cannot_open_uri">Cannot open uri \"%s\"</string>
 </resources>

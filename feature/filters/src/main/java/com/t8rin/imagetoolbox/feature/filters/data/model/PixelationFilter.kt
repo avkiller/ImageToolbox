@@ -23,27 +23,20 @@ import com.t8rin.imagetoolbox.core.domain.transformation.Transformation
 import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.ksp.annotations.FilterInject
 import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.Pixelate
-import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.PixelationLayer
+import com.t8rin.imagetoolbox.feature.filters.data.utils.pixelation.PixelationCommands
 
 @FilterInject
 internal class PixelationFilter(
     override val value: Float = 25f,
 ) : Transformation<Bitmap>, Filter.Pixelation {
     override val cacheKey: String
-        get() = (value).hashCode().toString()
+        get() = value.hashCode().toString()
 
     override suspend fun transform(
         input: Bitmap,
         size: IntegerSize
-    ): Bitmap {
-        return Pixelate.fromBitmap(
-            input = input,
-            layers = arrayOf(
-                PixelationLayer.Builder(PixelationLayer.Shape.Square)
-                    .setResolution(value - 4f)
-                    .setSize(value)
-                    .build()
-            )
-        )
-    }
+    ): Bitmap = Pixelate.fromBitmap(
+        input = input,
+        layers = PixelationCommands.square(value)
+    )
 }
