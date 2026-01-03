@@ -33,8 +33,11 @@ import com.t8rin.imagetoolbox.core.domain.GlobalStorageName
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
+import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageScaleMode
+import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.ResizeType
+import com.t8rin.imagetoolbox.core.domain.json.JsonParser
 import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.HashingType
 import com.t8rin.imagetoolbox.core.domain.model.PerformanceClass
@@ -50,6 +53,7 @@ import com.t8rin.imagetoolbox.core.settings.domain.model.NightMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.OneTimeSaveLocation
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.settings.domain.model.SliderType
+import com.t8rin.imagetoolbox.core.settings.domain.model.SnowfallMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.SwitchType
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ADD_ORIGINAL_NAME_TO_FILENAME
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ADD_PRESET_TO_FILENAME
@@ -84,6 +88,8 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.CUSTOM_FONTS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_DRAW_COLOR
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_DRAW_LINE_WIDTH
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_DRAW_PATH_MODE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_IMAGE_FORMAT
+import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_QUALITY
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_RESIZE_TYPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DONATE_DIALOG_OPEN_COUNT
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAG_HANDLE_WIDTH
@@ -139,6 +145,7 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_SETTINGS_IN_LANDSC
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_UPDATE_DIALOG
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SKIP_IMAGE_PICKING
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SLIDER_TYPE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.SNOWFALL_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SPOT_HEAL_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SWITCH_TYPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SYSTEM_BARS_VISIBILITY
@@ -175,6 +182,7 @@ internal class AndroidSettingsManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val dataStore: DataStore<Preferences>,
     private val shareProvider: Lazy<ShareProvider>,
+    private val jsonParser: JsonParser,
     dispatchersHolder: DispatchersHolder,
     appScope: AppScope,
 ) : DispatchersHolder by dispatchersHolder, SettingsManager {
@@ -191,7 +199,10 @@ internal class AndroidSettingsManager @Inject constructor(
     override suspend fun getSettingsState(): SettingsState = rawFlow().first()
 
     private fun rawFlow(): Flow<SettingsState> = dataStore.data.map {
-        it.toSettingsState(default)
+        it.toSettingsState(
+            default = default,
+            jsonParser = jsonParser
+        )
     }
 
     override val settingsState: StateFlow<SettingsState> = rawFlow().stateIn(
@@ -892,6 +903,24 @@ internal class AndroidSettingsManager @Inject constructor(
 
     override suspend fun toggleCustomAsciiGradient(gradient: String) = edit {
         it[ASCII_CUSTOM_GRADIENTS] = (it[ASCII_CUSTOM_GRADIENTS] ?: emptySet()).toggle(gradient)
+    }
+
+    override suspend fun setSnowfallMode(snowfallMode: SnowfallMode) = edit {
+        it[SNOWFALL_MODE] = snowfallMode.ordinal
+    }
+
+    override suspend fun setDefaultImageFormat(imageFormat: ImageFormat?) = edit {
+        if (imageFormat == null) {
+            it[DEFAULT_IMAGE_FORMAT] = ""
+        } else {
+            it[DEFAULT_IMAGE_FORMAT] = imageFormat.title
+        }
+    }
+
+    override suspend fun setDefaultQuality(quality: Quality) = edit {
+        jsonParser.toJson(quality, Quality::class.java)?.apply {
+            it[DEFAULT_QUALITY] = this
+        }
     }
 
     private fun MutablePreferences.toggle(

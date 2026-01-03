@@ -177,6 +177,8 @@ sealed class SettingsGroup(
         settingsList = listOf(
             Setting.DefaultScaleMode,
             Setting.DefaultColorSpace,
+            Setting.DefaultImageFormat,
+            Setting.DefaultQuality,
             Setting.DefaultResizeType
         ),
         initialState = false
@@ -383,6 +385,7 @@ sealed class SettingsGroup(
             Setting.UseFullscreenSettings,
             Setting.FastSettingsSide,
             Setting.OpenEditInsteadOfPreview,
+            Setting.SnowfallMode,
             Setting.EnableLinksPreview,
             Setting.GeneratePreviews
         ),

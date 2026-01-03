@@ -31,7 +31,9 @@ import com.t8rin.dynamic.theme.extractPrimaryColor
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
+import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageScaleMode
+import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.ResizeType
 import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.HashingType
@@ -49,6 +51,7 @@ import com.t8rin.imagetoolbox.core.settings.domain.model.FastSettingsSide
 import com.t8rin.imagetoolbox.core.settings.domain.model.NightMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.settings.domain.model.SliderType
+import com.t8rin.imagetoolbox.core.settings.domain.model.SnowfallMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.SwitchType
 import com.t8rin.imagetoolbox.core.settings.presentation.model.Setting
 import com.t8rin.imagetoolbox.core.settings.presentation.model.SettingsGroup
@@ -483,6 +486,15 @@ class SettingsComponent @AssistedInject internal constructor(
 
     fun toggleIsScreenSelectionLauncherMode() =
         settingsScope { toggleIsScreenSelectionLauncherMode() }
+
+    fun setSnowfallMode(snowfallMode: SnowfallMode) =
+        settingsScope { setSnowfallMode(snowfallMode) }
+
+    fun setDefaultImageFormat(imageFormat: ImageFormat?) =
+        settingsScope { setDefaultImageFormat(imageFormat) }
+
+    fun setDefaultQuality(quality: Quality) =
+        settingsScope { setDefaultQuality(quality) }
 
     private inline fun settingsScope(
         crossinline action: suspend SettingsManager.() -> Unit

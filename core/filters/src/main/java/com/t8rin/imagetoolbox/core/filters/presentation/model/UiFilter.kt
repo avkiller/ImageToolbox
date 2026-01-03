@@ -274,7 +274,8 @@ sealed class UiFilter<T : Any>(
                     UiThresholdFilter(),
                     UiDoGFilter(),
                     UiErrorLevelAnalysisFilter(),
-                    UiCopyMoveDetectionFilter()
+                    UiCopyMoveDetectionFilter(),
+                    UiBorderFrameFilter()
                 ),
                 //Blur
                 listOf(
@@ -369,7 +370,12 @@ sealed class UiFilter<T : Any>(
                     UiDeskewFilter(),
                     UiCropOrPerspectiveFilter(),
                     UiLensCorrectionFilter(),
-                    UiSeamCarvingFilter()
+                    UiSeamCarvingFilter(),
+                    UiGlitchVariantFilter(),
+                    UiVHSFilter(),
+                    UiBlockGlitchFilter(),
+                    UiCrtCurvatureFilter(),
+                    UiPixelMeltFilter()
                 ),
                 //Dithering
                 listOf(

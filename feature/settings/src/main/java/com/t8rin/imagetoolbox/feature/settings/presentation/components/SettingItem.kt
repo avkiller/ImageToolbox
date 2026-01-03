@@ -451,7 +451,7 @@ internal fun SettingItem(
             }
 
             Setting.ConfettiHarmonizer -> {
-                ConfettiHarmonizerSettingItem(onValueChange = component::setConfettiHarmonizer)
+                ConfettiHarmonizationColorSettingItem(onValueChange = component::setConfettiHarmonizer)
             }
 
             Setting.ConfettiHarmonizationLevel -> {
@@ -579,6 +579,18 @@ internal fun SettingItem(
 
             Setting.EnableLauncherMode -> {
                 EnableLauncherModeSettingItem(onClick = component::toggleIsScreenSelectionLauncherMode)
+            }
+
+            Setting.SnowfallMode -> {
+                SnowfallModeSettingItem(onValueChange = component::setSnowfallMode)
+            }
+
+            Setting.DefaultImageFormat -> {
+                DefaultImageFormatSettingItem(onValueChange = component::setDefaultImageFormat)
+            }
+
+            Setting.DefaultQuality -> {
+                DefaultQualitySettingItem(onValueChange = component::setDefaultQuality)
             }
         }
     }
