@@ -1,18 +1,18 @@
 /*
- * ImageToolbox is Screen.an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * ImageToolbox is an image editor for android
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this Screen.file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is Screen.distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
  * You should have received a copy of the Apache License
- * along with this Screen.program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
+ * along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
  */
 
 package com.t8rin.imagetoolbox.core.ui.utils.navigation
@@ -71,6 +71,7 @@ import com.t8rin.imagetoolbox.core.resources.icons.ImageWeight
 import com.t8rin.imagetoolbox.core.resources.icons.Jxl
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEditLarge
 import com.t8rin.imagetoolbox.core.resources.icons.MultipleImageEdit
+import com.t8rin.imagetoolbox.core.resources.icons.Neurology
 import com.t8rin.imagetoolbox.core.resources.icons.NoiseAlt
 import com.t8rin.imagetoolbox.core.resources.icons.PaletteSwatch
 import com.t8rin.imagetoolbox.core.resources.icons.ServiceToolbox
@@ -80,6 +81,7 @@ import com.t8rin.imagetoolbox.core.resources.icons.VectorPolyline
 import com.t8rin.imagetoolbox.core.resources.icons.WallpaperAlt
 import com.t8rin.imagetoolbox.core.resources.icons.WandShine
 import com.t8rin.imagetoolbox.core.resources.icons.WebpBox
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.AiTools
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.ApngTools
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.AsciiArt
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen.AudioCoverExtractor
@@ -190,6 +192,7 @@ internal fun Screen.simpleName(): String = when (this) {
     is LibraryDetails -> "Library_Details"
     is WallpapersExport -> "Wallpapers_Export"
     is AsciiArt -> "Ascii_Art"
+    is AiTools -> "Ai_Tools"
 }
 
 internal fun Screen.icon(): ImageVector? = when (this) {
@@ -242,6 +245,7 @@ internal fun Screen.icon(): ImageVector? = when (this) {
     is AudioCoverExtractor -> Icons.Outlined.Album
     is WallpapersExport -> Icons.Outlined.WallpaperAlt
     is AsciiArt -> Icons.Outlined.Ascii
+    is AiTools -> Icons.Outlined.Neurology
 }
 
 internal fun Screen.twoToneIcon(): ImageVector? = when (this) {
@@ -294,6 +298,7 @@ internal fun Screen.twoToneIcon(): ImageVector? = when (this) {
     is AudioCoverExtractor -> Icons.TwoTone.Album
     is WallpapersExport -> Icons.Outlined.WallpaperAlt
     is AsciiArt -> Icons.Outlined.Ascii
+    is AiTools -> Icons.TwoTone.Neurology
 }
 
 internal object UriSerializer : KSerializer<AndroidUri> {
@@ -346,6 +351,7 @@ private object ScreenConstantsImpl : ScreenConstants {
                     Draw(),
                     EraseBackground(),
                     MarkupLayers(),
+                    AiTools(),
                     CollageMaker(),
                     ImageStitching(),
                     ImageStacking(),
@@ -401,5 +407,5 @@ private object ScreenConstantsImpl : ScreenConstants {
         typedEntries.flatMap { it.entries }.sortedBy { it.id }
     }
 
-    override val FEATURES_COUNT = 73
+    override val FEATURES_COUNT = 80
 }

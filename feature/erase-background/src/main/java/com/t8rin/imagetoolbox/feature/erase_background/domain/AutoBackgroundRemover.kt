@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 
 package com.t8rin.imagetoolbox.feature.erase_background.domain
 
-import com.t8rin.imagetoolbox.feature.erase_background.domain.model.ModelType
+import com.t8rin.imagetoolbox.feature.erase_background.domain.model.BgModelType
 
 interface AutoBackgroundRemover<I> {
 
     fun removeBackgroundFromImage(
         image: I,
-        modelType: ModelType,
+        modelType: BgModelType,
         onSuccess: (I) -> Unit,
         onFailure: (Throwable) -> Unit
     )
@@ -32,5 +32,7 @@ interface AutoBackgroundRemover<I> {
         image: I,
         emptyColor: Int? = null
     ): I
+
+    fun cleanup()
 
 }

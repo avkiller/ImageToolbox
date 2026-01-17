@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.smarttoolfactory.cropper.model.AspectRatio
 import com.smarttoolfactory.cropper.model.OutlineType
 import com.smarttoolfactory.cropper.model.RectCropShape
@@ -54,10 +55,9 @@ import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
-import com.t8rin.imagetoolbox.core.domain.saving.restoreObject
-import com.t8rin.imagetoolbox.core.domain.saving.saveObject
 import com.t8rin.imagetoolbox.core.domain.transformation.Transformation
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
+import com.t8rin.imagetoolbox.core.domain.utils.update
 import com.t8rin.imagetoolbox.core.filters.domain.FilterProvider
 import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
@@ -67,6 +67,7 @@ import com.t8rin.imagetoolbox.core.settings.domain.SettingsProvider
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
+import com.t8rin.imagetoolbox.core.ui.utils.state.savable
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.HelperGridParams
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawLineStyle
@@ -105,6 +106,10 @@ class SingleEditComponent @AssistedInject internal constructor(
     init {
         debounce {
             initialUri?.let(::setUri)
+        }
+
+        doOnDestroy {
+            autoBackgroundRemover.cleanup()
         }
     }
 
@@ -207,8 +212,10 @@ class SingleEditComponent @AssistedInject internal constructor(
     private val _drawLineStyle: MutableState<DrawLineStyle> = mutableStateOf(DrawLineStyle.None)
     val drawLineStyle: DrawLineStyle by _drawLineStyle
 
-    private val _helperGridParams: MutableState<HelperGridParams> =
-        mutableStateOf(HelperGridParams())
+    private val _helperGridParams = fileController.savable(
+        scope = componentScope,
+        initial = HelperGridParams()
+    )
     val helperGridParams: HelperGridParams by _helperGridParams
 
     init {
@@ -218,10 +225,6 @@ class SingleEditComponent @AssistedInject internal constructor(
             _imageInfo.update {
                 it.copy(resizeType = settingsState.defaultResizeType)
             }
-        }
-        componentScope.launch {
-            val params = fileController.restoreObject<HelperGridParams>() ?: HelperGridParams()
-            _helperGridParams.update { params }
         }
     }
 
@@ -249,7 +252,7 @@ class SingleEditComponent @AssistedInject internal constructor(
         oneTimeSaveLocationUri: String?,
         onComplete: (result: SaveResult) -> Unit,
     ) {
-        savingJob = componentScope.launch {
+        savingJob = trackProgress {
             _isSaving.update { true }
             bitmap?.let { bitmap ->
                 onComplete(
@@ -516,7 +519,7 @@ class SingleEditComponent @AssistedInject internal constructor(
     }
 
     fun shareBitmap(onComplete: () -> Unit) {
-        savingJob = componentScope.launch {
+        savingJob = trackProgress {
             _isSaving.update { true }
             bitmap?.let { image ->
                 shareProvider.shareImage(
@@ -530,7 +533,7 @@ class SingleEditComponent @AssistedInject internal constructor(
     }
 
     fun cacheCurrentImage(onComplete: (Uri) -> Unit) {
-        savingJob = componentScope.launch {
+        savingJob = trackProgress {
             _isSaving.update { true }
             bitmap?.let { image ->
                 shareProvider.cacheImage(
@@ -768,15 +771,8 @@ class SingleEditComponent @AssistedInject internal constructor(
         _drawLineStyle.update { style }
     }
 
-    private var smartSavingJob: Job? by smartJob()
-
     fun updateHelperGridParams(params: HelperGridParams) {
         _helperGridParams.update { params }
-
-        smartSavingJob = componentScope.launch {
-            delay(200)
-            fileController.saveObject(params)
-        }
     }
 
 

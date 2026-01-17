@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,41 @@
 
 package com.t8rin.imagetoolbox.app.presentation.components
 
-import android.app.Application
 import com.t8rin.imagetoolbox.app.presentation.components.functions.attachLogWriter
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initAI
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initOpenCV
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initQrScanner
+import com.t8rin.imagetoolbox.app.presentation.components.functions.injectBaseComponent
 import com.t8rin.imagetoolbox.app.presentation.components.functions.registerSecurityProviders
 import com.t8rin.imagetoolbox.app.presentation.components.functions.setupFlags
 import com.t8rin.imagetoolbox.core.crash.presentation.components.applyGlobalExceptionHandler
+import com.t8rin.imagetoolbox.core.domain.saving.KeepAliveService
+import com.t8rin.imagetoolbox.core.ui.utils.ComposeApplication
 import com.t8rin.imagetoolbox.core.utils.initAppContext
 import dagger.hilt.android.HiltAndroidApp
+import io.ktor.client.HttpClient
+import javax.inject.Inject
 
 
 @HiltAndroidApp
-class ImageToolboxApplication : Application() {
+class ImageToolboxApplication : ComposeApplication() {
+
+    @Inject
+    lateinit var keepAliveService: KeepAliveService
+
+    @Inject
+    lateinit var httpClient: HttpClient
+
+    private var isSetupCompleted: Boolean = false
 
     override fun onCreate() {
         super.onCreate()
+        runSetup()
+    }
+
+    override fun runSetup() {
+        if (isSetupCompleted) return
+
         setupFlags()
         initAppContext()
         initOpenCV()
@@ -42,6 +60,9 @@ class ImageToolboxApplication : Application() {
         attachLogWriter()
         applyGlobalExceptionHandler()
         registerSecurityProviders()
+        injectBaseComponent()
+
+        isSetupCompleted = true
     }
 
 }

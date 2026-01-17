@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.UploadFile
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.DownloadForOffline
 import androidx.compose.material.icons.rounded.MultipleStop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +43,9 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,7 +77,7 @@ internal fun OCRLanguagesColumn(
     onExportLanguages: () -> Unit,
     downloadedLanguages: List<OCRLanguage>,
     notDownloadedLanguages: List<OCRLanguage>,
-    onWantDelete: (OCRLanguage) -> Unit,
+    onDeleteLanguage: (OCRLanguage, List<RecognitionType>) -> Unit,
     onToggleAllowMultipleLanguagesSelection: () -> Unit
 ) {
     fun onValueChangeImpl(
@@ -95,6 +97,17 @@ internal fun OCRLanguagesColumn(
             )
         } else onValueChange(listOf(lang), type)
     }
+
+    var deleteDialogData by remember {
+        mutableStateOf<OCRLanguage?>(null)
+    }
+
+    DeleteLanguageDialog(
+        languageToDelete = deleteDialogData,
+        onDismiss = { deleteDialogData = null },
+        onDeleteLanguage = onDeleteLanguage,
+        currentRecognitionType = currentRecognitionType
+    )
 
     LazyColumn(
         state = listState,
@@ -220,7 +233,7 @@ internal fun OCRLanguagesColumn(
                 value = value,
                 lang = lang,
                 downloadedLanguages = downloadedLanguages,
-                onWantDelete = onWantDelete,
+                onWantDelete = { deleteDialogData = it },
                 onValueChange = { selected, language ->
                     onValueChangeImpl(
                         selected = selected,
@@ -235,7 +248,7 @@ internal fun OCRLanguagesColumn(
         if (notDownloadedLanguages.isNotEmpty()) {
             item {
                 TitleItem(
-                    icon = Icons.Rounded.DownloadForOffline,
+                    icon = Icons.Rounded.Download,
                     text = stringResource(id = R.string.available_languages)
                 )
             }

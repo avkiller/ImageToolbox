@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Density
 import androidx.core.app.ActivityCompat
 import androidx.core.app.PendingIntentCompat
+import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -64,13 +65,17 @@ import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.askUserTo
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.checkPermissions
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.hasPermissionAllowed
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.setPermissionsAllowed
+import com.t8rin.imagetoolbox.core.utils.appContext
+import com.t8rin.logger.makeLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.io.RandomAccessFile
 import java.util.Locale
 import kotlin.math.ceil
+import kotlin.random.Random
 
 
 object ContextUtils {
@@ -399,7 +404,7 @@ object ContextUtils {
     ) = withContext(Dispatchers.Main.immediate) {
         runCatching {
             val context = this@createScreenShortcut
-            if (ShortcutManagerCompat.isRequestPinShortcutSupported(context) && screen.icon != null) {
+            if (context.canPinShortcuts() && screen.icon != null) {
                 val imageBitmap = screen.icon!!.toImageBitmap(
                     context = context,
                     width = 256,
@@ -433,11 +438,9 @@ object ContextUtils {
                     successCallback?.intentSender
                 )
             } else {
-                throw UnsupportedOperationException()
+                onFailure(UnsupportedOperationException())
             }
-        }.onFailure {
-            onFailure(it)
-        }
+        }.onFailure(onFailure)
     }
 
     fun Context.canPinShortcuts(): Boolean = runCatching {
@@ -446,18 +449,21 @@ object ContextUtils {
 
     @SuppressLint("MissingPermission")
     fun Context.isNetworkAvailable(): Boolean {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val nw = connectivityManager.activeNetwork ?: return false
-        val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
-        return when {
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-            else -> false
-        }
+        return getSystemService<ConnectivityManager>()?.run {
+            val capabilities = getNetworkCapabilities(
+                activeNetwork ?: return false
+            ) ?: return false
+
+            possibleCapabilities.any(capabilities::hasTransport)
+        } ?: false
     }
+
+    private val possibleCapabilities = listOf(
+        NetworkCapabilities.TRANSPORT_WIFI,
+        NetworkCapabilities.TRANSPORT_CELLULAR,
+        NetworkCapabilities.TRANSPORT_ETHERNET,
+        NetworkCapabilities.TRANSPORT_BLUETOOTH
+    )
 
     fun Context.shareText(value: String) {
         val sendIntent = Intent().apply {
@@ -522,5 +528,33 @@ object ContextUtils {
         return Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             .setData("package:${packageName}".toUri())
     }
+
+    fun Uri.takePersistablePermission(): Uri = apply {
+        runCatching {
+            appContext.contentResolver.takePersistableUriPermission(
+                this,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        }.onFailure {
+            it.makeLog("takePersistablePermission")
+        }
+    }
+
+    fun Uri.moveToCache(): Uri? = appContext.run {
+        contentResolver.openInputStream(this@moveToCache)?.use { stream ->
+            val file = File(
+                cacheDir,
+                getFilename(this@moveToCache) ?: "cache_${Random.nextInt()}.tmp"
+            ).apply { createNewFile() }
+
+            file.outputStream().use { stream.copyTo(it) }
+
+            file.toUri()
+        }
+    }
+
+    fun Uri.isFromAppFileProvider() =
+        toString().contains(appContext.getString(R.string.file_provider))
 
 }

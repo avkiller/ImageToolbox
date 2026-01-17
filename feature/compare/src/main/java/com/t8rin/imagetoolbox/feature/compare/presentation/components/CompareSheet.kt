@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -44,14 +45,14 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.beforeafter.BeforeAfterImage
 import com.smarttoolfactory.beforeafter.BeforeAfterLayout
-import com.smarttoolfactory.beforeafter.OverlayStyle
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalSheetDragHandle
+import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
@@ -88,23 +89,32 @@ fun CompareSheet(
                             )
                             .transparencyChecker()
                             .clipToBounds()
-                            .zoomable(rememberZoomState(maxScale = 10f)),
+                            .zoomable(rememberZoomState(maxScale = 15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         data.let { (b, a) ->
                             val before = remember(data) { b?.asImageBitmap() }
                             val after = remember(data) { a?.asImageBitmap() }
                             if (before != null && after != null) {
-                                BeforeAfterImage(
-                                    overlayStyle = OverlayStyle(),
+                                BeforeAfterLayout(
                                     modifier = Modifier.clip(ShapeDefaults.extraSmall),
                                     progress = animateFloatAsState(targetValue = progress).value,
+                                    enableZoom = false,
                                     onProgressChange = {
                                         progress = it
                                     },
-                                    enableZoom = false,
-                                    beforeImage = before,
-                                    afterImage = after,
+                                    beforeContent = {
+                                        Picture(
+                                            model = before,
+                                            modifier = Modifier.aspectRatio(before.safeAspectRatio)
+                                        )
+                                    },
+                                    afterContent = {
+                                        Picture(
+                                            model = after,
+                                            modifier = Modifier.aspectRatio(after.safeAspectRatio)
+                                        )
+                                    },
                                     beforeLabel = { },
                                     afterLabel = { }
                                 )
@@ -174,11 +184,10 @@ fun CompareSheet(
                         )
                         .transparencyChecker()
                         .clipToBounds()
-                        .zoomable(rememberZoomState(maxScale = 10f)),
+                        .zoomable(rememberZoomState(maxScale = 15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     BeforeAfterLayout(
-                        overlayStyle = OverlayStyle(),
                         modifier = Modifier.clip(shape),
                         progress = animateFloatAsState(targetValue = progress).value,
                         onProgressChange = {

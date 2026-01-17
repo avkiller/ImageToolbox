@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ package com.t8rin.imagetoolbox.feature.erase_background.data
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.t8rin.imagetoolbox.core.data.image.utils.healAlpha
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.feature.erase_background.domain.AutoBackgroundRemover
 import com.t8rin.imagetoolbox.feature.erase_background.domain.AutoBackgroundRemoverBackendFactory
-import com.t8rin.imagetoolbox.feature.erase_background.domain.model.ModelType
+import com.t8rin.imagetoolbox.feature.erase_background.domain.model.BgModelType
 import com.t8rin.logger.makeLog
+import com.t8rin.neural_tools.bgremover.BgRemover
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -98,18 +100,23 @@ internal class AndroidAutoBackgroundRemover @Inject constructor(
 
     override fun removeBackgroundFromImage(
         image: Bitmap,
-        modelType: ModelType,
+        modelType: BgModelType,
         onSuccess: (Bitmap) -> Unit,
         onFailure: (Throwable) -> Unit
     ) {
         appScope.launch {
-            backendFactory.create(modelType).performBackgroundRemove(image)
+            backendFactory.create(modelType)
+                .performBackgroundRemove(image)
+                .map { it.healAlpha(image) }
                 .onSuccess(onSuccess)
                 .onFailure {
-                    it.makeLog()
-                    onFailure(it)
+                    onFailure(it.makeLog())
                 }
         }
+    }
+
+    override fun cleanup() {
+        BgRemover.closeAll()
     }
 
 }

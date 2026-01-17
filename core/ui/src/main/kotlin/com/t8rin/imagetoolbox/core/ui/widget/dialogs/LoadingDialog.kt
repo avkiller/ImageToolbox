@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.dialogs
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -107,11 +108,13 @@ fun LoadingDialog(
     onCancelLoading: () -> Unit = {},
     canCancel: Boolean = true,
     loaderSize: Dp = 60.dp,
+    switchToIndicator: Boolean = false,
+    isLayoutSwappable: Boolean = true,
     additionalContent: @Composable (Dp) -> Unit = {}
 ) {
     val progress = progress()
 
-    if (progress == 1f && visible) {
+    if (progress == 1f && visible && isLayoutSwappable) {
         LoadingDialog(
             visible = true,
             onCancelLoading = onCancelLoading,
@@ -136,11 +139,29 @@ fun LoadingDialog(
                     },
                 contentAlignment = Alignment.Center,
                 content = {
-                    EnhancedLoadingIndicator(
-                        progress = progress(),
-                        loaderSize = loaderSize,
-                        additionalContent = additionalContent
-                    )
+                    AnimatedContent(
+                        targetState = switchToIndicator,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .align(Alignment.Center)
+                    ) { isIndicator ->
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isIndicator) {
+                                EnhancedLoadingIndicator(
+                                    modifier = Modifier.size(108.dp)
+                                )
+                            } else {
+                                EnhancedLoadingIndicator(
+                                    progress = progress(),
+                                    loaderSize = loaderSize,
+                                    additionalContent = additionalContent
+                                )
+                            }
+                        }
+                    }
                 }
             )
         }

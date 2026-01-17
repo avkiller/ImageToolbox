@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ ImageToolbox is an image editor for android
-  ~ Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+  ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="smth_went_wrong">Что-то пошло не так: %1$s</string>
     <string name="size">Размер %1$s</string>
     <string name="loading">Загрузка…</string>
@@ -367,7 +369,7 @@
     <string name="image_exif_warning">В настоящее время формат %1$s на Android позволяет только читать метаданные EXIF. При сохранении выходное изображение вообще не будет иметь метаданных</string>
     <string name="updates">Обновления</string>
     <string name="wait">Подождите</string>
-    <string name="effort_sub">Значение %1$d означает быстрое сжатие, приводящее к относительно большому размеру файла. %2$d означает более медленное сжатие, в результате чего файл становится меньше</string>
+    <string name="effort_sub">Значение %1$s означает быстрое сжатие, приводящее к относительно большому размеру файла. %2$s означает более медленное сжатие, в результате чего файл становится меньше</string>
     <string name="allow_betas">Разрешить обновления до бета-версий</string>
     <string name="saving_almost_complete">Сохранение почти завершено. Отмена сейчас потребует повторного сохранения</string>
     <string name="effort">Усилие</string>
@@ -548,7 +550,7 @@
     <string name="only_clip_sub">Сохранение в хранилище не будет выполнено, и изображение при возможности будет помещено в буфер обмена</string>
     <string name="only_clip">Только закрепление</string>
     <string name="recognize_text">Распознавание текста</string>
-    <string name="accuracy">Точность: %1$d</string>
+    <string name="accuracy">Точность: %1$s</string>
     <string name="fast">Быстро</string>
     <string name="no_data">Нет данных</string>
     <string name="download">Загрузить</string>
@@ -565,7 +567,7 @@
     <string name="segmentation_mode">Режим сегментации</string>
     <string name="use_pixel_switch">Использовать переключатель Pixel</string>
     <string name="use_pixel_switch_sub">Будет использоваться переключатель, как на телефонах Pixel, вместо стандартного из Material You</string>
-    <string name="saved_to_original">Перезаписан файл с именем %s в оригинальной папке</string>
+    <string name="saved_to_original">Перезаписан файл с именем %1$s в оригинальной папке</string>
     <string name="magnifier_sub">Включает лупу над пальцем во время рисования для лучшего понимания происходящего</string>
     <string name="force_exif_widget_initial_value_sub">EXIF переключатель будет в положении ВКЛ автоматически</string>
     <string name="allow_multiple_languages">Разрешить несколько языков</string>
@@ -853,7 +855,7 @@
     <string name="skip_file_picking_sub">Средство выбора файла будет показано немедленно, если это возможно, на выбранном экране</string>
     <string name="generate_previews_sub">Включает создание предварительного просмотра, это может помочь избежать сбоев на некоторых устройствах, это также отключает некоторые функции редактирования в рамках одной опции редактирования</string>
     <string name="compression_type">Тип Сжатия</string>
-    <string name="speed_sub">Управляет скоростью декодирования результирующего изображения. Это должно помочь быстрее открыть полученное изображение. Значение %1$d означает самое медленное декодирование, тогда как %2$d — самое быстрое, этот параметр может увеличить размер выходного изображения</string>
+    <string name="speed_sub">Управляет скоростью декодирования результирующего изображения. Это должно помочь быстрее открыть полученное изображение. Значение %1$s означает самое медленное декодирование, тогда как %2$s — самое быстрое, этот параметр может увеличить размер выходного изображения</string>
     <string name="sort_by_date">Сортировать по дате</string>
     <string name="sort_by_name">Сортировать по имени</string>
     <string name="sorting">Сортировка</string>
@@ -1118,7 +1120,7 @@
     <string name="save_as_qr_code_image">Сохранить как изображение QR-кода</string>
     <string name="delete_template">Удалить шаблон</string>
     <string name="delete_template_warn">Вы собираетесь удалить выбранный фильтр шаблона. Эта операция не может быть отменена</string>
-    <string name="added_filter_template">Добавлен фильтр шаблона с именем \"%1$s\" (%2$d)</string>
+    <string name="added_filter_template">Добавлен фильтр шаблона с именем \"%1$s\" (%2$s)</string>
     <string name="filter_preview">Предварительный просмотр фильтра</string>
     <string name="qr_code">QR и баркоды</string>
     <string name="qr_code_sub">Сканируйте QR-код, чтобы получить его содержимое, или вставьте свою строку для генерации нового кода</string>
@@ -1471,7 +1473,7 @@
     <string name="material_2">Material 2</string>
     <string name="material_2_sub">Слайдер на основе Material 2, не современный, простой и понятный</string>
     <string name="material_you_slider_sub">Современный слайдер Material You, футуристический, свежий, доступный</string>
-    <string name="crf_sub">Значение %1$d означает медленное сжатие, приводящее к относительно небольшому размеру файла. %2$d означает более быстрое сжатие, приводящее к большому размеру файла</string>
+    <string name="crf_sub">Значение %1$s означает медленное сжатие, приводящее к относительно небольшому размеру файла. %2$s означает более быстрое сжатие, приводящее к большому размеру файла</string>
     <string name="lut_library">Библиотека LUT</string>
     <string name="lut_library_sub">Загрузите коллекцию LUT, которую вы сможете применить после загрузки</string>
     <string name="filter_preview_image_sub">Изменить предварительный просмотр изображения по умолчанию для фильтров</string>
@@ -1499,8 +1501,8 @@
     <string name="fast_settings_side">Сторона быстрых настроек</string>
     <string name="fast_settings_side_sub">Добавить плавающую полосу на выбранной стороне при редактировании изображений, которая откроет быстрые настройки при нажатии</string>
     <string name="clear_selection">Очистить выделение</string>
-    <string name="settings_group_visibility_hidden">Группа настроек \"%s\" будет свернута по умолчанию</string>
-    <string name="settings_group_visibility_visible">Группа настроек \"%s\" будет развернута по умолчанию</string>
+    <string name="settings_group_visibility_hidden">Группа настроек \"%1$s\" будет свернута по умолчанию</string>
+    <string name="settings_group_visibility_visible">Группа настроек \"%1$s\" будет развернута по умолчанию</string>
     <string name="base_64_tools">Инструменты Base64</string>
     <string name="base_64_tools_sub">Декодировать Строка Base64 в изображение или кодирование изображения в формат Base64</string>
     <string name="base_64">Base64</string>
@@ -1770,7 +1772,7 @@
     <string name="pick_contact">Выбрать контакт</string>
     <string name="allow_skip_if_larger_sub">Некоторые инструменты будут позволять не сохранять изображения, если размер получившегося файла будет больше исходного</string>
     <string name="allow_skip_if_larger">Разрешить пропускать если больше</string>
-    <string name="skipped_saving_multiple">%1$d файлов пропущено</string>
+    <string name="skipped_saving_multiple">%1$s файлов пропущено</string>
     <string name="screenshot_not_captured_try_again">Снимок экрана не сделан, попробуйте еще раз</string>
     <string name="processing_screenshot">Обработка снимка экрана</string>
     <string name="invert_colors_ascii_sub">Применяет негативный фильтр к изображению для получения лучшего результата в некоторых случаях</string>
@@ -1838,14 +1840,14 @@
     <string name="palette_format">Формат палитры</string>
     <string name="export_palette_sub">Экспорт сгенерированной палитры в различные форматы</string>
     <string name="add_color_palette_sub">Добавляет новый цвет в существующую палитру</string>
-    <string name="palette_name_not_supported">Формат %s не поддерживает указание имени палитры</string>
+    <string name="palette_name_not_supported">Формат %1$s не поддерживает указание имени палитры</string>
     <string name="wallpapers_export_not_avaialbe">В соответствии с политикой Play Store, эта функция не может быть включена в текущую сборку. Для доступа к этой функциональности, пожалуйста, загрузите ImageToolbox из альтернативного источника. Доступные сборки можно найти на GitHub ниже</string>
     <string name="open_github_page">Открыть на Github</string>
     <plurals name="color_count">
-        <item quantity="one">%s цвет</item>
-        <item quantity="few">%s цвета</item>
-        <item quantity="many">%s цветов</item>
-        <item quantity="other">%s цветов</item>
+        <item quantity="one">%1$s цвет</item>
+        <item quantity="few">%1$s цвета</item>
+        <item quantity="many">%1$s цветов</item>
+        <item quantity="other">%1$s цветов</item>
     </plurals>
     <string name="overwrite_files_sub_short">Исходный файл будет заменен новым, а не сохранен в выбранной папке</string>
     <string name="hidden_watermark_text_detected">Обнаружен скрытый текст водяного знака</string>
@@ -1871,7 +1873,7 @@
     <string name="pulse_grid_pixelization">Пикселизация пульсирующей сетки</string>
     <string name="nucleus_pixelization">Ядровая пикселизация</string>
     <string name="radial_weave_pixelization">Пикселизация радиального плетения</string>
-    <string name="cannot_open_uri">Невозможно открыть ссылку \"%s\"</string>
+    <string name="cannot_open_uri">Невозможно открыть ссылку \"%1$s\"</string>
     <string name="snowfall_mode">Режим снегопада</string>
     <string name="enabled">Включено</string>
     <string name="border_frame">Рамка</string>
@@ -1886,4 +1888,132 @@
     <string name="chroma">Цветность</string>
     <string name="pixel_melt">Плавление пикселей</string>
     <string name="max_drop">Максимальное падение</string>
+    <string name="ai_tools">ИИ инструменты</string>
+    <string name="ai_tools_sub">Различные инструменты для обработки изображений с помощью моделей искусственного интеллекта, такие как удаление артефактов или шумоподавление</string>
+    <string name="model_anime_undeint">Сжатие, рваные линии</string>
+    <string name="model_broadcast">Мультфильмы, сжатие трансляций</string>
+    <string name="model_rgb_max_denoise_fp16">Общее сжатие, общий шум</string>
+    <string name="model_wb_denoise">Бесцветный мультяшный шум</string>
+    <string name="model_span_anime_pretrain">Быстрое, общее сжатие, общий шум, анимация/комиксы/аниме</string>
+    <string name="model_book_scan">Cканирование книг</string>
+    <string name="model_overexposure">Коррекция экспозиции</string>
+    <string name="model_fbcnn_color_fp16">Лучше всего подходит для общего сжатия, цветных изображений</string>
+    <string name="model_fbcnn_gray_fp16">Лучше всего подходит для общего сжатия, изображений в оттенках серого</string>
+    <string name="model_fbcnn_gray_double_fp16">Общее сжатие, изображения в оттенках серого, более сильное</string>
+    <string name="model_scunet_color_gan_fp16">Общий шум, цветные изображения</string>
+    <string name="model_scunet_color_psnr_fp16">Общий уровень шума, цветные изображения, улучшенная детализация</string>
+    <string name="model_scunet_gray_15_fp16">Общий шум, изображения в оттенках серого</string>
+    <string name="model_scunet_gray_25_fp16">Общий шум, изображения в оттенках серого, более сильный</string>
+    <string name="model_scunet_gray_50_fp16">Общий шум, изображения в оттенках серого, самый сильный</string>
+    <string name="model_jpeg_destroyer">Общее сжатие</string>
+    <string name="model_jaywreck">Общее сжатие</string>
+    <string name="model_h264">Texturization, h264 compression</string>
+    <string name="model_vhs">Сжатие VHS</string>
+    <string name="model_cinepak">Нестандартное сжатие (cinepak, msvideo1, roq)</string>
+    <string name="model_debink_v4">Сжатие Bink, лучше для геометрии</string>
+    <string name="model_debink_v5">Сжатие Bink, более сильное</string>
+    <string name="model_debink_v6">Сжатие Bink, мягкое, сохраняет детали</string>
+    <string name="model_antialias">Устранение эффекта лесенки, сглаживание</string>
+    <string name="model_kdm_scans">Отсканированные изображения/рисунки, легкое сжатие, муар</string>
+    <string name="model_bandage">Цветовая маркировка</string>
+    <string name="model_halftone">Медленно, удаляет полутона</string>
+    <string name="model_colorizer">Универсальный раскрашиватель для черно-белых изображений; для достижения лучших результатов используйте DDColor</string>
+    <string name="model_deedge">Удаление краев</string>
+    <string name="model_desharpen">Удаляет чрезмерную резкость</string>
+    <string name="model_dither">Медленно, дизеринг</string>
+    <string name="model_gainres">Сглаживание, общие артефакты, компьютерная графика</string>
+    <string name="model_kdm003_scans">Обработка сканирований KDM003</string>
+    <string name="model_nmkd_jaywreck3_lite">Облегченная модель улучшения изображения</string>
+    <string name="model_spongecolor_lite">Простая и быстрая раскраска, мультфильмы, не идеальный вариант</string>
+    <string name="model_bcgone_detailed_v2">Удаление артефактов сжатия</string>
+    <string name="model_bcgone_smooth">Гладкое удаление артефактов сжатия</string>
+    <string name="model_bandage_smooth">Удаление связей с гладкими результатами</string>
+    <string name="model_bendel_halftone">Обработка полутоновых изображений</string>
+    <string name="model_dither_deleter_v3_smooth">Удаление шаблона дизеринга</string>
+    <string name="model_jpeg_destroyer_v2">Удаление артефактов JPEG V2</string>
+    <string name="model_nmkd_h264_texturize">Улучшение текстуры H.264</string>
+    <string name="model_vhs_sharpen">Улучшение и повышение резкости VHS-видео</string>
+    <string name="merging">Слияние</string>
+    <string name="chunk_size">Размер фрагмента</string>
+    <string name="overlap_size">Размер перекрытия</string>
+    <string name="note_chunk_info">Изображения размером более %1$s пикселей будут разрезаны и обработаны по частям, а функция перекрытия смешивает их, чтобы предотвратить видимые швы</string>
+    <string name="large_chunk_warning">Большие размеры могут вызывать нестабильность в работе устройств низкого ценового сегмента</string>
+    <string name="select_one_to_start">Выберите один из вариантов для начала</string>
+    <string name="delete_model_sub">Вы хотите удалить модель %1$s? Вам потребуется загрузить её заново</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="models">Модели</string>
+    <string name="downloaded_models">Загруженные модели</string>
+    <string name="available_models">Доступные модели</string>
+    <string name="preparing">Подготовка</string>
+    <string name="active_model">Активная модель</string>
+    <string name="failed_to_open_session">Не удалось открыть сессию</string>
+    <string name="type_dejpeg">DEJPEG</string>
+    <string name="type_denoise">Шумоподавление</string>
+    <string name="type_colorize">Раскаршивание</string>
+    <string name="type_artifacts">Артефакты</string>
+    <string name="type_enhance">Улучшение</string>
+    <string name="type_anime">Аниме</string>
+    <string name="type_scans">Сканы</string>
+    <string name="only_onnx_models">Импортировать можно только модели в форматах .onnx/.ort</string>
+    <string name="import_model">Импортировать модель</string>
+    <string name="import_model_sub">Импортируйте пользовательскую модель ONNX для дальнейшего использования; принимаются только модели ONNX/ORT, поддерживаются почти все варианты, подобные ESRGAN</string>
+    <string name="imported_models">Импортированные модели</string>
+    <string name="model_scunet_color_15_fp16">Общий шум, цветные изображения</string>
+    <string name="model_scunet_color_25_fp16">Общий шум, цветные изображения, более интенсивный</string>
+    <string name="model_scunet_color_50_fp16">Общий шум, цветные изображения, самый сильный</string>
+    <string name="model_artifacts_dithering_alsa">Уменьшает артефакты дизеринга и полосы цвета, улучшая плавность градиентов и плоские цветовые области</string>
+    <string name="model_nmkd_brighten_redux">Улучшает яркость и контрастность изображения, обеспечивая сбалансированное освещение светлых участков и сохраняя естественные цвета</string>
+    <string name="model_nmkd_brighten">Осветляет темные изображения, сохраняя при этом детали и избегая переэкспозиции</string>
+    <string name="model_nmkd_detoon">Устраняет избыточное тонирование и восстанавливает более нейтральный и естественный цветовой баланс</string>
+    <string name="model_noise_toner_poisson_detailed">Применяет шумоподавление на основе распределения Пуассона с акцентом на сохранение мелких деталей и текстур</string>
+    <string name="model_noise_toner_poisson_soft">Применяет мягкий пуассоновский шум для получения более плавных и менее агрессивных визуальных результатов</string>
+    <string name="model_noise_toner_uniform_detailed">Равномерное шумоподавление, направленное на сохранение деталей и четкости изображения</string>
+    <string name="model_noise_toner_uniform_soft">Мягкое равномерное шумоподавление для создания тонкой текстуры и гладкой поверхности</string>
+    <string name="model_repainter">Восстанавливает поврежденные или неровные участки путем перекрашивания артефактов и улучшения согласованности изображения</string>
+    <string name="model_debandurh_fs_ultra_lite">Облегченная модель устранения полос, которая удаляет цветовые полосы с минимальными потерями производительности</string>
+    <string name="model_jpeg_0_20">Оптимизирует изображения с очень сильными артефактами сжатия (качество 0-20%) для повышения четкости</string>
+    <string name="model_jpeg_20_40">Улучшает изображения с сильными артефактами сжатия (качество 20-40%), восстанавливая детали и уменьшая шум</string>
+    <string name="model_jpeg_40_60">Улучшает изображения за счет умеренного сжатия (качество 40-60%), обеспечивая баланс между резкостью и плавностью</string>
+    <string name="model_jpeg_60_80">Улучшение качества изображений с легким сжатием (60-80%) для выделения тонких деталей и текстур</string>
+    <string name="model_jpeg_80_100">Слегка улучшает изображения практически без потерь качества (80-100%), сохраняя при этом естественный вид и детали</string>
+    <string name="model_deblr">Немного уменьшает размытие изображения, повышая резкость без появления артефактов</string>
+    <string name="processing_channel">Долгосрочные операции</string>
+    <string name="processing_image">Обработка изображения</string>
+    <string name="processing">Обработка</string>
+    <string name="model_artifacts_jpg_0_20">Удаляет сильные артефакты сжатия JPEG на изображениях очень низкого качества (0-20%)</string>
+    <string name="model_artifacts_jpg_20_40">Уменьшает сильные артефакты JPEG в сильно сжатых изображениях (на 20-40%)</string>
+    <string name="model_artifacts_jpg_40_60">Устраняет умеренные артефакты JPEG, сохраняя при этом детали изображения (40-60%)</string>
+    <string name="model_artifacts_jpg_60_80">Улучшает качество изображений JPEG на достаточно высоком уровне (60-80%)</string>
+    <string name="model_artifacts_jpg_80_100">Незаметно уменьшает незначительные артефакты JPEG в изображениях практически без потерь качества (80-100%)</string>
+    <string name="model_redetail_v2">Улучшает детализацию и текстуры, повышая воспринимаемую резкость без существенных артефактов</string>
+    <string name="processing_finished">Обработка завершена</string>
+    <string name="processing_failed">Обработка не удалась</string>
+    <string name="model_itf_skin_diffdetail_lite">Улучшает текстуру и детали кожи, сохраняя при этом естественный вид, оптимизировано для высокой скорости</string>
+    <string name="model_sbdv_dejpeg">Удаляет артефакты сжатия JPEG и восстанавливает качество изображения для сжатых фотографий</string>
+    <string name="model_iso_denoise_v1">Уменьшает уровень шума ISO на фотографиях, сделанных в условиях недостаточного освещения, сохраняя при этом детали</string>
+    <string name="model_dejumbo">Корректирует переэкспонированные или «гиперэкспонированные» участки и восстанавливает лучший тональный баланс</string>
+    <string name="model_ddcolor_tiny">Легкая и быстрая модель цветокоррекции, добавляющая естественные цвета к изображениям в оттенках серого</string>
+    <string name="type_upscale">Апскейл</string>
+    <string name="model_realesrgan_x4v3">Масштабирование X4 для обычных изображений; миниатюрная модель, использующая меньше ресурсов графического процессора и времени, с умеренным устранением размытия и шумоподавлением</string>
+    <string name="model_realesrgan_x2plus">Масштабирование X2 для обычных изображений с сохранением текстур и естественных деталей</string>
+    <string name="model_realesrgan_x4plus">Масштабирование X4 для обычных изображений с улучшенными текстурами и реалистичными результатами</string>
+    <string name="model_realesrgan_x4plus_anime">Оптимизированный для аниме-изображений масштабировщик X4; 6 блоков RRDB для более четких линий и деталей</string>
+    <string name="model_realesrnet_x4plus">Масштабирование X4 с использованием функции потерь MSE обеспечивает более плавные результаты и уменьшает артефакты для обычных изображений</string>
+    <string name="model_realesrgan_x4plus_anime_4b32f">X4 Upscaler, оптимизированный для аниме-изображений; вариант 4B32F с более четкой детализацией и плавными линиями</string>
+    <string name="model_ultrasharp_v2_x4">Модель предназначена для съемки изображений общего назначения; акцент делается на резкость и четкость</string>
+    <string name="model_ultrasharp_v2_lite_x4">Быстрее и компактнее, сохраняет детализацию, используя при этом меньше памяти графического процессора</string>
+    <string name="model_rmbg_1_4">Легкая модель для быстрого удаления фона. Сбалансированная производительность и точность. Работает с портретами, объектами и сценами. Рекомендуется для большинства случаев использования</string>
+    <string name="type_removebg">Удаление фона</string>
+    <string name="horizontal_border_thickness">Толщина горизонтальной границы</string>
+    <string name="vertical_border_thickness">Толщина вертикальной границы</string>
+    <string name="current_model_not_chunkable">Текущая модель не поддерживает фрагментацию, изображение будет обработано в исходных размерах, это может привести к высокому потреблению памяти и проблемам с устройствами низкого уровня.</string>
+    <string name="chunking_disabled">Фрагментация отключена, изображение будет обрабатываться в исходных размерах. Это может привести к высокому потреблению памяти и проблемам с устройствами низкого уровня, но может дать лучшие результаты при выводе.</string>
+    <string name="chunking">Фрагментация</string>
+    <string name="model_u2net">Высокоточная модель сегментации изображения для удаления фона</string>
+    <string name="model_u2netp">Облегченная версия U2Net для более быстрого удаления фона с меньшим использованием памяти.</string>
+    <string name="model_ddcolor">Модель Full DDColor обеспечивает высококачественную раскраску обычных изображений с минимальными артефактами. Лучший выбор из всех моделей раскрашивания.</string>
+    <string name="model_ddcolor_artistic">DDColor Обученные и частные художественные наборы данных; дает разнообразные и художественные результаты раскрашивания с меньшим количеством нереалистичных цветовых артефактов.</string>
+    <string name="model_birefnet">Легкая модель BiRefNet на основе Swin Transformer для точного удаления фона.</string>
+    <string name="model_inspyrenet">Качественное удаление фона с острыми краями и отличным сохранением деталей, особенно на сложных объектах и ​​сложном фоне.</string>
+    <string name="model_isnet">Модель удаления фона, которая создает точные маски с гладкими краями, подходящую для обычных объектов и умеренного сохранения деталей.</string>
 </resources>

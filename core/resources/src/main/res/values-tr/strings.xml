@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ ImageToolbox is an image editor for android
-  ~ Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+  ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Bir şeyler ters gitti: %1$s</string>
     <string name="size">Boyut: %1$s</string>
     <string name="loading">Yükleniyor…</string>
@@ -367,7 +369,7 @@
     <string name="analytics_sub">Anonim uygulama kullanım istatistiklerinin toplanmasına izin ver</string>
     <string name="image_exif_warning">Şu anda, %1$s formatı yalnızca Android\'de EXIF meta verilerinin okunmasına izin vermektedir. Çıktı resmi kaydedildiğinde hiçbir meta veriye sahip olmayacaktır.</string>
     <string name="effort">Efor</string>
-    <string name="effort_sub">%1$d değeri hızlı bir sıkıştırma anlamına gelir ve nispeten büyük bir dosya boyutuyla sonuçlanır. %2$d daha yavaş bir sıkıştırma anlamına gelir ve daha küçük bir dosyayla sonuçlanır.</string>
+    <string name="effort_sub">%1$s değeri hızlı bir sıkıştırma anlamına gelir ve nispeten büyük bir dosya boyutuyla sonuçlanır. %2$s daha yavaş bir sıkıştırma anlamına gelir ve daha küçük bir dosyayla sonuçlanır.</string>
     <string name="wait">Bekle</string>
     <string name="saving_almost_complete">Kaydetme neredeyse tamamlandı. Şimdi iptal etmek yeniden kaydetmeyi gerektirecektir.</string>
     <string name="updates">Güncellemeler</string>
@@ -552,7 +554,7 @@
     <string name="recognize_text">OCR (metin tanıma)</string>
     <string name="recognize_text_sub">Verilen resimden metin tanıyın, 120+ dil desteklenir</string>
     <string name="picture_has_no_text">Resimde metin yok veya uygulama bulamadı</string>
-    <string name="accuracy">"Doğruluk: %1$d"</string>
+    <string name="accuracy">Doğruluk: %1$s</string>
     <string name="recognition_type">Tanıma Türü</string>
     <string name="fast">Hızlı</string>
     <string name="standard">Standart</string>
@@ -566,7 +568,7 @@
     <string name="segmentation_mode">Segmentasyon Modu</string>
     <string name="use_pixel_switch">Piksel Anahtarı Kullan</string>
     <string name="use_pixel_switch_sub">Google Pixel benzeri bir anahtar kullanır</string>
-    <string name="saved_to_original">Orijinal hedefe %s adıyla dosyanın üzerine yazıldı</string>
+    <string name="saved_to_original">Orijinal hedefe %1$s adıyla dosyanın üzerine yazıldı</string>
     <string name="magnifier">Büyüteç</string>
     <string name="magnifier_sub">Daha iyi erişilebilirlik için çizim modlarında parmağın üstünde büyüteci etkinleştirir</string>
     <string name="force_exif_widget_initial_value">Başlangıç değerini zorla</string>
@@ -853,7 +855,7 @@
     <string name="lossy_compression">Kayıplı Sıkıştırma</string>
     <string name="lossy_compression_sub">Kayıpsız yerine dosya boyutunu azaltmak için kayıplı sıkıştırma kullanır</string>
     <string name="compression_type">Sıkıştırma Türü</string>
-    <string name="speed_sub">Sonuçta ortaya çıkan resmin kod çözme hızını kontrol eder, bu, sonuç resminin daha hızlı açılmasına yardımcı olmalıdır, %1$d değeri en yavaş kod çözme anlamına gelirken, %2$d en hızlı anlamına gelir, bu ayar çıktı resminin boyutunu artırabilir</string>
+    <string name="speed_sub">Sonuçta ortaya çıkan resmin kod çözme hızını kontrol eder, bu, sonuç resminin daha hızlı açılmasına yardımcı olmalıdır, %1$s değeri en yavaş kod çözme anlamına gelirken, %2$s en hızlı anlamına gelir, bu ayar çıktı resminin boyutunu artırabilir</string>
     <string name="sorting">Sıralama</string>
     <string name="sort_by_date">Tarih</string>
     <string name="sort_by_date_reversed">Tarih (Ters)</string>
@@ -882,9 +884,9 @@
     <string name="resize_anchor">Yeniden Boyutlandırma Çapası</string>
     <string name="pixel_switch">Piksel</string>
     <string name="fluent_switch">Fluent</string>
-    <string name="fluent_switch_sub">"Fluent" tasarım sistemine dayalı bir anahtar</string>
+    <string name="fluent_switch_sub">Fluent tasarım sistemine dayalı bir anahtar</string>
     <string name="cupertino_switch">Cupertino</string>
-    <string name="cupertino_switch_sub">"Cupertino" tasarım sistemine dayalı bir anahtar</string>
+    <string name="cupertino_switch_sub">Cupertino tasarım sistemine dayalı bir anahtar</string>
     <string name="images_to_svg">Resimleri SVG\'ye Dönüştür</string>
     <string name="images_to_svg_sub">Verilen resimleri SVG resimlerine dönüştürün</string>
     <string name="use_sampled_palette">Örneklenmiş Palet Kullan</string>
@@ -1120,7 +1122,7 @@
     <string name="save_as_qr_code_image">QR kodu resmi olarak kaydet</string>
     <string name="delete_template">Şablonu Sil</string>
     <string name="delete_template_warn">Seçilen şablon filtresini silmek üzeresiniz. Bu işlem geri alınamaz</string>
-    <string name="added_filter_template">\"%1$s\" (%2$d) adıyla filtre şablonu eklendi</string>
+    <string name="added_filter_template">\"%1$s\" (%2$s) adıyla filtre şablonu eklendi</string>
     <string name="filter_preview">Filtre Önizlemesi</string>
     <string name="qr_code">QR ve Barkod</string>
     <string name="qr_code_sub">QR kodunu tarayın ve içeriğini alın veya yeni bir tane oluşturmak için dizenizi yapıştırın</string>
@@ -1467,7 +1469,7 @@
     <string name="layout">Düzen</string>
     <string name="main_screen_title">Ana Ekran Başlığı</string>
     <string name="constant_rate_factor">Sabit Oran Faktörü (CRF)</string>
-    <string name="crf_sub">%1$d değeri yavaş bir sıkıştırma anlamına gelir ve nispeten küçük bir dosya boyutuyla sonuçlanır. %2$d daha hızlı bir sıkıştırma anlamına gelir ve büyük bir dosyayla sonuçlanır.</string>
+    <string name="crf_sub">%1$s değeri yavaş bir sıkıştırma anlamına gelir ve nispeten küçük bir dosya boyutuyla sonuçlanır. %2$s daha hızlı bir sıkıştırma anlamına gelir ve büyük bir dosyayla sonuçlanır.</string>
     <string name="lut_library">Lut Kütüphanesi</string>
     <string name="lut_library_sub">İndirdikten sonra uygulayabileceğiniz LUT koleksiyonunu indirin</string>
     <string name="lut_library_update_sub">İndirdikten sonra uygulayabileceğiniz LUT koleksiyonunu güncelleyin (sadece yeniler sıraya alınacaktır)</string>
@@ -1487,7 +1489,7 @@
     <string name="open_source_licenses">Açık Kaynak Lisansları</string>
     <string name="open_source_licenses_sub">Bu uygulamada kullanılan açık kaynaklı kütüphanelerin lisanslarını görüntüleyin</string>
     <string name="area">Alan</string>
-    <string name="area_sub">Piksel alan ilişkisi kullanarak yeniden örnekleme. Moire içermeyen sonuçlar verdiği için resim küçültme için tercih edilen bir yöntem olabilir. Ancak resim yakınlaştırıldığında, "En Yakın" yöntemine benzer.</string>
+    <string name="area_sub">Piksel alan ilişkisi kullanarak yeniden örnekleme. Moire içermeyen sonuçlar verdiği için resim küçültme için tercih edilen bir yöntem olabilir. Ancak resim yakınlaştırıldığında, En Yakın yöntemine benzer.</string>
     <string name="enable_tonemapping">Ton Eşlemeyi Etkinleştir</string>
     <string name="enter_percent">Yüzde Gir</string>
     <string name="unknown_host">Siteye erişilemiyor, VPN kullanmayı veya URL\'nin doğru olup olmadığını kontrol etmeyi deneyin</string>
@@ -1502,8 +1504,8 @@
     <string name="fast_settings_side">Hızlı Ayarlar Tarafı</string>
     <string name="fast_settings_side_sub">Resimleri düzenlerken seçilen tarafa, tıklandığında hızlı ayarları açacak bir kayan şerit ekleyin</string>
     <string name="clear_selection">Seçimi temizle</string>
-    <string name="settings_group_visibility_hidden">\"%s\" ayar grubu varsayılan olarak daraltılmış olacaktır</string>
-    <string name="settings_group_visibility_visible">\"%s\" ayar grubu varsayılan olarak genişletilmiş olacaktır</string>
+    <string name="settings_group_visibility_hidden">\"%1$s\" ayar grubu varsayılan olarak daraltılmış olacaktır</string>
+    <string name="settings_group_visibility_visible">\"%1$s\" ayar grubu varsayılan olarak genişletilmiş olacaktır</string>
     <string name="base_64_tools">Base64 Araçları</string>
     <string name="base_64_tools_sub">Base64 dizesini resme çözün veya resmi Base64 formatına kodlayın</string>
     <string name="base_64">Base64</string>
@@ -1638,8 +1640,8 @@
     <string name="type_image_link">Başlamak için resim bağlantısı yazın</string>
     <string name="paste_link">Bağlantıyı yapıştır</string>
     <plurals name="color_count">
-        <item quantity="one">%s renk</item>
-        <item quantity="other">%s renk</item>
+        <item quantity="one">%1$s renk</item>
+        <item quantity="other">%1$s renk</item>
     </plurals>
     <string name="disable_rotation">Dönmeyi kapat</string>
     <string name="disable_rotation_sub">İki parmak hareketiyle görüntülerin dönmesini engeller</string>
@@ -1752,7 +1754,7 @@
     <string name="processing_screenshot">Ekran görüntüsü işleniyor</string>
     <string name="screenshot_not_captured_try_again">Ekran görüntüsü yakalanamadı, tekrar deneyin</string>
     <string name="skipped_saving">Kaydedilme atlandı</string>
-    <string name="skipped_saving_multiple">%1$d dosya atlandı</string>
+    <string name="skipped_saving_multiple">%1$s dosya atlandı</string>
     <string name="allow_skip_if_larger">Eğer Büyükse Atlamaya İzin Ver</string>
     <string name="allow_skip_if_larger_sub">Bazı araçlar, sonuçta ortaya çıkan dosya boyutu orijinalinden daha büyük olacaksa görüntüleri kaydetmeyi atlayabilir.</string>
     <string name="qr_type_calendar_event">Takvim Etkinliği</string>
@@ -1842,7 +1844,7 @@
     <string name="palette_format">Palet Formatı</string>
     <string name="export_palette_sub">Oluşturulan paleti farklı formatlara aktarın</string>
     <string name="add_color_palette_sub">Mevcut palete yeni renk ekler</string>
-    <string name="palette_name_not_supported">%s formatı palet adı sağlamayı desteklemiyor</string>
+    <string name="palette_name_not_supported">%1$s formatı palet adı sağlamayı desteklemiyor</string>
     <string name="wallpapers_export_not_avaialbe">Play Store politikaları nedeniyle, bu özellik mevcut sürümde bulunmamaktadır. Bu özelliğe erişmek için lütfen ImageToolbox\'ı alternatif bir kaynaktan indirin. Mevcut sürümleri aşağıdaki GitHub adresinde bulabilirsiniz.</string>
     <string name="open_github_page">GitHub sayfasını aç</string>
     <string name="overwrite_files_sub_short">Orijinal dosya, seçilen klasöre kaydedilmek yerine yenisiyle değiştirilecektir.</string>
@@ -1869,7 +1871,7 @@
     <string name="pulse_grid_pixelization">Atım Izgara Pikselleştirmesi</string>
     <string name="nucleus_pixelization">Çekirdek Pikselleştirme</string>
     <string name="radial_weave_pixelization">Radyal Dokuma Pikselleştirme</string>
-    <string name="cannot_open_uri">\"%s\" URI açılamıyor</string>
+    <string name="cannot_open_uri">\"%1$s\" URI açılamıyor</string>
     <string name="snowfall_mode">Kar Yağışı Modu</string>
     <string name="enabled">Aktif</string>
     <string name="border_frame">Sınır Çerçevesi</string>
@@ -1884,4 +1886,132 @@
     <string name="chroma">Renk Parlaklığı</string>
     <string name="pixel_melt">Piksel Erime</string>
     <string name="max_drop">Maks Düşüş</string>
+    <string name="ai_tools">AI Araçları</string>
+    <string name="ai_tools_sub">Artefakt giderme veya gürültü giderme gibi yapay zeka modelleriyle görüntüleri işlemek için çeşitli araçlar</string>
+    <string name="model_anime_undeint">Sıkıştırma, pürüzlü çizgiler</string>
+    <string name="model_broadcast">Çizgi filmler, yayın sıkıştırma</string>
+    <string name="model_rgb_max_denoise_fp16">Genel sıkıştırma, genel gürültü</string>
+    <string name="model_wb_denoise">Renksiz çizgi film gürültüsü</string>
+    <string name="model_span_anime_pretrain">Hızlı, genel sıkıştırma, genel gürültü, animasyon/çizgi roman/anime</string>
+    <string name="model_book_scan">Kitap tarama</string>
+    <string name="model_overexposure">Pozlama düzeltmesi</string>
+    <string name="model_fbcnn_color_fp16">Genel sıkıştırmada en iyisi, renkli görüntüler</string>
+    <string name="model_fbcnn_gray_fp16">Genel sıkıştırmada en iyi, grisel görüntüler</string>
+    <string name="model_fbcnn_gray_double_fp16">Genel sıkıştırma, grisel görüntüler, daha güçlü</string>
+    <string name="model_scunet_color_gan_fp16">Genel gürültü, renkli görüntüler</string>
+    <string name="model_scunet_color_psnr_fp16">Genel gürültü, renkli görüntüler, daha iyi ayrıntılar</string>
+    <string name="model_scunet_gray_15_fp16">Genel gürültü, grisel görüntüler</string>
+    <string name="model_scunet_gray_25_fp16">Genel gürültü, grisel görüntüler, daha güçlü</string>
+    <string name="model_scunet_gray_50_fp16">Genel gürültü, grisel görüntüler, en güçlü</string>
+    <string name="model_jpeg_destroyer">Genel sıkıştırma</string>
+    <string name="model_jaywreck">Genel sıkıştırma</string>
+    <string name="model_h264">Tekstürleme, h264 sıkıştırma</string>
+    <string name="model_vhs">VHS sıkıştırma</string>
+    <string name="model_cinepak">Standart olmayan sıkıştırma (cinepak, msvideo1, roq)</string>
+    <string name="model_debink_v4">Blink sıkıştırması, geometri için daha iyi</string>
+    <string name="model_debink_v5">Blink sıkıştırma, daha güçlü</string>
+    <string name="model_debink_v6">Blink sıkıştırma, yumuşak, ayrıntıları korur</string>
+    <string name="model_antialias">Merdiven basamağı etkisini ortadan kaldırma, düzleştirme</string>
+    <string name="model_kdm_scans">Taranmış çizimler, hafif sıkıştırma, muare</string>
+    <string name="model_bandage">Renk bantlaması</string>
+    <string name="model_halftone">Yavaş, yarı tonları kaldırma</string>
+    <string name="model_colorizer">Grisel/siyah beyaz görüntüler için genel renklendirici, daha iyi sonuçlar için DDColor kullanın</string>
+    <string name="model_deedge">Kenar kaldırma</string>
+    <string name="model_desharpen">Aşırı keskinleştirmeyi kaldırır</string>
+    <string name="model_dither">Yavaş, titreşimli</string>
+    <string name="model_gainres">Kenar yumuşatma, genel artefaktlar, CGI</string>
+    <string name="model_kdm003_scans">KDM003 tarama işlemleri</string>
+    <string name="model_nmkd_jaywreck3_lite">Hafif görüntü iyileştirme modeli</string>
+    <string name="model_spongecolor_lite">Basit ve hızlı renklendirme, çizgi filmler, ideal değil</string>
+    <string name="model_bcgone_detailed_v2">Sıkıştırma artefaktı giderme</string>
+    <string name="model_bcgone_smooth">Sıkıştırma artefaktı giderme</string>
+    <string name="model_bandage_smooth">Pürüzsüz sonuçlarla bandaj çıkarma</string>
+    <string name="model_bendel_halftone">Yarım ton desen işleme</string>
+    <string name="model_dither_deleter_v3_smooth">Titreşim deseni kaldırma V3</string>
+    <string name="model_jpeg_destroyer_v2">JPEG artefakt giderme V2</string>
+    <string name="model_nmkd_h264_texturize">H.264 doku iyileştirme</string>
+    <string name="model_vhs_sharpen">VHS keskinleştirme ve iyileştirme</string>
+    <string name="merging">Birleştirme</string>
+    <string name="chunk_size">Parça Boyutu</string>
+    <string name="overlap_size">Örtüşme Boyutu</string>
+    <string name="note_chunk_info">%1$s px\'den büyük görüntüler dilimlenecek ve parçalar halinde işlenecek, üst üste binmeler görünür ek yerlerini önlemek için bunları karıştıracaktır.</string>
+    <string name="large_chunk_warning">Büyük boyutlar, düşük kaliteli cihazlarda kararsızlığa neden olabilir.</string>
+    <string name="select_one_to_start">Birini seçerek başla</string>
+    <string name="delete_model_sub">%1$s modelini silmek istiyor musunuz? Tekrar indirmeniz gerekecektir.</string>
+    <string name="confirm">Kabul</string>
+    <string name="models">Modeller</string>
+    <string name="downloaded_models">İndirilen Modeller</string>
+    <string name="available_models">Mevcut Modeller</string>
+    <string name="preparing">Hazırlanıyor</string>
+    <string name="active_model">Aktif Model</string>
+    <string name="failed_to_open_session">Oturum açılamadı</string>
+    <string name="only_onnx_models">Yalnızca .onnx/.ort modelleri içe aktarılabilir</string>
+    <string name="import_model">Model içe aktar</string>
+    <string name="import_model_sub">Özel onnx modelini daha sonra kullanmak üzere içe aktarın, yalnızca onnx/ort modelleri kabul edilir, neredeyse tüm esrgan benzeri varyantları destekler</string>
+    <string name="imported_models">İçeri Aktarılan Modeller</string>
+    <string name="model_scunet_color_15_fp16">Genel gürültü, renkli görüntüler</string>
+    <string name="model_scunet_color_25_fp16">Genel gürültü, renkli görüntüler, daha güçlü</string>
+    <string name="model_scunet_color_50_fp16">Genel gürültü, renkli görüntüler, en güçlü</string>
+    <string name="model_artifacts_dithering_alsa">Titreşim artefaktlarını ve renk bantlamasını azaltarak, yumuşak gradyanları ve düz renk alanlarını iyileştirir.</string>
+    <string name="model_nmkd_brighten_redux">Doğal renkleri korurken, dengeli vurgularla görüntünün parlaklığını ve kontrastını artırır.</string>
+    <string name="model_nmkd_brighten">Ayrıntıları koruyarak ve aşırı pozlamayı önleyerek karanlık görüntüleri aydınlatır.</string>
+    <string name="model_nmkd_detoon">Aşırı renk tonlamasını giderir ve daha nötr ve doğal bir renk dengesi sağlar.</string>
+    <string name="model_noise_toner_poisson_detailed">İnce ayrıntıları ve dokuları korumaya önem vererek Poisson tabanlı gürültü tonlaması uygular.</string>
+    <string name="model_noise_toner_poisson_soft">Daha yumuşak ve daha az agresif görsel sonuçlar için yumuşak Poisson gürültü tonlaması uygular.</string>
+    <string name="type_removebg">Kaldır</string>
+    <string name="model_noise_toner_uniform_detailed">Detayların korunması ve görüntü netliğine odaklanan tek tip gürültü tonlama.</string>
+    <string name="model_noise_toner_uniform_soft">Hafif ve düzgün bir doku ve pürüzsüz bir görünüm için hafif ve düzgün bir gürültü tonlaması.</string>
+    <string name="model_repainter">Artefaktları yeniden boyayarak ve görüntü tutarlılığını iyileştirerek hasarlı veya düzensiz alanları onarır.</string>
+    <string name="model_debandurh_fs_ultra_lite">Performans maliyetini en aza indirerek renk bantlamasını ortadan kaldıran hafif debanding modeli.</string>
+    <string name="model_jpeg_0_20">Görüntüleri çok yüksek sıkıştırma artefaktları (kalite %0-20) ile optimize ederek netliği artırır.</string>
+    <string name="model_jpeg_20_40">Yüksek sıkıştırma artefaktları olan görüntüleri iyileştirir (kalite %20-40), ayrıntıları geri yükler ve gürültüyü azaltır.</string>
+    <string name="model_jpeg_40_60">Görüntüleri orta düzeyde sıkıştırma (kalite %40-60) ile iyileştirir, keskinlik ve pürüzsüzlük arasında denge sağlar.</string>
+    <string name="model_jpeg_60_80">Hafif sıkıştırma (kalite %60-80) ile görüntüleri iyileştirerek ince ayrıntıları ve dokuları güçlendirir.</string>
+    <string name="model_jpeg_80_100">Doğal görünümü ve ayrıntıları korurken, neredeyse kayıpsız görüntüleri (kalite %80-100) hafifçe iyileştirir.</string>
+    <string name="model_deblr">Görüntü bulanıklığını hafifçe azaltır, artefakt oluşturmadan keskinliği artırır.</string>
+    <string name="processing_channel">Uzun süreli işlemler</string>
+    <string name="processing_image">Resim işleniyor</string>
+    <string name="processing">İşleniyor</string>
+    <string name="model_artifacts_jpg_0_20">Çok düşük kaliteli görüntülerdeki (0-20%) ağır JPEG sıkıştırma artefaktlarını giderir.</string>
+    <string name="model_artifacts_jpg_20_40">Yüksek oranda sıkıştırılmış görüntülerdeki güçlü JPEG artefaktlarını azaltır (20-40%).</string>
+    <string name="model_artifacts_jpg_40_60">Görüntü ayrıntılarını korurken orta derecede JPEG artefaktlarını temizler (40-60%).</string>
+    <string name="model_artifacts_jpg_60_80">Oldukça yüksek kaliteli görüntülerde (60-80%) hafif JPEG artefaktlarını iyileştirir.</string>
+    <string name="model_artifacts_jpg_80_100">Neredeyse kayıpsız görüntülerdeki (80-100%) küçük JPEG artefaktlarını ince bir şekilde azaltır.</string>
+    <string name="model_redetail_v2">İnce ayrıntıları ve dokuları geliştirerek, ağır yapaylık olmadan algılanan keskinliği artırır.</string>
+    <string name="processing_finished">İşleme bitti</string>
+    <string name="processing_failed">İşleme başarısız</string>
+    <string name="model_itf_skin_diffdetail_lite">Cilt dokularını ve ayrıntılarını iyileştirirken doğal görünümü korur, hız için optimize edilmiştir.</string>
+    <string name="model_sbdv_dejpeg">JPEG sıkıştırma artefaktlarını giderir ve sıkıştırılmış fotoğrafların görüntü kalitesini geri yükler.</string>
+    <string name="model_iso_denoise_v1">Düşük ışık koşullarında çekilen fotoğraflardaki ISO gürültüsünü azaltır ve ayrıntıları korur.</string>
+    <string name="model_dejumbo">Aşırı pozlanmış veya \"jumbo\" vurguları düzeltir ve daha iyi ton dengesi sağlar.</string>
+    <string name="model_ddcolor_tiny">Gri tonlu görüntülere doğal renkler ekleyen hafif ve hızlı renklendirme modeli.</string>
+    <string name="type_dejpeg">DEJPEG</string>
+    <string name="type_denoise">Gürültü giderme</string>
+    <string name="type_colorize">Renklendirme</string>
+    <string name="type_artifacts">Artefaktlar</string>
+    <string name="type_enhance">Geliştir</string>
+    <string name="type_anime">Anime</string>
+    <string name="type_scans">Tarama</string>
+    <string name="type_upscale">Kaliteleştirme</string>
+    <string name="model_realesrgan_x4v3">Genel görüntüler için X4 yükseltici; daha az GPU ve zaman kullanan, orta düzeyde bulanıklık giderme ve gürültü azaltma özelliğine sahip küçük model.</string>
+    <string name="model_realesrgan_x2plus">Genel görüntüler için X2 yükseltici, dokuları ve doğal ayrıntıları korur.</string>
+    <string name="model_realesrgan_x4plus">Gelişmiş dokular ve gerçekçi sonuçlar sunan genel görüntüler için X4 yükseltici.</string>
+    <string name="model_realesrgan_x4plus_anime">Anime görüntüleri için optimize edilmiş X4 yükseltici; daha keskin çizgiler ve ayrıntılar için 6 RRDB bloğu.</string>
+    <string name="model_realesrnet_x4plus">MSE kaybı ile X4 yükseltici, genel görüntüler için daha pürüzsüz sonuçlar ve daha az artefakt üretir.</string>
+    <string name="model_realesrgan_x4plus_anime_4b32f">Anime görüntüleri için optimize edilmiş X4 Upscaler; daha keskin ayrıntılar ve pürüzsüz çizgiler sunan 4B32F varyantı.</string>
+    <string name="model_ultrasharp_v2_x4">Genel görüntüler için X4 UltraSharp V2 modeli; keskinlik ve netliği vurgular.</string>
+    <string name="model_ultrasharp_v2_lite_x4">X4 UltraSharp V2 Lite; daha hızlı ve daha küçük, daha az GPU belleği kullanırken ayrıntıları korur.</string>
+    <string name="model_rmbg_1_4">Hızlı arka plan kaldırma için hafif model. Dengeli performans ve doğruluk. Portreler, nesneler ve sahnelerle çalışır. Çoğu kullanım durumu için önerilir.</string>
+    <string name="horizontal_border_thickness">Yatay Kenar Kalınlığı</string>
+    <string name="vertical_border_thickness">Dikey Kenar Kalınlığı</string>
+    <string name="current_model_not_chunkable">Mevcut model parçalamayı desteklemiyor, görüntü orijinal boyutlarda işlenecek, bu durum yüksek bellek tüketimine ve düşük kaliteli cihazlarda sorunlara neden olabilir</string>
+    <string name="chunking_disabled">Parçalama devre dışı, görüntü orijinal boyutlarında işlenecek; bu, yüksek bellek tüketimine ve düşük kaliteli cihazlarda sorunlara neden olabilir ancak çıkarımda daha iyi sonuçlar verebilir</string>
+    <string name="chunking">Parçalama</string>
+    <string name="model_u2net">Arka planı kaldırmak için yüksek doğruluklu görüntü segmentasyon modeli</string>
+    <string name="model_u2netp">Daha az bellek kullanımıyla daha hızlı arka plan kaldırma için U2Net\'in hafif versiyonu.</string>
+    <string name="model_ddcolor">Tam DDColor modeli, minimum düzeyde bozulmayla genel görüntüler için yüksek kaliteli renklendirme sunar. Tüm renklendirme modelleri arasında en iyi seçim.</string>
+    <string name="model_ddcolor_artistic">DDColor Eğitimli ve özel sanatsal veri kümeleri; daha az gerçekçi olmayan renk yapısı ile çeşitli ve sanatsal renklendirme sonuçları üretir.</string>
+    <string name="model_birefnet">Doğru arka plan kaldırma için Swin Transformer\'ı temel alan hafif BiRefNet modeli.</string>
+    <string name="model_inspyrenet">Özellikle karmaşık nesnelerde ve zorlu arka planlarda keskin kenarlar ve mükemmel ayrıntı korumasıyla yüksek kaliteli arka plan kaldırma.</string>
+    <string name="model_isnet">Genel nesneler için uygun ve orta düzeyde ayrıntı korumasına sahip, pürüzsüz kenarlı doğru maskeler üreten arka plan kaldırma modeli.</string>
 </resources>

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,14 +102,16 @@ fun EnhancedSliderItem(
     titleFontWeight: FontWeight = if (behaveAsContainer) {
         FontWeight.Medium
     } else FontWeight.Normal,
-    additionalContent: (@Composable () -> Unit)? = null,
+    isAnimated: Boolean = true,
+    canInputValue: Boolean = true,
+    additionalContent: (@Composable () -> Unit)? = null
 ) {
     val internalColor = contentColor
         ?: if (containerColor == MaterialTheme.colorScheme.surfaceContainer) {
             contentColorFor(backgroundColor = MaterialTheme.colorScheme.surfaceVariant)
         } else contentColorFor(backgroundColor = containerColor)
 
-    var showValueDialog by rememberSaveable { mutableStateOf(false) }
+    var showValueDialog by rememberSaveable(canInputValue) { mutableStateOf(false) }
     val internalState = remember(value) { mutableStateOf(value) }
 
     val isCompactLayout = LocalSettingsState.current.isCompactSelectorsLayout
@@ -150,42 +152,43 @@ fun EnhancedSliderItem(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val slider = @Composable {
-                    AnimatedContent(
-                        targetState = Pair(
-                            valueRange,
-                            steps
-                        )
-                    ) { (valueRange, steps) ->
-                        EnhancedSlider(
-                            modifier = if (isCompactLayout) {
-                                Modifier.padding(
-                                    top = topContentPadding,
-                                    start = 12.dp,
-                                    end = 12.dp
-                                )
-                            } else {
-                                sliderModifier
-//                                Modifier.padding(
-//                                    top = 6.dp,
-//                                    bottom = 6.dp,
-//                                    end = 6.dp,
-//                                    start = titleHorizontalPadding
-//                                )
-                            },
-                            enabled = enabled,
-                            value = internalState.value.toFloat(),
-                            onValueChange = {
-                                internalState.value = internalStateTransformation(it)
-                                onValueChange(it)
-                            },
-                            onValueChangeFinished = onValueChangeFinished?.let {
-                                {
-                                    it(internalState.value.toFloat())
-                                }
-                            },
-                            valueRange = valueRange,
-                            steps = steps
-                        )
+                    val nonAnimated: @Composable (ClosedFloatingPointRange<Float>, Int) -> Unit =
+                        { valueRange, steps ->
+                            EnhancedSlider(
+                                modifier = if (isCompactLayout) {
+                                    Modifier.padding(
+                                        top = topContentPadding,
+                                        start = 12.dp,
+                                        end = 12.dp
+                                    )
+                                } else {
+                                    sliderModifier
+                                },
+                                enabled = enabled,
+                                value = internalState.value.toFloat(),
+                                onValueChange = {
+                                    internalState.value = internalStateTransformation(it)
+                                    onValueChange(it)
+                                },
+                                onValueChangeFinished = onValueChangeFinished?.let {
+                                    {
+                                        it(internalState.value.toFloat())
+                                    }
+                                },
+                                valueRange = valueRange,
+                                steps = steps,
+                                isAnimated = isAnimated
+                            )
+                        }
+
+                    if (isAnimated) {
+                        AnimatedContent(
+                            targetState = valueRange to steps
+                        ) { (valueRange, steps) ->
+                            nonAnimated(valueRange, steps)
+                        }
+                    } else {
+                        nonAnimated(valueRange, steps)
                     }
                 }
                 AnimatedContent(
@@ -286,9 +289,9 @@ fun EnhancedSliderItem(
                                             top = topContentPadding,
                                             end = 8.dp
                                         ),
-                                    onClick = {
-                                        showValueDialog = true
-                                    }
+                                    onClick = if (canInputValue) {
+                                        { showValueDialog = true }
+                                    } else null
                                 )
                             }
                         } else {
@@ -334,9 +337,9 @@ fun EnhancedSliderItem(
                                         top = topContentPadding,
                                         end = 14.dp
                                     ),
-                                    onClick = {
-                                        showValueDialog = true
-                                    }
+                                    onClick = if (canInputValue) {
+                                        { showValueDialog = true }
+                                    } else null
                                 )
                             }
                             slider()

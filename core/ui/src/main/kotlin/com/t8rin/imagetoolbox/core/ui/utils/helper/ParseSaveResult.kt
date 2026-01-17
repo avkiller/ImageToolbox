@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package com.t8rin.imagetoolbox.core.ui.utils.helper
 import android.app.Activity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Save
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.firstOfType
@@ -29,6 +28,7 @@ import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.requestStoragePe
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ReviewHandler.Companion.showReview
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
+import com.t8rin.logger.makeLog
 
 internal fun Activity.parseSaveResult(
     saveResult: SaveResult,
@@ -36,6 +36,7 @@ internal fun Activity.parseSaveResult(
 ) {
     when (saveResult) {
         is SaveResult.Error.Exception -> {
+            saveResult.throwable.makeLog("parseSaveResult")
             essentials.showFailureToast(
                 throwable = saveResult.throwable
             )
@@ -179,11 +180,7 @@ internal fun Activity.parseSaveResults(
                 duration = ToastDuration.Long
             )
         }
-        essentials.showToast(
-            message = getString(R.string.failed_to_save, failed),
-            icon = Icons.Rounded.ErrorOutline,
-            duration = ToastDuration.Long
-        )
+        essentials.showFailureToast(getString(R.string.failed_to_save, failed))
         essentials.showToast(
             message = getString(
                 R.string.smth_went_wrong,

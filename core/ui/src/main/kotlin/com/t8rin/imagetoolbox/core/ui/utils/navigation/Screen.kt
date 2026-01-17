@@ -62,7 +62,8 @@ sealed class Screen(
     @Serializable
     data class LibraryDetails(
         val name: String,
-        val htmlDescription: String
+        val htmlDescription: String,
+        val link: String?
     ) : Screen(
         id = -5,
         title = 0,
@@ -811,6 +812,15 @@ sealed class Screen(
         id = 41,
         title = R.string.ascii_art,
         subtitle = R.string.ascii_art_sub
+    )
+
+    @Serializable
+    data class AiTools(
+        val uris: List<Uri>? = null
+    ) : Screen(
+        id = 41,
+        title = R.string.ai_tools,
+        subtitle = R.string.ai_tools_sub
     )
 
     companion object : ScreenConstants by ScreenConstants
