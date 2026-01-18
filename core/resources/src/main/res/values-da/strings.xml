@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources>
+  --><resources>
     <string name="flexible">Fleksibel</string>
     <string name="ok">OK</string>
     <string name="crop">Beskær</string>
@@ -2014,4 +2012,12 @@
     <string name="model_birefnet">Letvægts BiRefNet-model baseret på Swin Transformer til nøjagtig baggrundsfjernelse.</string>
     <string name="model_inspyrenet">Baggrundsfjernelse i høj kvalitet med skarpe kanter og fremragende detaljebevarelse, især på komplekse genstande og vanskelige baggrunde.</string>
     <string name="model_isnet">Baggrundsfjernelsesmodel, der producerer nøjagtige masker med glatte kanter, velegnet til generelle genstande og moderat detaljebevarelse.</string>
+    <string name="model_already_downloaded">Modellen er allerede downloadet</string>
+    <string name="model_successfully_imported">Modellen blev importeret</string>
+    <string name="type">Type</string>
+    <string name="keyword">Søgeord</string>
+    <string name="very_fast">Meget hurtig</string>
+    <string name="normal">Normal</string>
+    <string name="slow">Langsom</string>
+    <string name="very_slow">Meget langsom</string>
 </resources>

@@ -28,10 +28,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.t8rin.imagetoolbox.core.data.image.utils.healAlpha
+import com.t8rin.imagetoolbox.core.data.saving.io.FileReadable
 import com.t8rin.imagetoolbox.core.data.saving.io.FileWriteable
+import com.t8rin.imagetoolbox.core.data.saving.io.UriReadable
+import com.t8rin.imagetoolbox.core.data.utils.computeFromReadable
 import com.t8rin.imagetoolbox.core.data.utils.observeHasChanges
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
+import com.t8rin.imagetoolbox.core.domain.model.HashingType
 import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.KeepAliveService
@@ -54,6 +58,7 @@ import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.contentLength
 import io.ktor.utils.io.readRemaining
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -93,6 +98,8 @@ internal class AndroidAiToolsRepository @Inject constructor(
     init {
         appScope.launch { extractU2NetP() }
     }
+
+    private var isProcessingImage = false
 
     private val modelsDir: File
         get() = File(
@@ -145,7 +152,16 @@ internal class AndroidAiToolsRepository @Inject constructor(
 
         if (model.name.contains("u2netp")) {
             extractU2NetP()
+            selectModelForced(model)
+            close()
         } else {
+            trySend(
+                NeuralDownloadProgress(
+                    currentPercent = 0f,
+                    currentTotalSize = model.downloadSize
+                )
+            )
+
             client.prepareGet(model.downloadLink).execute { response ->
                 val total = response.contentLength() ?: -1L
 
@@ -176,15 +192,7 @@ internal class AndroidAiToolsRepository @Inject constructor(
 
                         tmp.renameTo(modelFile)
 
-                        updateFlow.emit(Unit)
-
-                        ensureActive()
-
-                        selectModel(
-                            model = model,
-                            forced = true
-                        )
-                        model.asBgRemover()?.checkModel()
+                        selectModelForced(model)
                         close()
                     } catch (e: Throwable) {
                         tmp.delete()
@@ -195,14 +203,42 @@ internal class AndroidAiToolsRepository @Inject constructor(
         }
     }.flowOn(ioDispatcher)
 
+    private suspend fun CoroutineScope.selectModelForced(model: NeuralModel) {
+        updateFlow.emit(Unit)
+
+        ensureActive()
+
+        selectModel(
+            model = model,
+            forced = true
+        )
+        model.asBgRemover()?.checkModel()
+    }
+
     override suspend fun importModel(
         uri: String
     ): SaveResult = withContext(ioDispatcher) {
-        val modelName = context.getFilename(uri.toUri()).orEmpty().ifEmpty {
-            "imported_model_${System.currentTimeMillis()}.onnx"
+        val modelToImport = UriReadable(
+            uri = uri.toUri(),
+            context = context
+        )
+        val modelChecksum = HashingType.SHA_256.computeFromReadable(modelToImport)
+
+        val possibleModel = NeuralModel.entries.find {
+            it.checksum == modelChecksum
         }
 
-        if (downloadedModels.value.any { it.name.equals(modelName, true) }) {
+        val modelName = possibleModel?.name
+            ?: context.getFilename(uri.toUri()).orEmpty().ifEmpty {
+                "imported_model_($modelChecksum).onnx"
+            }
+
+        val alreadyDownloaded = downloadedModels.value.find {
+            it.checksum == modelChecksum
+        }
+
+        if (alreadyDownloaded != null) {
+            selectModelForced(alreadyDownloaded)
             return@withContext SaveResult.Skipped
         }
 
@@ -214,7 +250,14 @@ internal class AndroidAiToolsRepository @Inject constructor(
                     modelName
                 ).apply(File::createNewFile)
             )
-        )
+        ).also {
+            selectModelForced(
+                NeuralModel.Imported(
+                    name = modelName,
+                    checksum = modelChecksum
+                )
+            )
+        }
     }
 
     override suspend fun processImage(
@@ -230,25 +273,29 @@ internal class AndroidAiToolsRepository @Inject constructor(
             model == null -> return@withContext listener.failedSession()
 
             model.type == NeuralModel.Type.REMOVE_BG -> {
-                withClosedSession(listener) {
-                    model.asBgRemover()?.removeBackground(image = image)!!.healAlpha(image)
+                processImage {
+                    withClosedSession(listener) {
+                        model.asBgRemover()?.removeBackground(image = image)!!.healAlpha(image)
+                    }
                 }
             }
 
             else -> {
-                val ortSession = session.makeLog("Held session")
-                    ?: createSession(selectedModel.value).makeLog("New session")
-                    ?: return@withContext null.also {
-                        listener.onError(getString(R.string.failed_to_open_session))
-                    }
+                processImage {
+                    val ortSession = session.makeLog("Held session")
+                        ?: createSession(selectedModel.value).makeLog("New session")
+                        ?: return@withContext null.also {
+                            listener.onError(getString(R.string.failed_to_open_session))
+                        }
 
-                processor.processImage(
-                    session = ortSession,
-                    inputBitmap = image,
-                    params = params,
-                    listener = listener,
-                    model = selectedModel.value!!
-                )
+                    processor.processImage(
+                        session = ortSession,
+                        inputBitmap = image,
+                        params = params,
+                        listener = listener,
+                        model = selectedModel.value!!
+                    )
+                }
             }
         }
     }
@@ -288,6 +335,7 @@ internal class AndroidAiToolsRepository @Inject constructor(
         model: NeuralModel?,
         forced: Boolean
     ): Boolean = withContext(ioDispatcher) {
+        if (isProcessingImage) return@withContext false
         if (!forced && model != null && downloadedModels.value.none { it.name == model.name }) return@withContext false
         if (model != null && model.name == selectedModel.value?.name) return@withContext false
 
@@ -355,12 +403,17 @@ internal class AndroidAiToolsRepository @Inject constructor(
     private suspend fun fetchDownloadedModels(
         onGetFiles: (List<File>) -> Unit
     ) = withContext(ioDispatcher) {
-        modelsDir.listFiles().orEmpty().toList().also(onGetFiles).mapNotNull {
+        modelsDir.listFiles().orEmpty().toList().filter {
+            !it.name.orEmpty().endsWith(".tmp")
+        }.also(onGetFiles).mapNotNull {
             val name = it.name
 
             if (name.isNullOrEmpty()) return@mapNotNull null
 
-            NeuralModel.find(name) ?: NeuralModel.Imported(name)
+            NeuralModel.find(name) ?: NeuralModel.Imported(
+                name = name,
+                checksum = HashingType.SHA_256.computeFromReadable(FileReadable(it))
+            )
         }
     }
 
@@ -383,6 +436,13 @@ internal class AndroidAiToolsRepository @Inject constructor(
     private suspend fun extractU2NetP() {
         //Extraction from assets
         BgRemover.downloadModel(BgRemover.Type.U2NetP).collect()
+    }
+
+    private inline fun <T> processImage(action: () -> T): T = try {
+        isProcessingImage = true
+        action()
+    } finally {
+        isProcessingImage = false
     }
 
 }

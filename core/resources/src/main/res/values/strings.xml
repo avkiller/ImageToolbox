@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -467,6 +466,7 @@
     <string name="mask_color">Mask Color</string>
     <string name="ton_space" translatable="false">TON Space</string>
     <string name="ton" translatable="false">TON</string>
+    <string name="boosty" translatable="false">Boosty</string>
     <string name="mask_preview">Mask preview</string>
     <string name="mask_preview_sub">Drawn filter mask will be rendered to show you the approximate result</string>
     <string name="inverse_fill_type">Inverse Fill Type</string>
@@ -2035,4 +2035,12 @@
     <string name="model_birefnet">Lightweight BiRefNet model based on Swin Transformer for accurate background removing.</string>
     <string name="model_inspyrenet">High-quality background removal with sharp edges and excellent detail preservation, especially on complex objects and tricky backgrounds.</string>
     <string name="model_isnet">Background removal model that produces accurate masks with smooth edges, suitable for general objects and moderate detail preservation.</string>
+    <string name="model_already_downloaded">Model already downloaded</string>
+    <string name="model_successfully_imported">Model successfully imported</string>
+    <string name="type">Type</string>
+    <string name="keyword">Keyword</string>
+    <string name="very_fast">Very Fast</string>
+    <string name="normal">Normal</string>
+    <string name="slow">Slow</string>
+    <string name="very_slow">Very Slow</string>
 </resources>

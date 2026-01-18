@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">اندازه</string>
     <string name="pick_image">تصویری برای شروع انتخاب کنید</string>
     <string name="smth_went_wrong">مشکلی رخ داد: %1$s</string>
@@ -2014,4 +2012,12 @@
     <string name="model_birefnet">مدل سبک BiRefNet بر اساس ترانسفورماتور Swin برای حذف دقیق پس زمینه.</string>
     <string name="model_inspyrenet">حذف پس‌زمینه با کیفیت بالا با لبه‌های تیز و حفظ جزئیات عالی، به‌ویژه در اشیاء پیچیده و پس‌زمینه‌های پیچیده.</string>
     <string name="model_isnet">مدل حذف پس‌زمینه که ماسک‌هایی دقیق با لبه‌های صاف، مناسب برای اشیاء عمومی و حفظ جزئیات متوسط ​​تولید می‌کند.</string>
+    <string name="model_already_downloaded">مدل قبلا دانلود شده است</string>
+    <string name="model_successfully_imported">مدل با موفقیت وارد شد</string>
+    <string name="type">تایپ کنید</string>
+    <string name="keyword">کلمه کلیدی</string>
+    <string name="very_fast">خیلی سریع</string>
+    <string name="normal">عادی</string>
+    <string name="slow">کند</string>
+    <string name="very_slow">خیلی آهسته</string>
 </resources>

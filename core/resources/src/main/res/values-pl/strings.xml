@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">Rozmiar %1$s</string>
     <string name="width">Szerokość %1$s</string>
     <string name="loading">Ładowanie…</string>
@@ -2016,4 +2014,12 @@
     <string name="model_birefnet">Lekki model BiRefNet oparty na transformatorze Swin do dokładnego usuwania tła.</string>
     <string name="model_inspyrenet">Wysokiej jakości usuwanie tła z ostrymi krawędziami i doskonałym zachowaniem szczegółów, szczególnie w przypadku skomplikowanych obiektów i trudnych środowisk.</string>
     <string name="model_isnet">Model usuwania tła, który tworzy dokładne maski o gładkich krawędziach, odpowiednie dla obiektów ogólnych i umiarkowanego zachowania szczegółów.</string>
+    <string name="model_already_downloaded">Model już pobrany</string>
+    <string name="model_successfully_imported">Model został pomyślnie zaimportowany</string>
+    <string name="type">Typ</string>
+    <string name="keyword">Słowo kluczowe</string>
+    <string name="very_fast">Bardzo szybko</string>
+    <string name="normal">Normalna</string>
+    <string name="slow">Powolny</string>
+    <string name="very_slow">Bardzo powolny</string>
 </resources>

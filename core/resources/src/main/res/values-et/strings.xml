@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources>
+  --><resources>
     <string name="smth_went_wrong">Midagi läks valesti: %1$s</string>
     <string name="size">Suurus %1$s</string>
     <string name="loading">Laadin…</string>
@@ -2014,4 +2012,12 @@
     <string name="model_birefnet">Kerge BiRefNet mudel, mis põhineb Swin Transformeril tausta täpseks eemaldamiseks.</string>
     <string name="model_inspyrenet">Kvaliteetne teravate servade ja suurepärase detaili säilivusega taustaeemaldus, eriti keerukate objektide ja keerulise taustaga.</string>
     <string name="model_isnet">Tausta eemaldamise mudel, mis toodab täpseid siledate servadega maske, mis sobivad üldistele objektidele ja mõõduka detaili säilitamiseks.</string>
+    <string name="model_already_downloaded">Mudel on juba alla laaditud</string>
+    <string name="model_successfully_imported">Mudel edukalt imporditud</string>
+    <string name="type">Tüüp</string>
+    <string name="keyword">Märksõna</string>
+    <string name="very_fast">Väga kiire</string>
+    <string name="normal">Tavaline</string>
+    <string name="slow">Aeglane</string>
+    <string name="very_slow">Väga aeglane</string>
 </resources>

@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="width">Leveys %1$s</string>
     <string name="height">Korkeus %1$s</string>
     <string name="quality">Laatu</string>
@@ -2014,4 +2012,12 @@
     <string name="model_birefnet">Kevyt BiRefNet-malli, joka perustuu Swin Transformeriin tarkan taustan poistamiseen.</string>
     <string name="model_inspyrenet">Laadukas taustan poisto terävillä reunoilla ja erinomaisella yksityiskohdilla, erityisesti monimutkaisissa kohteissa ja hankalassa taustassa.</string>
     <string name="model_isnet">Taustanpoistomalli, joka tuottaa tarkat maskit sileillä reunoilla, sopii yleisiin esineisiin ja kohtuulliseen yksityiskohtien säilytykseen.</string>
+    <string name="model_already_downloaded">Malli on jo ladattu</string>
+    <string name="model_successfully_imported">Mallin tuonti onnistui</string>
+    <string name="type">Tyyppi</string>
+    <string name="keyword">avainsana</string>
+    <string name="very_fast">Erittäin nopea</string>
+    <string name="normal">Normaali</string>
+    <string name="slow">Hidas</string>
+    <string name="very_slow">Erittäin hidas</string>
 </resources>

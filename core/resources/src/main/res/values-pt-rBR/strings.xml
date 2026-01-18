@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -13,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Algo deu errado: %1$s</string>
     <string name="size">Tamanho %1$s</string>
     <string name="loading">Carregando…</string>
@@ -2014,4 +2013,12 @@
     <string name="model_birefnet">Modelo BiRefNet leve baseado no Swin Transformer para remoção precisa do fundo.</string>
     <string name="model_inspyrenet">Remoção de fundo de alta qualidade com bordas nítidas e excelente preservação de detalhes, especialmente em objetos complexos e fundos complicados.</string>
     <string name="model_isnet">Modelo de remoção de fundo que produz máscaras precisas com bordas suaves, adequadas para objetos gerais e preservação moderada de detalhes.</string>
+    <string name="model_already_downloaded">Modelo já baixado</string>
+    <string name="model_successfully_imported">Modelo importado com sucesso</string>
+    <string name="type">Tipo</string>
+    <string name="keyword">Palavra-chave</string>
+    <string name="very_fast">Muito rápido</string>
+    <string name="normal">Normal</string>
+    <string name="slow">Lento</string>
+    <string name="very_slow">Muito lento</string>
 </resources>

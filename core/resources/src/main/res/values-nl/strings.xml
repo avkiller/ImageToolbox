@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">Formaat %1$s</string>
     <string name="loading">Laden…</string>
     <string name="pick_image">Kies afbeelding om te starten</string>
@@ -2014,4 +2012,12 @@
     <string name="model_birefnet">Lichtgewicht BiRefNet-model gebaseerd op Swin Transformer voor nauwkeurige achtergrondverwijdering.</string>
     <string name="model_inspyrenet">Hoogwaardige achtergrondverwijdering met scherpe randen en uitstekend detailbehoud, vooral bij complexe objecten en lastige achtergronden.</string>
     <string name="model_isnet">Model voor achtergrondverwijdering dat nauwkeurige maskers met gladde randen produceert, geschikt voor algemene objecten en matig detailbehoud.</string>
+    <string name="model_already_downloaded">Model al gedownload</string>
+    <string name="model_successfully_imported">Model succesvol geïmporteerd</string>
+    <string name="type">Type</string>
+    <string name="keyword">Trefwoord</string>
+    <string name="very_fast">Zeer snel</string>
+    <string name="normal">Normaal</string>
+    <string name="slow">Langzaam</string>
+    <string name="very_slow">Zeer langzaam</string>
 </resources>

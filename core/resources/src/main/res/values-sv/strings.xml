@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Något gick fel: %1$s</string>
     <string name="size">Storlek %1$s</string>
     <string name="loading">Laddar…</string>
@@ -2015,4 +2013,12 @@
     <string name="model_birefnet">Lätt BiRefNet-modell baserad på Swin Transformer för exakt bakgrundsborttagning.</string>
     <string name="model_inspyrenet">Högkvalitativ bakgrundsborttagning med skarpa kanter och utmärkt bevarande av detaljer, särskilt på komplexa föremål och knepiga bakgrunder.</string>
     <string name="model_isnet">Bakgrundsborttagningsmodell som ger exakta masker med släta kanter, lämplig för allmänna föremål och måttlig detaljbevarande.</string>
+    <string name="model_already_downloaded">Modellen har redan laddats ned</string>
+    <string name="model_successfully_imported">Modellen har importerats</string>
+    <string name="type">Typ</string>
+    <string name="keyword">Nyckelord</string>
+    <string name="very_fast">Mycket snabb</string>
+    <string name="normal">Normal</string>
+    <string name="slow">Långsam</string>
+    <string name="very_slow">Mycket långsam</string>
 </resources>

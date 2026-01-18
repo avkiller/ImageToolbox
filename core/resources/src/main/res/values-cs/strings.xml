@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources>
+  --><resources>
     <string name="prefix">Předpona</string>
     <string name="smth_went_wrong">Něco se pokazilo: %1$s</string>
     <string name="size">Velikost %1$s</string>
@@ -2016,4 +2014,12 @@
     <string name="model_birefnet">Lehký model BiRefNet založený na Swin Transformer pro přesné odstranění pozadí.</string>
     <string name="model_inspyrenet">Vysoce kvalitní odstranění pozadí s ostrými hranami a vynikajícím zachováním detailů, zejména na složitých objektech a složitých pozadích.</string>
     <string name="model_isnet">Model odstranění pozadí, který vytváří přesné masky s hladkými okraji, vhodný pro běžné objekty a zachování mírného detailu.</string>
+    <string name="model_already_downloaded">Model je již stažen</string>
+    <string name="model_successfully_imported">Model byl úspěšně importován</string>
+    <string name="type">Typ</string>
+    <string name="keyword">Klíčové slovo</string>
+    <string name="very_fast">Velmi rychlé</string>
+    <string name="normal">Normální</string>
+    <string name="slow">Pomalý</string>
+    <string name="very_slow">Velmi pomalé</string>
 </resources>

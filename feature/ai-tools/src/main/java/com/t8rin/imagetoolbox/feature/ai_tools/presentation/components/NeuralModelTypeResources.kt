@@ -17,11 +17,14 @@
 
 package com.t8rin.imagetoolbox.feature.ai_tools.presentation.components
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +34,7 @@ import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
 import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.HighQuality
 import androidx.compose.material.icons.rounded.Scanner
 import androidx.compose.material3.Icon
@@ -46,7 +50,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
 import com.t8rin.imagetoolbox.core.domain.utils.roundTo
@@ -64,7 +70,10 @@ import com.t8rin.imagetoolbox.core.resources.icons.Tortoise
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralConstants
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralModel
 import java.io.File
@@ -102,44 +111,86 @@ fun NeuralModel.Speed.icon(): ImageVector = when (this) {
     is NeuralModel.Speed.VerySlow -> Icons.Rounded.Snail
 }
 
+fun NeuralModel.Speed.title(): Int = when (this) {
+    is NeuralModel.Speed.VeryFast -> R.string.very_fast
+    is NeuralModel.Speed.Fast -> R.string.fast
+    is NeuralModel.Speed.Normal -> R.string.normal
+    is NeuralModel.Speed.Slow -> R.string.slow
+    is NeuralModel.Speed.VerySlow -> R.string.very_slow
+}
+
 @Composable
 fun NeuralModelTypeBadge(
     type: NeuralModel.Type,
-    isInverted: Boolean,
-    modifier: Modifier = Modifier
+    isInverted: Boolean?,
+    modifier: Modifier = Modifier,
+    height: Dp = 22.dp,
+    endPadding: Dp = 6.dp,
+    startPadding: Dp = 2.dp,
+    onClick: (() -> Unit)? = null,
+    style: TextStyle = MaterialTheme.typography.labelSmall
 ) {
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
+
     Row(
         modifier = modifier
-            .height(22.dp)
+            .height(height)
             .container(
                 color = takeColorFromScheme {
-                    if (isInverted) {
-                        tertiary.blend(
+                    when (isInverted) {
+                        true -> tertiary.blend(
                             color = secondary,
                             fraction = 0.3f
                         )
-                    } else {
-                        tertiaryContainer.blend(
+
+                        false -> tertiaryContainer.blend(
+                            color = secondaryContainer,
+                            fraction = 0.3f
+                        )
+
+                        null -> surfaceVariant.blend(
                             color = secondaryContainer,
                             fraction = 0.3f
                         )
                     }
                 },
-                shape = CircleShape,
+                shape = shapeByInteraction(
+                    shape = CircleShape,
+                    pressedShape = ShapeDefaults.pressed,
+                    interactionSource = interactionSource
+                ),
                 resultPadding = 0.dp
             )
-            .padding(start = 4.dp, end = 6.dp),
+            .then(
+                if (onClick != null) {
+                    Modifier.hapticsClickable(
+                        indication = LocalIndication.current,
+                        onClick = onClick,
+                        interactionSource = interactionSource
+                    )
+                } else {
+                    Modifier
+                }
+            )
+            .padding(start = startPadding, end = endPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         val contentColor = takeColorFromScheme {
-            if (isInverted) {
-                onTertiary.blend(
+            when (isInverted) {
+                true -> onTertiary.blend(
                     color = onSecondary,
                     fraction = 0.65f
                 )
-            } else {
-                onTertiaryContainer.blend(
+
+                false -> onTertiaryContainer.blend(
+                    color = onSecondaryContainer,
+                    fraction = 0.65f
+                )
+
+                null -> onSurfaceVariant.blend(
                     color = onSecondaryContainer,
                     fraction = 0.65f
                 )
@@ -147,20 +198,22 @@ fun NeuralModelTypeBadge(
         }
 
         Box(
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size((height - 2.dp).coerceAtMost(24.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = type.icon(),
                 contentDescription = null,
                 tint = contentColor,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp)
             )
         }
         Text(
             text = stringResource(type.title()),
             color = contentColor,
-            style = MaterialTheme.typography.labelSmall
+            style = style
         )
     }
 }
@@ -168,53 +221,90 @@ fun NeuralModelTypeBadge(
 @Composable
 fun NeuralModelSpeedBadge(
     speed: NeuralModel.Speed,
-    isInverted: Boolean,
-    modifier: Modifier = Modifier
+    isInverted: Boolean?,
+    modifier: Modifier = Modifier,
+    height: Dp = 22.dp,
+    endPadding: Dp = 6.dp,
+    startPadding: Dp = 2.dp,
+    onClick: (() -> Unit)? = null,
+    showTitle: Boolean = false,
+    style: TextStyle = MaterialTheme.typography.labelSmall
 ) {
-    val hasValue =
-        speed.speedValue > 0f // speed.speedValue > 0f IDK If it's needed or not, icons are enough
+    val hasValue = showTitle || speed.speedValue > 0f
+
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
 
     Row(
         modifier = modifier
             .then(
                 if (hasValue) {
-                    Modifier.height(22.dp)
+                    Modifier.height(height)
                 } else {
-                    Modifier.size(22.dp)
+                    Modifier.size(height)
                 }
             )
             .container(
                 color = takeColorFromScheme {
-                    if (isInverted) {
-                        primary
-                    } else {
-                        primaryContainer
+                    when (isInverted) {
+                        true -> primary
+                        false -> primaryContainer
+                        null -> surfaceVariant.blend(
+                            color = primaryContainer,
+                            fraction = 0.2f
+                        )
                     }
                 },
-                shape = CircleShape,
+                shape = shapeByInteraction(
+                    shape = CircleShape,
+                    pressedShape = ShapeDefaults.pressed,
+                    interactionSource = interactionSource
+                ),
                 resultPadding = 0.dp
             )
             .then(
+                if (onClick != null) {
+                    Modifier.hapticsClickable(
+                        indication = LocalIndication.current,
+                        onClick = onClick,
+                        interactionSource = interactionSource
+                    )
+                } else {
+                    Modifier
+                }
+            )
+            .then(
                 if (hasValue) {
-                    Modifier.padding(start = 4.dp, end = 6.dp)
+                    Modifier.padding(start = startPadding, end = endPadding)
                 } else Modifier
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally)
     ) {
         val contentColor = takeColorFromScheme {
-            if (isInverted) {
-                onPrimary
-            } else {
-                onPrimaryContainer
+            when (isInverted) {
+                true -> onPrimary
+                false -> onPrimaryContainer
+                null -> onSurfaceVariant.blend(
+                    color = onPrimaryContainer,
+                    fraction = 0.3f
+                )
             }
         }
-        Icon(
-            imageVector = speed.icon(),
-            contentDescription = null,
-            tint = contentColor,
-            modifier = Modifier.size(16.dp)
-        )
+        Box(
+            modifier = Modifier.size((height - 2.dp).coerceAtMost(24.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = speed.icon(),
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp)
+            )
+        }
         if (hasValue) {
             val speedValue by remember(speed.speedValue) {
                 derivedStateOf {
@@ -224,14 +314,18 @@ fun NeuralModelSpeedBadge(
                             speed.speedValue > 5f -> 2
                             else -> 3
                         }
-                    )
+                    ).toString().trimTrailingZero()
                 }
             }
 
             Text(
-                text = speedValue.toString().trimTrailingZero(),
+                text = if (showTitle) {
+                    stringResource(speed.title())
+                } else {
+                    speedValue
+                },
                 color = contentColor,
-                style = MaterialTheme.typography.labelSmall
+                style = style
             )
         }
     }
@@ -263,26 +357,36 @@ fun NeuralModelSizeBadge(
             else onSurfaceVariant
         }
 
+        val context = LocalContext.current
+        val modelFile by remember(context, model.name) {
+            derivedStateOf {
+                File(File(context.filesDir, NeuralConstants.DIR), model.name)
+            }
+        }
+        val size by remember(model.downloadSize, modelFile) {
+            derivedStateOf {
+                modelFile.length().takeIf { it > 0 }?.let(::humanFileSize)
+                    ?: humanFileSize(model.downloadSize)
+            }
+        }
+
         Box(
             modifier = Modifier.size(20.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.InsertDriveFile,
+                imageVector = if (modelFile.exists()) {
+                    Icons.AutoMirrored.Rounded.InsertDriveFile
+                } else {
+                    Icons.Rounded.Cloud
+                },
                 contentDescription = null,
                 tint = contentColor,
                 modifier = Modifier.size(16.dp)
             )
         }
-        val context = LocalContext.current
         Text(
-            text = remember(model.name) {
-                derivedStateOf {
-                    val dir = File(context.filesDir, NeuralConstants.DIR)
-
-                    humanFileSize(File(dir, model.name).length())
-                }
-            }.value,
+            text = size,
             color = contentColor,
             style = MaterialTheme.typography.labelSmall
         )
@@ -302,7 +406,14 @@ private fun PreviewSpeed() = ImageToolboxThemeForPreview(
             .padding(8.dp)
     ) {
         NeuralModel.Speed.entries.forEach {
-            NeuralModelSpeedBadge(it, Random.nextBoolean())
+            NeuralModelSpeedBadge(
+                speed = it.clone(12.21f),
+                isInverted = Random.nextBoolean(),
+                height = 36.dp,
+                endPadding = 12.dp,
+                startPadding = 6.dp,
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     }
 }
@@ -320,7 +431,14 @@ private fun PreviewType() = ImageToolboxThemeForPreview(
             .padding(8.dp)
     ) {
         NeuralModel.Type.entries.forEach {
-            NeuralModelTypeBadge(it, Random.nextBoolean())
+            NeuralModelTypeBadge(
+                type = it,
+                isInverted = Random.nextBoolean(),
+                height = 36.dp,
+                endPadding = 12.dp,
+                startPadding = 6.dp,
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     }
 }
