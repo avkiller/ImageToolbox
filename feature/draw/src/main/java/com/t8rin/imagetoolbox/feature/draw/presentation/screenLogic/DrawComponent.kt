@@ -258,15 +258,14 @@ class DrawComponent @AssistedInject internal constructor(
                     DrawBehavior.Image(calculateScreenOrientationBasedOnUri(uri))
                 }
             }
-            imageGetter.getImageAsync(
+            imageGetter.getImageData(
                 uri = uri.toString(),
-                originalSize = true,
-                onGetImage = { data ->
-                    updateBitmap(data.image)
-                    _imageFormat.update { data.imageInfo.imageFormat }
-                },
+                size = 1500,
                 onFailure = onFailure
-            )
+            )?.let { data ->
+                updateBitmap(data.image)
+                _imageFormat.update { data.imageInfo.imageFormat }
+            }
         }
     }
 
@@ -433,6 +432,11 @@ class DrawComponent @AssistedInject internal constructor(
 
     fun updateDrawMode(drawMode: DrawMode) {
         _drawMode.update { drawMode }
+
+        if (drawMode is DrawMode.Warp) {
+            _drawPathMode.update { DrawPathMode.Free }
+            _drawLineStyle.update { DrawLineStyle.None }
+        }
     }
 
     fun updateDrawPathMode(drawPathMode: DrawPathMode) {
