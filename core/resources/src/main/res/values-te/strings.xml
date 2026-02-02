@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">పరిమాణం %1$s</string>
     <string name="app_closing">యాప్‌ను మూసివేస్తోంది</string>
     <string name="pick_image_alt">చిత్రాన్ని ఎంచుకోండి</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">సాధారణ</string>
     <string name="slow">నెమ్మదిగా</string>
     <string name="very_slow">చాలా స్లో</string>
+    <string name="compute_percents">శాతాలను లెక్కించండి</string>
+    <string name="minimum_value_is">కనిష్ట విలువ %1$s</string>
+    <string name="warp_sub">వేళ్లతో గీయడం ద్వారా చిత్రాన్ని వక్రీకరించండి</string>
+    <string name="warp">వార్ప్</string>
+    <string name="hardness">కాఠిన్యం</string>
+    <string name="warp_mode">వార్ప్ మోడ్</string>
+    <string name="warp_mode_move">తరలించు</string>
+    <string name="warp_mode_grow">పెరుగుతాయి</string>
+    <string name="warp_mode_shrink">కుదించు</string>
+    <string name="warp_mode_swirl_cw">స్విర్ల్ CW</string>
+    <string name="warp_mode_swirl_ccw">స్విర్ల్ CCW</string>
+    <string name="fade_strength">ఫేడ్ స్ట్రెంత్</string>
+    <string name="top_drop">టాప్ డ్రాప్</string>
+    <string name="bottom_drop">బాటమ్ డ్రాప్</string>
+    <string name="start_drop">డ్రాప్ ప్రారంభించండి</string>
+    <string name="end_drop">ఎండ్ డ్రాప్</string>
+    <string name="downloading">డౌన్‌లోడ్ చేస్తోంది</string>
+    <string name="smooth_shapes">స్మూత్ ఆకారాలు</string>
+    <string name="smooth_shapes_sub">మృదువైన, మరింత సహజమైన ఆకారాల కోసం ప్రామాణిక గుండ్రని దీర్ఘచతురస్రాలకు బదులుగా సూపర్‌ఎల్లిప్స్‌లను ఉపయోగించండి</string>
+    <string name="shape_type">ఆకార రకం</string>
+    <string name="cut">కట్</string>
+    <string name="rounded">గుండ్రంగా</string>
+    <string name="smooth">మృదువైన</string>
+    <string name="cut_shapes_sub">గుండ్రంగా లేకుండా పదునైన అంచులు</string>
+    <string name="rounded_shapes_sub">క్లాసిక్ గుండ్రని మూలలు</string>
+    <string name="shapes_type">ఆకారాల రకం</string>
+    <string name="corners_size">మూలల పరిమాణం</string>
+    <string name="squircle">ఉడుత</string>
+    <string name="squircle_shapes_sub">సొగసైన గుండ్రని UI మూలకాలు</string>
+    <string name="filename_format">ఫైల్ పేరు ఫార్మాట్</string>
+    <string name="prefix_pattern_description">ప్రాజెక్ట్ పేర్లు, బ్రాండ్‌లు లేదా వ్యక్తిగత ట్యాగ్‌ల కోసం అనుకూలమైన వచనం ఫైల్ పేరు ప్రారంభంలోనే ఉంచబడుతుంది.</string>
+    <string name="original_filename_pattern_description">పొడిగింపు లేకుండా అసలు ఫైల్ పేరును ఉపయోగిస్తుంది, సోర్స్ గుర్తింపును అలాగే ఉంచడంలో మీకు సహాయపడుతుంది.</string>
+    <string name="width_pattern_description">పిక్సెల్‌లలో ఇమేజ్ వెడల్పు, రిజల్యూషన్ మార్పులు లేదా స్కేలింగ్ ఫలితాలను ట్రాక్ చేయడానికి ఉపయోగపడుతుంది.</string>
+    <string name="height_pattern_description">పిక్సెల్‌లలో ఇమేజ్ ఎత్తు, కారక నిష్పత్తులు లేదా ఎగుమతులతో పని చేస్తున్నప్పుడు సహాయకరంగా ఉంటుంది.</string>
+    <string name="random_numbers_pattern_description">ప్రత్యేకమైన ఫైల్ పేర్లకు హామీ ఇవ్వడానికి యాదృచ్ఛిక అంకెలను రూపొందిస్తుంది; నకిలీలకు వ్యతిరేకంగా అదనపు భద్రత కోసం మరిన్ని అంకెలను జోడించండి.</string>
+    <string name="sequence_number_pattern_description">బ్యాచ్ ఎగుమతుల కోసం ఆటో-ఇంక్రిమెంటింగ్ కౌంటర్, ఒక సెషన్‌లో బహుళ చిత్రాలను సేవ్ చేసేటప్పుడు అనువైనది.</string>
+    <string name="preset_info_pattern_description">ఫైల్ పేరులో వర్తింపజేయబడిన ప్రీసెట్ పేరును చొప్పిస్తుంది, తద్వారా చిత్రం ఎలా ప్రాసెస్ చేయబడిందో మీరు సులభంగా గుర్తుంచుకోగలరు.</string>
+    <string name="scale_mode_pattern_description">ప్రాసెసింగ్ సమయంలో ఉపయోగించిన ఇమేజ్ స్కేలింగ్ మోడ్‌ను ప్రదర్శిస్తుంది, పరిమాణం మార్చబడిన, కత్తిరించిన లేదా అమర్చిన చిత్రాలను వేరు చేయడంలో సహాయపడుతుంది.</string>
+    <string name="suffix_pattern_description">_v2, _edited లేదా _final వంటి సంస్కరణకు ఉపయోగపడే అనుకూల వచనం ఫైల్ పేరు చివరిలో ఉంచబడుతుంది.</string>
+    <string name="extension_pattern_description">ఫైల్ పొడిగింపు (png, jpg, webp, మొదలైనవి), స్వయంచాలకంగా సేవ్ చేయబడిన వాస్తవ ఆకృతికి సరిపోలుతుంది.</string>
+    <string name="formatted_timestamp_pattern_description">అనుకూలీకరించదగిన టైమ్‌స్టాంప్, ఇది ఖచ్చితమైన సార్టింగ్ కోసం జావా స్పెసిఫికేషన్ ద్వారా మీ స్వంత ఆకృతిని నిర్వచించటానికి మిమ్మల్ని అనుమతిస్తుంది.</string>
 </resources>

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.imagetoolbox.core.settings.presentation.model.PicturePickerMode
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
-import com.t8rin.imagetoolbox.core.ui.widget.other.LocalToastHostState
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRowSwitch
-import kotlinx.coroutines.launch
 
 @Composable
 fun AddOriginalFilenameSettingItem(
@@ -42,25 +40,21 @@ fun AddOriginalFilenameSettingItem(
     shape: Shape = ShapeDefaults.center,
     modifier: Modifier = Modifier.padding(horizontal = 8.dp)
 ) {
-    val scope = rememberCoroutineScope()
-    val toastHostState = LocalToastHostState.current
-    val context = LocalContext.current
+    val essentials = rememberLocalEssentials()
     val settingsState = LocalSettingsState.current
     PreferenceRowSwitch(
         shape = shape,
-        enabled = !settingsState.randomizeFilename && !settingsState.overwriteFiles && settingsState.picturePickerMode != PicturePickerMode.PhotoPicker && settingsState.hashingTypeForFilename == null,
+        enabled = settingsState.filenameBehavior is FilenameBehavior.None && settingsState.picturePickerMode != PicturePickerMode.PhotoPicker,
         modifier = modifier,
         startIcon = Icons.Outlined.Difference,
         onClick = {
             onClick()
         },
         onDisabledClick = {
-            scope.launch {
-                toastHostState.showToast(
-                    message = context.getString(R.string.filename_not_work_with_photopicker),
-                    icon = Icons.Outlined.ErrorOutline
-                )
-            }
+            essentials.showToast(
+                message = essentials.getString(R.string.filename_not_work_with_photopicker),
+                icon = Icons.Outlined.ErrorOutline
+            )
         },
         title = stringResource(R.string.add_original_filename),
         subtitle = stringResource(R.string.add_original_filename_sub),

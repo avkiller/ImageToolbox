@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">Formaat %1$s</string>
     <string name="loading">Laden…</string>
     <string name="pick_image">Kies afbeelding om te starten</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">Normaal</string>
     <string name="slow">Langzaam</string>
     <string name="very_slow">Zeer langzaam</string>
+    <string name="compute_percents">Bereken procenten</string>
+    <string name="minimum_value_is">Minimale waarde is %1$s</string>
+    <string name="warp_sub">Vervorm het beeld door met de vingers te tekenen</string>
+    <string name="warp">Verdraaien</string>
+    <string name="hardness">Hardheid</string>
+    <string name="warp_mode">Warp-modus</string>
+    <string name="warp_mode_move">Beweging</string>
+    <string name="warp_mode_grow">Groeien</string>
+    <string name="warp_mode_shrink">Krimpen</string>
+    <string name="warp_mode_swirl_cw">Werveling CW</string>
+    <string name="warp_mode_swirl_ccw">Draai CCW</string>
+    <string name="fade_strength">Vervagen sterkte</string>
+    <string name="top_drop">Topdaling</string>
+    <string name="bottom_drop">Onderste daling</string>
+    <string name="start_drop">Begin druppel</string>
+    <string name="end_drop">Einde daling</string>
+    <string name="downloading">Downloaden</string>
+    <string name="smooth_shapes">Gladde vormen</string>
+    <string name="smooth_shapes_sub">Gebruik superellipsen in plaats van standaard afgeronde rechthoeken voor vloeiendere, natuurlijkere vormen</string>
+    <string name="shape_type">Vormtype</string>
+    <string name="cut">Snee</string>
+    <string name="rounded">Afgerond</string>
+    <string name="smooth">Zacht</string>
+    <string name="cut_shapes_sub">Scherpe randen zonder afronding</string>
+    <string name="rounded_shapes_sub">Klassieke afgeronde hoeken</string>
+    <string name="shapes_type">Vormentype</string>
+    <string name="corners_size">Hoeken maat</string>
+    <string name="squircle">Eekhoorn</string>
+    <string name="squircle_shapes_sub">Elegante afgeronde UI-elementen</string>
+    <string name="filename_format">Bestandsnaamformaat</string>
+    <string name="prefix_pattern_description">Aangepaste tekst helemaal aan het begin van de bestandsnaam, perfect voor projectnamen, merken of persoonlijke tags.</string>
+    <string name="original_filename_pattern_description">Gebruikt de originele bestandsnaam zonder extensie, zodat u de bronidentificatie intact kunt houden.</string>
+    <string name="width_pattern_description">De afbeeldingsbreedte in pixels, handig voor het volgen van resolutiewijzigingen of schaalresultaten.</string>
+    <string name="height_pattern_description">De afbeeldingshoogte in pixels, handig bij het werken met beeldverhoudingen of exporten.</string>
+    <string name="random_numbers_pattern_description">Genereert willekeurige cijfers om unieke bestandsnamen te garanderen; voeg meer cijfers toe voor extra veiligheid tegen duplicaten.</string>
+    <string name="sequence_number_pattern_description">Automatisch oplopende teller voor batchexports, ideaal bij het opslaan van meerdere afbeeldingen in één sessie.</string>
+    <string name="preset_info_pattern_description">Voegt de toegepaste voorinstellingsnaam in de bestandsnaam in, zodat u gemakkelijk kunt onthouden hoe de afbeelding is verwerkt.</string>
+    <string name="scale_mode_pattern_description">Toont de afbeeldingsschaalmodus die wordt gebruikt tijdens de verwerking, zodat afbeeldingen waarvan het formaat is aangepast, bijgesneden of passend zijn gemaakt, beter te onderscheiden zijn.</string>
+    <string name="suffix_pattern_description">Aangepaste tekst aan het einde van de bestandsnaam, handig voor versiebeheer zoals _v2, _edited of _final.</string>
+    <string name="extension_pattern_description">De bestandsextensie (png, jpg, webp, etc.), die automatisch overeenkomt met het daadwerkelijk opgeslagen formaat.</string>
+    <string name="formatted_timestamp_pattern_description">Een aanpasbare tijdstempel waarmee u uw eigen formaat kunt definiëren via Java-specificatie voor perfecte sortering.</string>
 </resources>

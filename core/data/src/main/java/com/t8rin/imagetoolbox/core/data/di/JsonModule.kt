@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.t8rin.imagetoolbox.core.data.json.MoshiParser
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.json.JsonParser
+import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
+import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -46,13 +48,29 @@ internal interface JsonModule {
         @Singleton
         fun moshi(): Moshi = Moshi.Builder()
             .add(
-                PolymorphicJsonAdapterFactory.of(Quality::class.java, "Quality")
-                    .withSubtype(Quality.Jxl::class.java, "Jxl")
-                    .withSubtype(Quality.Avif::class.java, "Avif")
-                    .withSubtype(Quality.PngLossy::class.java, "PngLossy")
-                    .withSubtype(Quality.Tiff::class.java, "Tiff")
-                    .withSubtype(Quality.Base::class.java, "Base")
+                PolymorphicJsonAdapterFactory.of(Quality::class.java, "quality_type")
+                    .withSubtype(Quality.Jxl::class.java, "jxl")
+                    .withSubtype(Quality.Avif::class.java, "avif")
+                    .withSubtype(Quality.PngLossy::class.java, "png")
+                    .withSubtype(Quality.Tiff::class.java, "tiff")
+                    .withSubtype(Quality.Base::class.java, "base")
                     .withDefaultValue(Quality.Base())
+            )
+            .add(
+                PolymorphicJsonAdapterFactory.of(ShapeType::class.java, "shape_type")
+                    .withSubtype(ShapeType.Rounded::class.java, "rounded")
+                    .withSubtype(ShapeType.Cut::class.java, "cut")
+                    .withSubtype(ShapeType.Squircle::class.java, "squircle")
+                    .withSubtype(ShapeType.Smooth::class.java, "smooth")
+                    .withDefaultValue(ShapeType.Rounded())
+            )
+            .add(
+                PolymorphicJsonAdapterFactory.of(FilenameBehavior::class.java, "filename_type")
+                    .withSubtype(FilenameBehavior.None::class.java, "none")
+                    .withSubtype(FilenameBehavior.Overwrite::class.java, "overwrite")
+                    .withSubtype(FilenameBehavior.Checksum::class.java, "checksum")
+                    .withSubtype(FilenameBehavior.Random::class.java, "random")
+                    .withDefaultValue(FilenameBehavior.None())
             )
             .addLast(KotlinJsonAdapterFactory())
             .build()

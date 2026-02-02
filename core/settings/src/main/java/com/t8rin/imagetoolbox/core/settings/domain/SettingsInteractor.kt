@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.t8rin.imagetoolbox.core.settings.domain.model.CopyToClipboardMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.DomainFontFamily
 import com.t8rin.imagetoolbox.core.settings.domain.model.FastSettingsSide
 import com.t8rin.imagetoolbox.core.settings.domain.model.NightMode
+import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.domain.model.SliderType
 import com.t8rin.imagetoolbox.core.settings.domain.model.SnowfallMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.SwitchType
@@ -58,7 +59,7 @@ interface SettingsInteractor : SimpleSettingsInteractor {
 
     suspend fun toggleDynamicColors()
 
-    suspend fun setBorderWidth(width: Float)
+    override suspend fun setBorderWidth(width: Float)
 
     suspend fun toggleAllowImageMonet()
 
@@ -241,6 +242,10 @@ interface SettingsInteractor : SimpleSettingsInteractor {
     suspend fun setDefaultImageFormat(imageFormat: ImageFormat?)
 
     suspend fun setDefaultQuality(quality: Quality)
+
+    suspend fun setShapesType(shapeType: ShapeType)
+
+    suspend fun setFilenamePattern(pattern: String?)
 }
 
 fun SettingsInteractor.toSimpleSettingsInteractor(): SimpleSettingsInteractor =

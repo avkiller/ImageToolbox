@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="exception">חריג</string>
     <string name="edit_exif">ערוך EXIF</string>
     <string name="save">שמור</string>
@@ -2022,4 +2024,45 @@
     <string name="normal">נוֹרמָלִי</string>
     <string name="slow">לְהַאֵט</string>
     <string name="very_slow">מאוד איטי</string>
+    <string name="compute_percents">חישוב אחוזים</string>
+    <string name="minimum_value_is">הערך המינימלי הוא %1$s</string>
+    <string name="warp_sub">עיוות תמונה על ידי ציור עם אצבעות</string>
+    <string name="warp">לְעַקֵם</string>
+    <string name="hardness">קַשִׁיוּת</string>
+    <string name="warp_mode">מצב עיוות</string>
+    <string name="warp_mode_move">מַהֲלָך</string>
+    <string name="warp_mode_grow">לִגדוֹל</string>
+    <string name="warp_mode_shrink">לְצַמֵק</string>
+    <string name="warp_mode_swirl_cw">מערבולת CW</string>
+    <string name="warp_mode_swirl_ccw">סיבוב CCW</string>
+    <string name="fade_strength">חוזק דעיכה</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">ירידה למטה</string>
+    <string name="start_drop">התחל ירידה</string>
+    <string name="end_drop">סוף ירידה</string>
+    <string name="downloading">מוריד</string>
+    <string name="smooth_shapes">צורות חלקות</string>
+    <string name="smooth_shapes_sub">השתמש בסופראליפסות במקום במלבנים מעוגלים סטנדרטיים לקבלת צורות חלקות וטבעיות יותר</string>
+    <string name="shape_type">סוג צורה</string>
+    <string name="cut">גְזִירָה</string>
+    <string name="rounded">מְעוּגָל</string>
+    <string name="smooth">לְהַחלִיק</string>
+    <string name="cut_shapes_sub">קצוות חדים ללא עיגול</string>
+    <string name="rounded_shapes_sub">פינות מעוגלות קלאסיות</string>
+    <string name="shapes_type">סוג צורות</string>
+    <string name="corners_size">גודל פינות</string>
+    <string name="squircle">סקוורקל</string>
+    <string name="squircle_shapes_sub">רכיבי ממשק משתמש מעוגלים ואלגנטיים</string>
+    <string name="filename_format">פורמט שם קובץ</string>
+    <string name="prefix_pattern_description">טקסט מותאם אישית ממוקם ממש בתחילת שם הקובץ, מושלם עבור שמות פרויקטים, מותגים או תגים אישיים.</string>
+    <string name="original_filename_pattern_description">משתמש בשם הקובץ המקורי ללא סיומת, ועוזר לך לשמור על זיהוי המקור ללא פגע.</string>
+    <string name="width_pattern_description">רוחב התמונה בפיקסלים, שימושי למעקב אחר שינויים ברזולוציה או שינוי קנה מידה של תוצאות.</string>
+    <string name="height_pattern_description">גובה התמונה בפיקסלים, מועיל בעבודה עם יחסי גובה-רוחב או ייצוא.</string>
+    <string name="random_numbers_pattern_description">יוצר ספרות אקראיות כדי להבטיח שמות קבצים ייחודיים; הוסף ספרות נוספות לבטיחות נוספת מפני כפילויות.</string>
+    <string name="sequence_number_pattern_description">מונה הגדלה אוטומטית ליצוא אצווה, אידיאלי בעת שמירת תמונות מרובות בסשן אחד.</string>
+    <string name="preset_info_pattern_description">מכניס את השם המוגדר מראש שהוחל לשם הקובץ כך שתוכל לזכור בקלות כיצד עבדה התמונה.</string>
+    <string name="scale_mode_pattern_description">מציג את מצב קנה המידה של התמונה המשמש במהלך העיבוד, ועוזר להבחין בין תמונות שגודלו, חתכו או הותאמו.</string>
+    <string name="suffix_pattern_description">טקסט מותאם אישית ממוקם בסוף שם הקובץ, שימושי לניהול גרסאות כמו _v2, _edited או _final.</string>
+    <string name="extension_pattern_description">סיומת הקובץ (png, jpg, webp וכו\'), תואמת אוטומטית לפורמט השמור בפועל.</string>
+    <string name="formatted_timestamp_pattern_description">חותמת זמן הניתנת להתאמה אישית המאפשרת לך להגדיר פורמט משלך לפי מפרט Java למיון מושלם.</string>
 </resources>

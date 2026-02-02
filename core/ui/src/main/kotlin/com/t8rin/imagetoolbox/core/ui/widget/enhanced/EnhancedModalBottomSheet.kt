@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
@@ -208,6 +210,20 @@ private fun EnhancedModalSheetImpl(
     enableBackHandler: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    if (LocalInspectionMode.current && visible) {
+        return ProvideContainerDefaults(
+            color = EnhancedBottomSheetDefaults.contentContainerColor
+        ) {
+            ModalBottomSheet(
+                onDismissRequest = { onVisibleChange(false) },
+                containerColor = containerColor,
+                contentColor = contentColor,
+                dragHandle = { Column(content = dragHandle) },
+                content = content
+            )
+        }
+    }
+
     var predictiveBackProgress by remember {
         mutableFloatStateOf(0f)
     }
@@ -367,7 +383,7 @@ private fun GraphicsLayerScope.calculatePredictiveBackScaleY(progress: Float): F
 
 object EnhancedBottomSheetDefaults {
 
-    val shape = ShapeDefaults.extremeLarge.only(CornerSides.Top)
+    val shape @Composable get() = ShapeDefaults.extremeLarge.only(CornerSides.Top)
 
     val barContainerColor: Color
         @Composable

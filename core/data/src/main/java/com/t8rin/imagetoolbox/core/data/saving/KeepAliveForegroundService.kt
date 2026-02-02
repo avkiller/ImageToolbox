@@ -66,7 +66,7 @@ internal class KeepAliveForegroundService : Service() {
     }
 
     private fun handleIntent(intent: Intent) {
-        when (intent.action.makeLog("AndroidKeepAliveServiceImpl")) {
+        when (intent.action.makeLog("KeepAliveForegroundService")) {
             ACTION_UPDATE -> {
                 title = intent.getStringExtra(EXTRA_TITLE) ?: title
                 description = intent.getStringExtra(EXTRA_DESC) ?: description
@@ -75,15 +75,17 @@ internal class KeepAliveForegroundService : Service() {
                     KeepAliveService.PROGRESS_NO_PROGRESS
                 )
 
-                "UPDATE: title = $title, description = $description, progress = $progress".makeLog("AndroidKeepAliveServiceImpl")
+                "UPDATE: title = $title, description = $description, progress = $progress".makeLog("KeepAliveForegroundService")
 
                 startForeground()
             }
 
             ACTION_STOP -> {
+                startForeground()
+
                 removeNotification = intent.getBooleanExtra(
                     EXTRA_REMOVE_NOTIFICATION, true
-                ).makeLog("AndroidKeepAliveServiceImpl")
+                ).makeLog("KeepAliveForegroundService")
 
                 stopForegroundSafe()
             }
@@ -121,14 +123,19 @@ internal class KeepAliveForegroundService : Service() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun stopForegroundSafe() {
-        stopForeground(
-            if (removeNotification) {
-                STOP_FOREGROUND_REMOVE
-            } else {
-                STOP_FOREGROUND_DETACH
-            }
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(
+                if (removeNotification) {
+                    STOP_FOREGROUND_REMOVE
+                } else {
+                    STOP_FOREGROUND_DETACH
+                }
+            )
+        } else {
+            stopForeground(removeNotification)
+        }
         if (removeNotification) {
             notificationManager.cancel(NOTIFICATION_ID)
         }

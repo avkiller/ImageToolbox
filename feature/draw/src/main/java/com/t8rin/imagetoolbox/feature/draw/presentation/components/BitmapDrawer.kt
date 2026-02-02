@@ -62,11 +62,9 @@ import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.createScaledBitmap
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.HelperGridParams
-import com.t8rin.imagetoolbox.feature.draw.data.WarpEngine
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawLineStyle
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawMode
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawPathMode
-import com.t8rin.imagetoolbox.feature.draw.domain.WarpBrush
 import com.t8rin.imagetoolbox.feature.draw.domain.WarpStroke
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.BitmapDrawerPreview
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.DrawPathEffectPreview
@@ -81,6 +79,9 @@ import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.overlay
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.pointerDrawObserver
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.rememberPaint
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.rememberPathHelper
+import com.t8rin.trickle.WarpBrush
+import com.t8rin.trickle.WarpEngine
+import com.t8rin.trickle.WarpMode
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import net.engawapg.lib.zoomable.ZoomState
@@ -348,8 +349,10 @@ fun BitmapDrawer(
                                 currentDrawPosition.isSpecified
                             ) {
                                 warpRuntimeStrokes += WarpStroke(
-                                    from = previousDrawPosition.x to previousDrawPosition.y,
-                                    to = currentDrawPosition.x to currentDrawPosition.y
+                                    fromX = previousDrawPosition.x,
+                                    fromY = previousDrawPosition.y,
+                                    toX = currentDrawPosition.x,
+                                    toY = currentDrawPosition.y
                                 )
                             }
                         }
@@ -411,8 +414,10 @@ fun BitmapDrawer(
                                     it.getPosition(it.length)
                                 }.takeOrElse { currentDrawPosition }.let { lastPoint ->
                                     warpRuntimeStrokes += WarpStroke(
-                                        from = lastPoint.x to lastPoint.y,
-                                        to = currentDrawPosition.x to currentDrawPosition.y
+                                        fromX = lastPoint.x,
+                                        fromY = lastPoint.y,
+                                        toX = currentDrawPosition.x,
+                                        toY = currentDrawPosition.y
                                     )
                                 }
 
@@ -526,11 +531,18 @@ fun BitmapDrawer(
                 )
             }
 
-            val warpEngine by remember(warpClearTrigger, drawMode) {
+            var warpEngine by remember {
                 mutableStateOf(
                     WarpEngine(
                         src = outputImage.asAndroidBitmap()
                     )
+                )
+            }
+
+            LaunchedEffect(warpClearTrigger, drawMode) {
+                warpEngine.release()
+                warpEngine = WarpEngine(
+                    src = outputImage.asAndroidBitmap()
                 )
             }
 
@@ -540,16 +552,16 @@ fun BitmapDrawer(
                     .collect {
                         if (drawMode is DrawMode.Warp) {
                             warpEngine.applyStroke(
-                                fromX = it.from.first,
-                                fromY = it.from.second,
-                                toX = it.to.first,
-                                toY = it.to.second,
+                                fromX = it.fromX,
+                                fromY = it.fromY,
+                                toX = it.toX,
+                                toY = it.toY,
                                 brush = WarpBrush(
                                     radius = strokeWidth.toPx(canvasSize),
                                     strength = drawMode.strength,
                                     hardness = drawMode.hardness
                                 ),
-                                mode = drawMode.warpMode
+                                mode = WarpMode.valueOf(drawMode.warpMode.name)
                             )
                             invalidations++
                         }

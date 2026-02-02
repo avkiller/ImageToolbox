@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="pick_image">தொடங்குவதற்கு படத்தைத் தேர்ந்தெடுக்கவும்</string>
     <string name="flexible">நெகிழ்வான</string>
     <string name="stay">இருங்கள்</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">இயல்பானது</string>
     <string name="slow">மெதுவாக</string>
     <string name="very_slow">மிக மெதுவாக</string>
+    <string name="compute_percents">சதவீதங்களைக் கணக்கிடுங்கள்</string>
+    <string name="minimum_value_is">குறைந்தபட்ச மதிப்பு %1$s</string>
+    <string name="warp_sub">விரல்களால் வரைவதன் மூலம் படத்தை சிதைக்கவும்</string>
+    <string name="warp">வார்ப்</string>
+    <string name="hardness">கடினத்தன்மை</string>
+    <string name="warp_mode">வார்ப் பயன்முறை</string>
+    <string name="warp_mode_move">நகர்த்தவும்</string>
+    <string name="warp_mode_grow">வளருங்கள்</string>
+    <string name="warp_mode_shrink">சுருக்கு</string>
+    <string name="warp_mode_swirl_cw">சுழி CW</string>
+    <string name="warp_mode_swirl_ccw">சுழல் CCW</string>
+    <string name="fade_strength">மங்கலான வலிமை</string>
+    <string name="top_drop">டாப் டிராப்</string>
+    <string name="bottom_drop">பாட்டம் டிராப்</string>
+    <string name="start_drop">துளியைத் தொடங்கு</string>
+    <string name="end_drop">என்ட் டிராப்</string>
+    <string name="downloading">பதிவிறக்குகிறது</string>
+    <string name="smooth_shapes">மென்மையான வடிவங்கள்</string>
+    <string name="smooth_shapes_sub">மென்மையான, இயற்கையான வடிவங்களுக்கு நிலையான வட்டமான செவ்வகங்களுக்குப் பதிலாக சூப்பர் எலிப்ஸைப் பயன்படுத்தவும்</string>
+    <string name="shape_type">வடிவ வகை</string>
+    <string name="cut">வெட்டு</string>
+    <string name="rounded">வட்டமானது</string>
+    <string name="smooth">மென்மையானது</string>
+    <string name="cut_shapes_sub">ரவுண்டிங் இல்லாமல் கூர்மையான விளிம்புகள்</string>
+    <string name="rounded_shapes_sub">கிளாசிக் வட்டமான மூலைகள்</string>
+    <string name="shapes_type">வடிவங்களின் வகை</string>
+    <string name="corners_size">மூலைகளின் அளவு</string>
+    <string name="squircle">அணில்</string>
+    <string name="squircle_shapes_sub">நேர்த்தியான வட்டமான UI கூறுகள்</string>
+    <string name="filename_format">கோப்பு பெயர் வடிவம்</string>
+    <string name="prefix_pattern_description">திட்டப் பெயர்கள், பிராண்டுகள் அல்லது தனிப்பட்ட குறிச்சொற்களுக்கு ஏற்றவாறு, கோப்பின் பெயரின் தொடக்கத்திலேயே தனிப்பயன் உரை வைக்கப்பட்டுள்ளது.</string>
+    <string name="original_filename_pattern_description">அசல் கோப்பு பெயரை நீட்டிப்பு இல்லாமல் பயன்படுத்துகிறது, இது மூல அடையாளத்தை அப்படியே வைத்திருக்க உதவுகிறது.</string>
+    <string name="width_pattern_description">பிக்சல்களில் உள்ள படத்தின் அகலம், தெளிவுத்திறன் மாற்றங்கள் அல்லது அளவிடுதல் முடிவுகளைக் கண்காணிக்கப் பயன்படுகிறது.</string>
+    <string name="height_pattern_description">பிக்சல்களில் உள்ள படத்தின் உயரம், விகிதங்கள் அல்லது ஏற்றுமதிகளுடன் பணிபுரியும் போது உதவியாக இருக்கும்.</string>
+    <string name="random_numbers_pattern_description">தனிப்பட்ட கோப்புப் பெயர்களுக்கு உத்தரவாதம் அளிக்க சீரற்ற இலக்கங்களை உருவாக்குகிறது; நகல்களுக்கு எதிராக கூடுதல் பாதுகாப்பிற்காக அதிக இலக்கங்களைச் சேர்க்கவும்.</string>
+    <string name="sequence_number_pattern_description">தொகுப்பு ஏற்றுமதிகளுக்கான தானியங்கு-அதிகரிப்பு கவுண்டர், ஒரு அமர்வில் பல படங்களைச் சேமிக்கும் போது சிறந்தது.</string>
+    <string name="preset_info_pattern_description">பயன்படுத்தப்பட்ட முன்னமைக்கப்பட்ட பெயரை கோப்பு பெயரில் செருகும், இதன் மூலம் படம் எவ்வாறு செயலாக்கப்பட்டது என்பதை நீங்கள் எளிதாக நினைவில் கொள்ளலாம்.</string>
+    <string name="scale_mode_pattern_description">செயலாக்கத்தின் போது பயன்படுத்தப்படும் பட அளவிடுதல் பயன்முறையைக் காட்டுகிறது, மறுஅளவிடப்பட்ட, செதுக்கப்பட்ட அல்லது பொருத்தப்பட்ட படங்களை வேறுபடுத்த உதவுகிறது.</string>
+    <string name="suffix_pattern_description">_v2, _edited, அல்லது _final போன்ற பதிப்பிற்குப் பயன்படும், கோப்புப் பெயரின் இறுதியில் வைக்கப்படும் தனிப்பயன் உரை.</string>
+    <string name="extension_pattern_description">கோப்பு நீட்டிப்பு (png, jpg, webp, முதலியன), உண்மையான சேமிக்கப்பட்ட வடிவத்துடன் தானாகவே பொருந்தும்.</string>
+    <string name="formatted_timestamp_pattern_description">ஒரு தனிப்பயனாக்கக்கூடிய நேர முத்திரை, சரியான வரிசைப்படுத்துதலுக்கான ஜாவா விவரக்குறிப்பு மூலம் உங்கள் சொந்த வடிவமைப்பை வரையறுக்க உதவுகிறது.</string>
 </resources>

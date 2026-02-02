@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,31 +43,31 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormatGroup
+import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.alphaContainedEntries
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSimpleSettingsInteractor
 import com.t8rin.imagetoolbox.core.ui.utils.helper.toModel
+import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedChip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.tappable
-import com.t8rin.imagetoolbox.core.ui.widget.other.LocalToastHostState
 import kotlinx.coroutines.launch
 
 
@@ -78,6 +78,7 @@ fun ImageFormatSelector(
     entries: List<ImageFormatGroup> = ImageFormatGroup.entries,
     forceEnabled: Boolean = false,
     value: ImageFormat?,
+    quality: Quality? = null,
     onValueChange: (ImageFormat) -> Unit,
     shape: Shape = ShapeDefaults.extraLarge,
     enableItemsCardBackground: Boolean = true,
@@ -93,18 +94,15 @@ fun ImageFormatSelector(
     },
     onAutoClick: (() -> Unit)? = null
 ) {
-    val enabled = !LocalSettingsState.current.overwriteFiles || forceEnabled
-    val context = LocalContext.current
-    val toastHostState = LocalToastHostState.current
-    val scope = rememberCoroutineScope()
+    val settingsState = LocalSettingsState.current
+    val enabled = settingsState.filenameBehavior !is FilenameBehavior.Overwrite || forceEnabled
+    val essentials = rememberLocalEssentials()
 
     val cannotChangeFormat: () -> Unit = {
-        scope.launch {
-            toastHostState.showToast(
-                context.getString(R.string.cannot_change_image_format),
-                Icons.Rounded.Architecture
-            )
-        }
+        essentials.showToast(
+            essentials.getString(R.string.cannot_change_image_format),
+            Icons.Rounded.Architecture
+        )
     }
 
     val allFormats by remember(entries) {
@@ -153,7 +151,7 @@ fun ImageFormatSelector(
                 allFormats.filteredFormats()
             }
             val showBackgroundSelector =
-                value != null && value !in ImageFormat.alphaContainedEntries
+                value != null && (value !in ImageFormat.alphaContainedEntries || quality?.isNonAlpha() == true)
 
             val entriesSize = (if (filteredFormats.size > 1) 1 else 0)
                 .plus(if (showBackgroundSelector) 1 else 0)
@@ -294,7 +292,6 @@ fun ImageFormatSelector(
             }
 
             val simpleSettingsInteractor = LocalSimpleSettingsInteractor.current
-            val settingsState = LocalSettingsState.current
             AnimatedVisibility(
                 visible = showBackgroundSelector,
                 modifier = Modifier.fillMaxWidth()
@@ -318,7 +315,7 @@ fun ImageFormatSelector(
                     value = settingsState.backgroundForNoAlphaImageFormats,
                     icon = Icons.Outlined.FormatPaint,
                     onValueChange = {
-                        scope.launch {
+                        essentials.launch {
                             simpleSettingsInteractor.setBackgroundColorForNoAlphaFormats(
                                 color = it.toModel()
                             )

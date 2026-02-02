@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="image_too_large_preview">سۈرەت بەك چوڭ، ئالدىن كۆرگىلى بولمايدۇ، لېكىن يەنىلا ساقلاشنى سىناپ باقىمىز</string>
     <string name="pick_image">رەسىمنى تاللاپ باشلاڭ</string>
     <string name="height">ئېگىزلىك %1$s</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">نورمال</string>
     <string name="slow">ئاستا</string>
     <string name="very_slow">Very Slow</string>
+    <string name="compute_percents">ھېسابلاش نىسبىتى</string>
+    <string name="minimum_value_is">ئەڭ تۆۋەن قىممىتى %1$s</string>
+    <string name="warp_sub">بارماق بىلەن رەسىم سىزىش ئارقىلىق رەسىمنى بۇرمىلاش</string>
+    <string name="warp">Warp</string>
+    <string name="hardness">قاتتىقلىق</string>
+    <string name="warp_mode">Warp Mode</string>
+    <string name="warp_mode_move">يۆتكەڭ</string>
+    <string name="warp_mode_grow">ئۆسۈڭ</string>
+    <string name="warp_mode_shrink">كىچىكلىتىش</string>
+    <string name="warp_mode_swirl_cw">Swirl CW</string>
+    <string name="warp_mode_swirl_ccw">Swirl CCW</string>
+    <string name="fade_strength">Fade Strength</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">ئاستى تامچە</string>
+    <string name="start_drop">باشلاش</string>
+    <string name="end_drop">ئاخىرلىشىش</string>
+    <string name="downloading">چۈشۈرۈش</string>
+    <string name="smooth_shapes">سىلىق شەكىللەر</string>
+    <string name="smooth_shapes_sub">تېخىمۇ يۇمىلاق ، تەبىئىي شەكىللەر ئۈچۈن ئۆلچەملىك يۇمىلاق شەكىللىك تىك تۆت بۇلۇڭنىڭ ئورنىغا ئادەتتىن تاشقىرى تېز سۈرئەتلىك نۇر ئىشلىتىڭ</string>
+    <string name="shape_type">شەكىل تىپى</string>
+    <string name="cut">كېسىڭ</string>
+    <string name="rounded">يۇمىلاق ئۈستەل</string>
+    <string name="smooth">سىلىق</string>
+    <string name="cut_shapes_sub">يۇمىلاق قىرلار يۇمىلاق ئەمەس</string>
+    <string name="rounded_shapes_sub">كلاسسىك يۇمىلاق بۇلۇڭ</string>
+    <string name="shapes_type">شەكىل تىپى</string>
+    <string name="corners_size">بۇلۇڭ چوڭلۇقى</string>
+    <string name="squircle">Squircle</string>
+    <string name="squircle_shapes_sub">نەپىس يۇمىلاق UI ئېلېمېنتلىرى</string>
+    <string name="filename_format">ھۆججەت ئىسمى فورماتى</string>
+    <string name="prefix_pattern_description">ھۆججەت نامىنىڭ بېشىدا قويۇلغان ئىختىيارى تېكىست ، تۈر ئىسمى ، ماركا ياكى شەخسىي خەتكۈچلەرگە ماس كېلىدۇ.</string>
+    <string name="original_filename_pattern_description">ئەسلى ھۆججەت نامىنى كېڭەيتمەي ئىشلىتىڭ ، مەنبە پەرقلەندۈرۈشنى ساقلىشىڭىزغا ياردەم بېرىدۇ.</string>
+    <string name="width_pattern_description">پىكسېلدىكى رەسىم كەڭلىكى ، ئېنىقلىق دەرىجىسىنى ئۆزگەرتىش ياكى ئۆلچەش نەتىجىسىنى ئىز قوغلاشقا پايدىلىق.</string>
+    <string name="height_pattern_description">رەسىمنىڭ ئېگىزلىكى پېكسىل بولۇپ ، تەرەپ نىسبىتى ياكى ئېكسپورتى بىلەن ئىشلىگەندە پايدىلىق.</string>
+    <string name="random_numbers_pattern_description">ئۆزگىچە ھۆججەت نامىغا كاپالەتلىك قىلىش ئۈچۈن ئىختىيارى سان ھاسىل قىلىدۇ. كۆپەيتىلگەنگە قارشى قوشۇمچە بىخەتەرلىك ئۈچۈن تېخىمۇ كۆپ رەقەم قوشۇڭ.</string>
+    <string name="sequence_number_pattern_description">تۈركۈملەپ ئېكسپورت قىلىش ئۈچۈن ئاپتوماتىك كۆپەيتىش ھېساباتى ، بىر بۆلەكتە كۆپ رەسىمنى ساقلىغاندا كۆڭۈلدىكىدەك.</string>
+    <string name="preset_info_pattern_description">قوللىنىشچان ئالدىن بېكىتىلگەن ئىسىمنى ھۆججەت نامىغا قىستۇرۇڭ ، بۇنداق بولغاندا رەسىمنىڭ قانداق بىر تەرەپ قىلىنغانلىقىنى ئاسانلا ئەستە ساقلىيالايسىز.</string>
+    <string name="scale_mode_pattern_description">بىر تەرەپ قىلىش جەريانىدا ئىشلىتىلگەن رەسىمنى كىچىكلىتىش ھالىتىنى كۆرسىتىدۇ ، چوڭ-كىچىكلىكى ، كېسىلگەن ياكى ماسلاشتۇرۇلغان رەسىملەرنى پەرقلەندۈرۈشكە ياردەم بېرىدۇ.</string>
+    <string name="suffix_pattern_description">ھۆججەت نامىنىڭ ئاخىرىغا قويۇلغان ئىختىيارى تېكىست ، _v2 ، _edited ياكى _final غا ئوخشاش نەشىر قىلىشقا پايدىلىق.</string>
+    <string name="extension_pattern_description">ھۆججەت كېڭەيتىلمىسى (png, jpg ، webp قاتارلىقلار) ، ئاپتوماتىك ساقلانغان فورماتقا ئاپتوماتىك ماس كېلىدۇ.</string>
+    <string name="formatted_timestamp_pattern_description">مۇكەممەل تەرتىپلەش ئۈچۈن java ئۆلچىمى ئارقىلىق ئۆزىڭىزنىڭ فورماتىنى بەلگىلىيەلەيدىغان خاسلاشتۇرغىلى بولىدىغان ۋاقىت تامغىسى.</string>
 </resources>

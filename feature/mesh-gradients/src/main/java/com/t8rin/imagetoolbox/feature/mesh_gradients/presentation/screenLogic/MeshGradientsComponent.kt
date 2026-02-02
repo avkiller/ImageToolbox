@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
+import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResources
-import com.t8rin.imagetoolbox.core.domain.remote.RemoteResourcesDownloadProgress
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResourcesStore
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
@@ -50,7 +50,7 @@ class MeshGradientsComponent @AssistedInject constructor(
     private val _meshGradientUris = mutableStateOf(emptyList<Uri>())
     val meshGradientUris by _meshGradientUris
 
-    private val _meshGradientDownloadProgress: MutableState<RemoteResourcesDownloadProgress?> =
+    private val _meshGradientDownloadProgress: MutableState<DownloadProgress?> =
         mutableStateOf(null)
     val meshGradientDownloadProgress by _meshGradientDownloadProgress
 
@@ -60,7 +60,7 @@ class MeshGradientsComponent @AssistedInject constructor(
             val resources = remoteResourcesStore
                 .getResources(
                     name = RemoteResources.MESH_GRADIENTS,
-                    forceUpdate = true,
+                    forceUpdate = false,
                     onDownloadRequest = {
                         remoteResourcesStore.downloadResources(
                             name = RemoteResources.MESH_GRADIENTS,

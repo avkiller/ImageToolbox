@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -532,4 +532,20 @@ sealed class Setting(
         title = R.string.quality,
         subtitle = null
     )
+
+    data object ShapeType : Setting(
+        title = R.string.shapes_type,
+        subtitle = null
+    )
+
+    data object CornersSize : Setting(
+        title = R.string.corners_size,
+        subtitle = null
+    )
+
+    data object FilenamePattern : Setting(
+        title = R.string.filename_format,
+        subtitle = null
+    )
+
 }

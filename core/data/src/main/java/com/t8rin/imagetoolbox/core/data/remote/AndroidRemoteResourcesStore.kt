@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,32 +21,28 @@ import android.content.Context
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.data.utils.decodeEscaped
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
+import com.t8rin.imagetoolbox.core.domain.remote.DownloadManager
+import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResource
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResources
-import com.t8rin.imagetoolbox.core.domain.remote.RemoteResourcesDownloadProgress
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResourcesStore
+import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
-import com.t8rin.imagetoolbox.core.domain.utils.withProgress
 import com.t8rin.logger.makeLog
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.ktor.client.HttpClient
-import io.ktor.client.request.prepareGet
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.contentLength
-import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 import javax.inject.Inject
 
 
 internal class AndroidRemoteResourcesStore @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val client: HttpClient,
+    private val downloadManager: DownloadManager,
+    resourceManager: ResourceManager,
     dispatchersHolder: DispatchersHolder
-) : RemoteResourcesStore, DispatchersHolder by dispatchersHolder {
+) : RemoteResourcesStore,
+    DispatchersHolder by dispatchersHolder,
+    ResourceManager by resourceManager {
 
     override suspend fun getResources(
         name: String,
@@ -76,7 +72,7 @@ internal class AndroidRemoteResourcesStore @Inject constructor(
 
     override suspend fun downloadResources(
         name: String,
-        onProgress: (RemoteResourcesDownloadProgress) -> Unit,
+        onProgress: (DownloadProgress) -> Unit,
         onFailure: (Throwable) -> Unit,
         downloadOnlyNewData: Boolean
     ): RemoteResources? = withContext(defaultDispatcher) {
@@ -84,63 +80,12 @@ internal class AndroidRemoteResourcesStore @Inject constructor(
             val url = getResourcesLink(name)
             val savingDir = getSavingDir(name)
 
-            val downloadedUris = mutableListOf<RemoteResource>()
-
-            client.prepareGet(url).execute { response ->
-                val total = response.contentLength() ?: -1L
-
-                val source = response.bodyAsChannel().toInputStream().withProgress(
-                    total = total,
-                    onProgress = { percent ->
-                        onProgress(
-                            RemoteResourcesDownloadProgress(
-                                currentPercent = percent,
-                                currentTotalSize = total
-                            )
-                        )
-                    }
-                )
-
-                ZipInputStream(source).use { zipIn ->
-                    var entry: ZipEntry?
-                    while (zipIn.nextEntry.also { entry = it } != null) {
-                        entry?.let { zipEntry ->
-                            val filename = zipEntry.name
-
-                            if (filename.isNullOrBlank() || filename.startsWith("__")) return@let
-
-                            val outFile = File(
-                                savingDir,
-                                filename.decodeEscaped()
-                            ).apply {
-                                delete()
-                                parentFile?.mkdirs()
-                                createNewFile()
-                            }
-
-                            if (downloadOnlyNewData) {
-                                val file = savingDir.listFiles()?.find {
-                                    it.name == filename && it.length() > 0L
-                                }
-
-                                if (file != null) return@let
-                            }
-
-                            FileOutputStream(outFile).use { fos ->
-                                zipIn.copyTo(fos)
-                            }
-                            zipIn.closeEntry()
-
-                            downloadedUris.add(
-                                RemoteResource(
-                                    uri = outFile.toUri().toString(),
-                                    name = filename.decodeEscaped()
-                                )
-                            )
-                        }
-                    }
-                }
-            }
+            downloadManager.downloadZip(
+                url = url,
+                destinationPath = savingDir.absolutePath,
+                onProgress = onProgress,
+                downloadOnlyNewData = downloadOnlyNewData
+            )
 
             name to url makeLog "downloadResources"
 
@@ -153,17 +98,10 @@ internal class AndroidRemoteResourcesStore @Inject constructor(
                 )
             } ?: emptyList()
 
-            if (downloadedUris.isNotEmpty()) {
-                RemoteResources(
-                    name = name,
-                    list = (savedAlready + downloadedUris).distinct().sortedBy { it.name }
-                )
-            } else {
-                RemoteResources(
-                    name = name,
-                    list = savedAlready.sortedBy { it.name }
-                )
-            }
+            RemoteResources(
+                name = name,
+                list = savedAlready.sortedBy { it.name }
+            )
         }.onFailure {
             it.makeLog()
             onFailure(it)

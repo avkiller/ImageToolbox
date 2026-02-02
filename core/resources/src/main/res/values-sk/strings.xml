@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="zoom">Priblíženie obrázka</string>
     <string name="smth_went_wrong">Niečo sa pokazilo: %1$s</string>
     <string name="size">Veľkosť %1$s</string>
@@ -2022,4 +2024,45 @@
     <string name="normal">Normálne</string>
     <string name="slow">Pomaly</string>
     <string name="very_slow">Veľmi pomalé</string>
+    <string name="compute_percents">Vypočítajte percentá</string>
+    <string name="minimum_value_is">Minimálna hodnota je %1$s</string>
+    <string name="warp_sub">Skreslenie obrazu kresbou prstami</string>
+    <string name="warp">Warp</string>
+    <string name="hardness">Tvrdosť</string>
+    <string name="warp_mode">Režim Warp</string>
+    <string name="warp_mode_move">Pohybujte sa</string>
+    <string name="warp_mode_grow">Rast</string>
+    <string name="warp_mode_shrink">Zmenšiť</string>
+    <string name="warp_mode_swirl_cw">Swirl CW</string>
+    <string name="warp_mode_swirl_ccw">Krúžte CCW</string>
+    <string name="fade_strength">Sila slabnutia</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">Spodná kvapka</string>
+    <string name="start_drop">Spustite aplikáciu Drop</string>
+    <string name="end_drop">End Drop</string>
+    <string name="downloading">Sťahovanie</string>
+    <string name="smooth_shapes">Hladké tvary</string>
+    <string name="smooth_shapes_sub">Pre hladšie a prirodzenejšie tvary použite superelipsy namiesto štandardných zaoblených obdĺžnikov</string>
+    <string name="shape_type">Typ tvaru</string>
+    <string name="cut">Vystrihnúť</string>
+    <string name="rounded">Zaoblené</string>
+    <string name="smooth">Hladký</string>
+    <string name="cut_shapes_sub">Ostré hrany bez zaoblenia</string>
+    <string name="rounded_shapes_sub">Klasické zaoblené rohy</string>
+    <string name="shapes_type">Tvary Typ</string>
+    <string name="corners_size">Veľkosť rohov</string>
+    <string name="squircle">Squircle</string>
+    <string name="squircle_shapes_sub">Elegantné zaoblené prvky používateľského rozhrania</string>
+    <string name="filename_format">Formát názvu súboru</string>
+    <string name="prefix_pattern_description">Vlastný text umiestnený na samom začiatku názvu súboru, ideálny pre názvy projektov, značky alebo osobné značky.</string>
+    <string name="original_filename_pattern_description">Používa pôvodný názov súboru bez prípony, čo vám pomôže zachovať identifikáciu zdroja neporušenú.</string>
+    <string name="width_pattern_description">Šírka obrázka v pixeloch, užitočná na sledovanie zmien rozlíšenia alebo škálovanie výsledkov.</string>
+    <string name="height_pattern_description">Výška obrázka v pixeloch, užitočná pri práci s pomermi strán alebo pri exporte.</string>
+    <string name="random_numbers_pattern_description">Generuje náhodné číslice na zaručenie jedinečných názvov súborov; pridajte viac číslic pre väčšiu bezpečnosť pred duplikátmi.</string>
+    <string name="sequence_number_pattern_description">Automatické počítadlo pre dávkové exporty, ideálne pri ukladaní viacerých obrázkov v jednej relácii.</string>
+    <string name="preset_info_pattern_description">Vloží použitý názov predvoľby do názvu súboru, aby ste si ľahko zapamätali, ako bol obrázok spracovaný.</string>
+    <string name="scale_mode_pattern_description">Zobrazuje režim zmeny mierky obrazu použitý počas spracovania, čím pomáha rozlíšiť obrázky so zmenenou veľkosťou, orezané alebo prispôsobené.</string>
+    <string name="suffix_pattern_description">Vlastný text umiestnený na konci názvu súboru, užitočný pri vytváraní verzií ako _v2, _edited alebo _final.</string>
+    <string name="extension_pattern_description">Prípona súboru (png, jpg, webp atď.), ktorá sa automaticky zhoduje so skutočným uloženým formátom.</string>
+    <string name="formatted_timestamp_pattern_description">Prispôsobiteľná časová pečiatka, ktorá vám umožní definovať svoj vlastný formát podľa špecifikácie Java pre dokonalé triedenie.</string>
 </resources>

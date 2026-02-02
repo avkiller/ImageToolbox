@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.t8rin.imagetoolbox.core.domain.model.DomainAspectRatio
 import com.t8rin.imagetoolbox.core.domain.model.HashingType
 import com.t8rin.imagetoolbox.core.domain.model.SystemBarsVisibility
 import com.t8rin.imagetoolbox.core.domain.utils.Flavor
+import com.t8rin.imagetoolbox.core.domain.utils.safeCast
 
 data class SettingsState(
     val nightMode: NightMode,
@@ -52,7 +53,6 @@ data class SettingsState(
     val filenamePrefix: String,
     val addSizeInFilename: Boolean,
     val addOriginalFilename: Boolean,
-    val randomizeFilename: Boolean,
     val font: DomainFontFamily,
     val fontScale: Float?,
     val allowCollectCrashlytics: Boolean,
@@ -72,7 +72,6 @@ data class SettingsState(
     val screensSearchEnabled: Boolean,
     val copyToClipboardMode: CopyToClipboardMode,
     val hapticsStrength: Int,
-    val overwriteFiles: Boolean,
     val filenameSuffix: String,
     val defaultImageScaleMode: ImageScaleMode,
     val magnifierEnabled: Boolean,
@@ -116,7 +115,6 @@ data class SettingsState(
     val isCenterAlignDialogButtons: Boolean,
     val fastSettingsSide: FastSettingsSide,
     val settingGroupsInitialVisibility: Map<Int, Boolean>,
-    val hashingTypeForFilename: HashingType?,
     val customFonts: List<DomainFontFamily.Custom>,
     val enableToolExitConfirmation: Boolean,
     val recentColors: List<ColorModel>,
@@ -131,7 +129,10 @@ data class SettingsState(
     val spotHealMode: Int,
     val snowfallMode: SnowfallMode,
     val defaultImageFormat: ImageFormat?,
-    val defaultQuality: Quality
+    val defaultQuality: Quality,
+    val shapesType: ShapeType,
+    val filenamePattern: String?,
+    val filenameBehavior: FilenameBehavior
 ) {
 
     companion object {
@@ -158,7 +159,6 @@ data class SettingsState(
                 filenamePrefix = "ResizedImage",
                 addSizeInFilename = false,
                 addOriginalFilename = false,
-                randomizeFilename = false,
                 font = DomainFontFamily.System,
                 fontScale = 1f,
                 allowCollectCrashlytics = false,
@@ -178,7 +178,6 @@ data class SettingsState(
                 isInvertThemeColors = false,
                 screensSearchEnabled = false,
                 hapticsStrength = 1,
-                overwriteFiles = false,
                 filenameSuffix = "",
                 defaultImageScaleMode = ImageScaleMode.Default,
                 copyToClipboardMode = CopyToClipboardMode.Disabled,
@@ -200,7 +199,7 @@ data class SettingsState(
                 generatePreviews = true,
                 showSettingsInLandscape = true,
                 useFullscreenSettings = false,
-                switchType = SwitchType.MaterialYou,
+                switchType = SwitchType.Compose,
                 defaultDrawLineWidth = 20f,
                 oneTimeSaveLocations = emptyList(),
                 openEditInsteadOfPreview = false,
@@ -223,7 +222,6 @@ data class SettingsState(
                 isCenterAlignDialogButtons = false,
                 fastSettingsSide = FastSettingsSide.CenterEnd,
                 settingGroupsInitialVisibility = emptyMap(),
-                hashingTypeForFilename = null,
                 customFonts = emptyList(),
                 enableToolExitConfirmation = true,
                 recentColors = emptyList(),
@@ -238,7 +236,10 @@ data class SettingsState(
                 spotHealMode = 0,
                 snowfallMode = SnowfallMode.Auto,
                 defaultImageFormat = null,
-                defaultQuality = Quality.Base()
+                defaultQuality = Quality.Base(),
+                shapesType = ShapeType.Rounded(),
+                filenamePattern = null,
+                filenameBehavior = FilenameBehavior.None()
             )
         }
     }

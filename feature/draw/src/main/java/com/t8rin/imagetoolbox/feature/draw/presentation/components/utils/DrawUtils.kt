@@ -36,7 +36,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.NativeCanvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
@@ -70,12 +69,14 @@ import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
 import com.t8rin.imagetoolbox.core.resources.shapes.MaterialStarShape
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.density
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.Line
+import com.t8rin.imagetoolbox.core.utils.appContext
 import com.t8rin.imagetoolbox.core.utils.toTypeface
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawLineStyle
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawMode
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawPathMode
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import android.graphics.Canvas as NativeCanvas
 import android.graphics.Paint as NativePaint
 import android.graphics.Path as NativePath
 
@@ -463,14 +464,13 @@ internal fun NativeCanvas.drawRepeatedImageOnPath(
     paint: NativePaint,
     invalidations: Int
 ) {
-    val context = LocalContext.current
     var pathImage by remember(strokeWidth, canvasSize, drawMode.imageData) {
         mutableStateOf<Bitmap?>(null)
     }
     LaunchedEffect(pathImage, drawMode.imageData, strokeWidth, canvasSize, invalidations) {
         if (pathImage == null) {
-            pathImage = context.imageLoader.execute(
-                ImageRequest.Builder(context)
+            pathImage = appContext.imageLoader.execute(
+                ImageRequest.Builder(appContext)
                     .data(drawMode.imageData)
                     .size(strokeWidth.toPx(canvasSize).roundToInt())
                     .build()

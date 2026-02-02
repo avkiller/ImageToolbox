@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Đã xảy ra lỗi: %1$s</string>
     <string name="size">Kích thước %1$s</string>
     <string name="loading">Đang tải…</string>
@@ -2019,4 +2021,45 @@
     <string name="normal">Bình thường</string>
     <string name="slow">Chậm</string>
     <string name="very_slow">Rất chậm</string>
+    <string name="compute_percents">Tính phần trăm</string>
+    <string name="minimum_value_is">Giá trị tối thiểu là %1$s</string>
+    <string name="warp_sub">Làm biến dạng hình ảnh bằng cách vẽ bằng ngón tay</string>
+    <string name="warp">Làm cong vênh</string>
+    <string name="hardness">độ cứng</string>
+    <string name="warp_mode">Chế độ dọc</string>
+    <string name="warp_mode_move">Di chuyển</string>
+    <string name="warp_mode_grow">Phát triển</string>
+    <string name="warp_mode_shrink">Thu nhỏ</string>
+    <string name="warp_mode_swirl_cw">Xoáy CW</string>
+    <string name="warp_mode_swirl_ccw">xoáy CCW</string>
+    <string name="fade_strength">Sức mạnh phai nhạt</string>
+    <string name="top_drop">Thả hàng đầu</string>
+    <string name="bottom_drop">Thả dưới cùng</string>
+    <string name="start_drop">Bắt đầu thả</string>
+    <string name="end_drop">Thả cuối</string>
+    <string name="downloading">Đang tải xuống</string>
+    <string name="smooth_shapes">Hình dạng mượt mà</string>
+    <string name="smooth_shapes_sub">Sử dụng hình siêu elip thay vì hình chữ nhật bo tròn tiêu chuẩn để có hình dạng mượt mà, tự nhiên hơn</string>
+    <string name="shape_type">Loại hình dạng</string>
+    <string name="cut">Cắt</string>
+    <string name="rounded">làm tròn</string>
+    <string name="smooth">Trơn tru</string>
+    <string name="cut_shapes_sub">Các cạnh sắc nét mà không làm tròn</string>
+    <string name="rounded_shapes_sub">Các góc bo tròn cổ điển</string>
+    <string name="shapes_type">Loại hình dạng</string>
+    <string name="corners_size">Kích thước góc</string>
+    <string name="squircle">hình tròn</string>
+    <string name="squircle_shapes_sub">Các thành phần UI được bo tròn trang nhã</string>
+    <string name="filename_format">Định dạng tên tệp</string>
+    <string name="prefix_pattern_description">Văn bản tùy chỉnh được đặt ở đầu tên tệp, hoàn hảo cho tên dự án, nhãn hiệu hoặc thẻ cá nhân.</string>
+    <string name="original_filename_pattern_description">Sử dụng tên tệp gốc không có phần mở rộng, giúp bạn giữ nguyên nhận dạng nguồn.</string>
+    <string name="width_pattern_description">Chiều rộng hình ảnh tính bằng pixel, hữu ích để theo dõi các thay đổi về độ phân giải hoặc kết quả chia tỷ lệ.</string>
+    <string name="height_pattern_description">Chiều cao hình ảnh tính bằng pixel, hữu ích khi làm việc với tỷ lệ khung hình hoặc xuất.</string>
+    <string name="random_numbers_pattern_description">Tạo các chữ số ngẫu nhiên để đảm bảo tên tệp duy nhất; thêm nhiều chữ số để tăng cường an toàn chống lại sự trùng lặp.</string>
+    <string name="sequence_number_pattern_description">Bộ đếm tăng tự động để xuất hàng loạt, lý tưởng khi lưu nhiều hình ảnh trong một phiên.</string>
+    <string name="preset_info_pattern_description">Chèn tên đặt trước đã áp dụng vào tên tệp để bạn có thể dễ dàng nhớ cách xử lý hình ảnh.</string>
+    <string name="scale_mode_pattern_description">Hiển thị chế độ chia tỷ lệ hình ảnh được sử dụng trong quá trình xử lý, giúp phân biệt hình ảnh đã thay đổi kích thước, cắt xén hoặc vừa vặn.</string>
+    <string name="suffix_pattern_description">Văn bản tùy chỉnh được đặt ở cuối tên tệp, hữu ích cho việc lập phiên bản như _v2, _edited hoặc _final.</string>
+    <string name="extension_pattern_description">Phần mở rộng tệp (png, jpg, webp, v.v.), tự động khớp với định dạng đã lưu thực tế.</string>
+    <string name="formatted_timestamp_pattern_description">Dấu thời gian có thể tùy chỉnh cho phép bạn xác định định dạng của riêng mình theo đặc tả java để sắp xếp hoàn hảo.</string>
 </resources>

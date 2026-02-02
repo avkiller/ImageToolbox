@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,10 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
@@ -47,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.t8rin.imagetoolbox.core.domain.utils.autoCast
+import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
+import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.animation.lessSpringySpec
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -60,19 +60,15 @@ object ShapeDefaults {
         size: Int,
         forceDefault: Boolean = false,
         vertical: Boolean = true
-    ): RoundedCornerShape {
-        val internalShape by remember(index, size, forceDefault, vertical) {
-            derivedStateOf {
-                when {
-                    index == -1 || size == 1 || forceDefault -> default
-                    index == 0 && size > 1 -> if (vertical) top else start
-                    index == size - 1 -> if (vertical) bottom else end
-                    else -> center
-                }
-            }
+    ): Shape {
+        val internalShape = when {
+            index == -1 || size == 1 || forceDefault -> default
+            index == 0 && size > 1 -> if (vertical) top else start
+            index == size - 1 -> if (vertical) bottom else end
+            else -> center
         }
 
-        return RoundedCornerShape(
+        return AutoCornersShape(
             topStart = internalShape.topStart.animate(),
             topEnd = internalShape.topEnd.animate(),
             bottomStart = internalShape.bottomStart.animate(),
@@ -80,107 +76,123 @@ object ShapeDefaults {
         )
     }
 
-    val top = RoundedCornerShape(
-        topStart = 16.dp,
-        topEnd = 16.dp,
-        bottomStart = 4.dp,
-        bottomEnd = 4.dp
-    )
+    val top
+        @Composable get() = AutoCornersShape(
+            topStart = 16.dp,
+            topEnd = 16.dp,
+            bottomStart = 4.dp,
+            bottomEnd = 4.dp
+        )
 
-    val center = RoundedCornerShape(
-        topStart = 4.dp,
-        topEnd = 4.dp,
-        bottomStart = 4.dp,
-        bottomEnd = 4.dp
-    )
+    val center
+        @Composable get() = AutoCornersShape(
+            topStart = 4.dp,
+            topEnd = 4.dp,
+            bottomStart = 4.dp,
+            bottomEnd = 4.dp
+        )
 
-    val bottom = RoundedCornerShape(
-        topStart = 4.dp,
-        topEnd = 4.dp,
-        bottomStart = 16.dp,
-        bottomEnd = 16.dp
-    )
+    val bottom
+        @Composable get() = AutoCornersShape(
+            topStart = 4.dp,
+            topEnd = 4.dp,
+            bottomStart = 16.dp,
+            bottomEnd = 16.dp
+        )
 
-    val start = RoundedCornerShape(
-        topStart = 16.dp,
-        topEnd = 4.dp,
-        bottomStart = 16.dp,
-        bottomEnd = 4.dp
-    )
+    val start
+        @Composable get() = AutoCornersShape(
+            topStart = 16.dp,
+            topEnd = 4.dp,
+            bottomStart = 16.dp,
+            bottomEnd = 4.dp
+        )
 
-    val end = RoundedCornerShape(
-        topStart = 4.dp,
-        topEnd = 16.dp,
-        bottomStart = 4.dp,
-        bottomEnd = 16.dp
-    )
+    val end
+        @Composable get() = AutoCornersShape(
+            topStart = 4.dp,
+            topEnd = 16.dp,
+            bottomStart = 4.dp,
+            bottomEnd = 16.dp
+        )
 
-    val topEnd = RoundedCornerShape(
-        topEnd = 16.dp,
-        topStart = 4.dp,
-        bottomEnd = 4.dp,
-        bottomStart = 4.dp
-    )
+    val topEnd
+        @Composable get() = AutoCornersShape(
+            topEnd = 16.dp,
+            topStart = 4.dp,
+            bottomEnd = 4.dp,
+            bottomStart = 4.dp
+        )
 
-    val topStart = RoundedCornerShape(
-        topEnd = 4.dp,
-        topStart = 16.dp,
-        bottomEnd = 4.dp,
-        bottomStart = 4.dp
-    )
+    val topStart
+        @Composable get() = AutoCornersShape(
+            topEnd = 4.dp,
+            topStart = 16.dp,
+            bottomEnd = 4.dp,
+            bottomStart = 4.dp
+        )
 
-    val bottomEnd = RoundedCornerShape(
-        topEnd = 4.dp,
-        topStart = 4.dp,
-        bottomEnd = 16.dp,
-        bottomStart = 4.dp
-    )
+    val bottomEnd
+        @Composable get() = AutoCornersShape(
+            topEnd = 4.dp,
+            topStart = 4.dp,
+            bottomEnd = 16.dp,
+            bottomStart = 4.dp
+        )
 
-    val smallTop = RoundedCornerShape(
-        topStart = 12.dp,
-        topEnd = 12.dp,
-        bottomStart = 4.dp,
-        bottomEnd = 4.dp
-    )
+    val smallTop
+        @Composable get() = AutoCornersShape(
+            topStart = 12.dp,
+            topEnd = 12.dp,
+            bottomStart = 4.dp,
+            bottomEnd = 4.dp
+        )
 
-    val smallBottom = RoundedCornerShape(
-        topStart = 4.dp,
-        topEnd = 4.dp,
-        bottomStart = 12.dp,
-        bottomEnd = 12.dp
-    )
+    val smallBottom
+        @Composable get() = AutoCornersShape(
+            topStart = 4.dp,
+            topEnd = 4.dp,
+            bottomStart = 12.dp,
+            bottomEnd = 12.dp
+        )
 
-    val smallStart = RoundedCornerShape(
-        topStart = 12.dp,
-        topEnd = 4.dp,
-        bottomStart = 12.dp,
-        bottomEnd = 4.dp
-    )
+    val smallStart
+        @Composable get() = AutoCornersShape(
+            topStart = 12.dp,
+            topEnd = 4.dp,
+            bottomStart = 12.dp,
+            bottomEnd = 4.dp
+        )
 
-    val smallEnd = RoundedCornerShape(
-        topEnd = 12.dp,
-        topStart = 4.dp,
-        bottomEnd = 12.dp,
-        bottomStart = 4.dp
-    )
+    val smallEnd
+        @Composable get() = AutoCornersShape(
+            topEnd = 12.dp,
+            topStart = 4.dp,
+            bottomEnd = 12.dp,
+            bottomStart = 4.dp
+        )
 
-    val extremeSmall = RoundedCornerShape(2.dp)
+    val extremeSmall @Composable get() = AutoCornersShape(2.dp)
 
-    val extraSmall = RoundedCornerShape(4.dp)
+    val extraSmall @Composable get() = AutoCornersShape(4.dp)
 
-    val pressed = RoundedCornerShape(6.dp)
+    val pressed @Composable get() = AutoCornersShape(6.dp)
 
-    val mini = RoundedCornerShape(8.dp)
+    val mini @Composable get() = AutoCornersShape(8.dp)
 
-    val small = RoundedCornerShape(12.dp)
+    val smallMini @Composable get() = AutoCornersShape(10.dp)
 
-    val default = RoundedCornerShape(16.dp)
+    val small @Composable get() = AutoCornersShape(12.dp)
 
-    val large = RoundedCornerShape(20.dp)
+    val default @Composable get() = AutoCornersShape(16.dp)
 
-    val extraLarge = RoundedCornerShape(24.dp)
+    val large @Composable get() = AutoCornersShape(20.dp)
 
-    val extremeLarge = RoundedCornerShape(28.dp)
+    val extraLarge @Composable get() = AutoCornersShape(24.dp)
+
+    val extremeLarge @Composable get() = AutoCornersShape(28.dp)
+
+    val circle @Composable get() = AutoCircleShape()
 
     @Composable
     private inline fun CornerSize.animate(): Dp = animateDpAsState(
@@ -219,6 +231,7 @@ value class CornerSides internal constructor(private val mask: Int) {
     fun has(other: CornerSides): Boolean = contains(other)
 }
 
+
 inline fun <reified S : CornerBasedShape> S.only(
     sides: CornerSides
 ): S = autoCast {
@@ -235,6 +248,7 @@ val ZeroCornerSize: CornerSize = CornerSize(0f)
 @Stable
 internal class AnimatedShape(
     initialShape: CornerBasedShape,
+    val shapesType: ShapeType,
     private val density: Density,
     private val animationSpec: FiniteAnimationSpec<Float>,
 ) : Shape {
@@ -273,16 +287,29 @@ internal class AnimatedShape(
         size: Size,
         layoutDirection: LayoutDirection,
         density: Density
+    ): Outline = createOutline(
+        size = size,
+        layoutDirection = layoutDirection,
+        density = density,
+        shapesType = shapesType
+    )
+
+    fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density,
+        shapesType: ShapeType
     ): Outline {
         if (size.width > 1f && size.height > 1f) {
             this.size = size
         }
 
-        return RoundedCornerShape(
-            topStart = topStart.boundedValue(),
-            topEnd = topEnd.boundedValue(),
-            bottomStart = bottomStart.boundedValue(),
-            bottomEnd = bottomEnd.boundedValue(),
+        return AutoCornersShape(
+            topStart = CornerSize(topStart.boundedValue()),
+            topEnd = CornerSize(topEnd.boundedValue()),
+            bottomStart = CornerSize(bottomStart.boundedValue()),
+            bottomEnd = CornerSize(bottomEnd.boundedValue()),
+            shapesType = shapesType
         ).createOutline(
             size = size,
             layoutDirection = layoutDirection,
@@ -300,9 +327,11 @@ internal fun rememberAnimatedShape(
     animationSpec: FiniteAnimationSpec<Float> = lessSpringySpec(),
 ): AnimatedShape {
     val density = LocalDensity.current
+    val shapesType = LocalSettingsState.current.shapesType
 
-    val state = remember(animationSpec, density) {
+    val state = remember(animationSpec, density, shapesType) {
         AnimatedShape(
+            shapesType = shapesType,
             initialShape = currentShape,
             animationSpec = animationSpec,
             density = density

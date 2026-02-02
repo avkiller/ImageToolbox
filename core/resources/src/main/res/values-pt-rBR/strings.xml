@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Algo deu errado: %1$s</string>
     <string name="size">Tamanho %1$s</string>
     <string name="loading">Carregando…</string>
@@ -2021,4 +2023,45 @@
     <string name="normal">Normal</string>
     <string name="slow">Lento</string>
     <string name="very_slow">Muito lento</string>
+    <string name="compute_percents">Calcular Porcentagens</string>
+    <string name="minimum_value_is">O valor mínimo é %1$s</string>
+    <string name="warp_sub">Distorcer a imagem desenhando com os dedos</string>
+    <string name="warp">Deformação</string>
+    <string name="hardness">Dureza</string>
+    <string name="warp_mode">Modo de Deformação</string>
+    <string name="warp_mode_move">Mover</string>
+    <string name="warp_mode_grow">Crescer</string>
+    <string name="warp_mode_shrink">Encolher</string>
+    <string name="warp_mode_swirl_cw">Torcer SH</string>
+    <string name="warp_mode_swirl_ccw">Torcer SAH</string>
+    <string name="fade_strength">Força de desbotamento</string>
+    <string name="top_drop">Queda superior</string>
+    <string name="bottom_drop">Queda inferior</string>
+    <string name="start_drop">Iniciar queda</string>
+    <string name="end_drop">Fim da queda</string>
+    <string name="downloading">Baixando</string>
+    <string name="smooth_shapes">Formas Suaves</string>
+    <string name="smooth_shapes_sub">Use superelipses em vez de retângulos arredondados padrão para obter formas mais suaves e naturais</string>
+    <string name="shape_type">Tipo de forma</string>
+    <string name="cut">Corte</string>
+    <string name="rounded">Arredondado</string>
+    <string name="smooth">Suave</string>
+    <string name="cut_shapes_sub">Arestas vivas sem arredondamento</string>
+    <string name="rounded_shapes_sub">Cantos arredondados clássicos</string>
+    <string name="shapes_type">Tipo de formas</string>
+    <string name="corners_size">Tamanho dos cantos</string>
+    <string name="squircle">Esquilo</string>
+    <string name="squircle_shapes_sub">Elementos de UI elegantes e arredondados</string>
+    <string name="filename_format">Formato do nome do arquivo</string>
+    <string name="prefix_pattern_description">Texto personalizado colocado logo no início do nome do arquivo, perfeito para nomes de projetos, marcas ou tags pessoais.</string>
+    <string name="original_filename_pattern_description">Usa o nome do arquivo original sem extensão, ajudando a manter intacta a identificação da fonte.</string>
+    <string name="width_pattern_description">A largura da imagem em pixels, útil para rastrear alterações de resolução ou resultados de dimensionamento.</string>
+    <string name="height_pattern_description">A altura da imagem em pixels, útil ao trabalhar com proporções ou exportações.</string>
+    <string name="random_numbers_pattern_description">Gera dígitos aleatórios para garantir nomes de arquivos exclusivos; adicione mais dígitos para segurança extra contra duplicatas.</string>
+    <string name="sequence_number_pattern_description">Contador de incremento automático para exportações em lote, ideal ao salvar várias imagens em uma sessão.</string>
+    <string name="preset_info_pattern_description">Insere o nome da predefinição aplicada no nome do arquivo para que você possa lembrar facilmente como a imagem foi processada.</string>
+    <string name="scale_mode_pattern_description">Exibe o modo de dimensionamento da imagem usado durante o processamento, ajudando a distinguir imagens redimensionadas, cortadas ou ajustadas.</string>
+    <string name="suffix_pattern_description">Texto personalizado colocado no final do nome do arquivo, útil para controle de versão como _v2, _edited ou _final.</string>
+    <string name="extension_pattern_description">A extensão do arquivo (png, jpg, webp, etc.), correspondendo automaticamente ao formato real salvo.</string>
+    <string name="formatted_timestamp_pattern_description">Um carimbo de data/hora personalizável que permite definir seu próprio formato por especificação Java para uma classificação perfeita.</string>
 </resources>

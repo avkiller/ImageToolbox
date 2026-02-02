@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Bir şeyler ters gitti: %1$s</string>
     <string name="size">Boyut: %1$s</string>
     <string name="loading">Yükleniyor…</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">Normal</string>
     <string name="slow">Yavaş</string>
     <string name="very_slow">Çok Yavaş</string>
+    <string name="compute_percents">Yüzdeleri Hesapla</string>
+    <string name="minimum_value_is">Minimum değer %1$s\'dir</string>
+    <string name="warp_sub">Parmaklarınızla çizim yaparak görüntüyü deforme edin</string>
+    <string name="warp">Çözgü</string>
+    <string name="hardness">Sertlik</string>
+    <string name="warp_mode">Çözgü Modu</string>
+    <string name="warp_mode_move">Taşınmak</string>
+    <string name="warp_mode_grow">Büyümek</string>
+    <string name="warp_mode_shrink">Çekmek</string>
+    <string name="warp_mode_swirl_cw">CW girdap</string>
+    <string name="warp_mode_swirl_ccw">Girdap CCW</string>
+    <string name="fade_strength">Solmaya Dayanım</string>
+    <string name="top_drop">En İyi Düşüş</string>
+    <string name="bottom_drop">Alttan Düşme</string>
+    <string name="start_drop">Bırakmayı Başlat</string>
+    <string name="end_drop">Bırakmayı Sonlandır</string>
+    <string name="downloading">İndiriliyor</string>
+    <string name="smooth_shapes">Pürüzsüz Şekiller</string>
+    <string name="smooth_shapes_sub">Daha düzgün, daha doğal şekiller için standart yuvarlatılmış dikdörtgenler yerine süper elipsler kullanın</string>
+    <string name="shape_type">Şekil Türü</string>
+    <string name="cut">Kesmek</string>
+    <string name="rounded">Yuvarlak</string>
+    <string name="smooth">Düz</string>
+    <string name="cut_shapes_sub">Yuvarlama olmadan keskin kenarlar</string>
+    <string name="rounded_shapes_sub">Klasik yuvarlatılmış köşeler</string>
+    <string name="shapes_type">Şekiller Türü</string>
+    <string name="corners_size">Köşe Boyutu</string>
+    <string name="squircle">sincap</string>
+    <string name="squircle_shapes_sub">Zarif yuvarlak kullanıcı arayüzü öğeleri</string>
+    <string name="filename_format">Dosya Adı Formatı</string>
+    <string name="prefix_pattern_description">Dosya adının en başına yerleştirilen özel metin; proje adları, markalar veya kişisel etiketler için mükemmeldir.</string>
+    <string name="original_filename_pattern_description">Orijinal dosya adını uzantısız olarak kullanarak kaynak kimliğini olduğu gibi korumanıza yardımcı olur.</string>
+    <string name="width_pattern_description">Çözünürlük değişikliklerini izlemek veya sonuçları ölçeklendirmek için yararlı olan piksel cinsinden görüntü genişliği.</string>
+    <string name="height_pattern_description">Görüntünün piksel cinsinden yüksekliği, en boy oranlarıyla veya dışa aktarmalarla çalışırken faydalıdır.</string>
+    <string name="random_numbers_pattern_description">Benzersiz dosya adlarını garanti etmek için rastgele rakamlar üretir; kopyalara karşı ekstra güvenlik için daha fazla rakam ekleyin.</string>
+    <string name="sequence_number_pattern_description">Toplu dışa aktarmalar için otomatik artan sayaç, tek oturumda birden fazla görüntüyü kaydederken idealdir.</string>
+    <string name="preset_info_pattern_description">Uygulanan ön ayar adını dosya adına ekler, böylece görüntünün nasıl işlendiğini kolayca hatırlayabilirsiniz.</string>
+    <string name="scale_mode_pattern_description">İşleme sırasında kullanılan görüntü ölçeklendirme modunu görüntüleyerek yeniden boyutlandırılan, kırpılan veya takılan görüntülerin ayırt edilmesine yardımcı olur.</string>
+    <string name="suffix_pattern_description">Dosya adının sonuna yerleştirilen ve _v2, _edited veya _final gibi sürüm oluşturma için yararlı olan özel metin.</string>
+    <string name="extension_pattern_description">Gerçek kaydedilen formatla otomatik olarak eşleşen dosya uzantısı (png, jpg, webp vb.).</string>
+    <string name="formatted_timestamp_pattern_description">Mükemmel sıralama için Java spesifikasyonuna göre kendi formatınızı tanımlamanıza olanak tanıyan özelleştirilebilir bir zaman damgası.</string>
 </resources>

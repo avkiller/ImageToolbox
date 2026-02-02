@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="single_edit">Vienas redagavimas</string>
     <string name="create_shortcut_title">Pasirinkite įrankį, kurį prisegti</string>
     <string name="smth_went_wrong">Kažkas nutiko ne taip: %1$s.</string>
@@ -2023,4 +2025,45 @@
     <string name="normal">Normalus</string>
     <string name="slow">Lėtas</string>
     <string name="very_slow">Labai lėtas</string>
+    <string name="compute_percents">Apskaičiuokite procentus</string>
+    <string name="minimum_value_is">Minimali vertė yra %1$s</string>
+    <string name="warp_sub">Iškraipykite vaizdą piešdami pirštais</string>
+    <string name="warp">Metmenys</string>
+    <string name="hardness">Kietumas</string>
+    <string name="warp_mode">Metimo režimas</string>
+    <string name="warp_mode_move">Judėti</string>
+    <string name="warp_mode_grow">Augti</string>
+    <string name="warp_mode_shrink">Susitraukti</string>
+    <string name="warp_mode_swirl_cw">Sūkurys CW</string>
+    <string name="warp_mode_swirl_ccw">Sūkurys CCW</string>
+    <string name="fade_strength">Išblukimo stiprumas</string>
+    <string name="top_drop">Viršutinis lašas</string>
+    <string name="bottom_drop">Apatinis lašas</string>
+    <string name="start_drop">Pradėti Drop</string>
+    <string name="end_drop">Pabaigos kritimas</string>
+    <string name="downloading">Atsisiunčiama</string>
+    <string name="smooth_shapes">Lygios formos</string>
+    <string name="smooth_shapes_sub">Naudokite superelipses, o ne standartinius suapvalintus stačiakampius, kad gautumėte lygesnes, natūralesnes formas</string>
+    <string name="shape_type">Formos tipas</string>
+    <string name="cut">Iškirpti</string>
+    <string name="rounded">Suapvalinti</string>
+    <string name="smooth">Sklandžiai</string>
+    <string name="cut_shapes_sub">Aštrūs kraštai be apvalinimo</string>
+    <string name="rounded_shapes_sub">Klasikiniai užapvalinti kampai</string>
+    <string name="shapes_type">Formos tipas</string>
+    <string name="corners_size">Kampų dydis</string>
+    <string name="squircle">Squircle</string>
+    <string name="squircle_shapes_sub">Elegantiški suapvalinti vartotojo sąsajos elementai</string>
+    <string name="filename_format">Failo vardo formatas</string>
+    <string name="prefix_pattern_description">Pasirinktinis tekstas, patalpintas pačioje failo pavadinimo pradžioje, puikiai tinka projektų pavadinimams, prekių ženklams ar asmeninėms žymoms.</string>
+    <string name="original_filename_pattern_description">Naudoja originalų failo pavadinimą be plėtinio, padedantį išlaikyti šaltinio identifikavimo duomenis.</string>
+    <string name="width_pattern_description">Vaizdo plotis pikseliais, naudingas stebint skiriamosios gebos pokyčius arba keičiant mastelio rezultatus.</string>
+    <string name="height_pattern_description">Vaizdo aukštis pikseliais, naudinga dirbant su formato koeficientu arba eksportuojant.</string>
+    <string name="random_numbers_pattern_description">Generuoja atsitiktinius skaitmenis, kad garantuotų unikalius failų pavadinimus; pridėkite daugiau skaitmenų, kad išvengtumėte dublikatų.</string>
+    <string name="sequence_number_pattern_description">Automatiškai didėjantis paketinio eksporto skaitiklis, idealiai tinka išsaugant kelis vaizdus per vieną sesiją.</string>
+    <string name="preset_info_pattern_description">Į failo pavadinimą įterpia pritaikytą išankstinio nustatymo pavadinimą, kad galėtumėte lengvai prisiminti, kaip buvo apdorotas vaizdas.</string>
+    <string name="scale_mode_pattern_description">Rodomas vaizdo mastelio keitimo režimas, naudojamas apdorojimo metu, padedantis atskirti pakeisto dydžio, apkarpytus ar pritaikytus vaizdus.</string>
+    <string name="suffix_pattern_description">Pasirinktinis tekstas, dedamas failo pavadinimo pabaigoje, naudingas kuriant versijas, pvz., _v2, _edited arba _final.</string>
+    <string name="extension_pattern_description">Failo plėtinys (png, jpg, webp ir kt.), automatiškai atitinkantis tikrąjį išsaugotą formatą.</string>
+    <string name="formatted_timestamp_pattern_description">Pritaikoma laiko žyma, leidžianti nustatyti savo formatą pagal „Java“ specifikaciją, kad būtų galima tobulai rūšiuoti.</string>
 </resources>

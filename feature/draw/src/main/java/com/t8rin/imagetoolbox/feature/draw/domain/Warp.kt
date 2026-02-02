@@ -19,16 +19,6 @@ package com.t8rin.imagetoolbox.feature.draw.domain
 
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 
-class DisplacementMap(
-    val width: Int,
-    val height: Int
-) {
-    val dx = FloatArray(width * height)
-    val dy = FloatArray(width * height)
-
-    fun index(x: Int, y: Int) = y * width + x
-}
-
 enum class WarpMode {
     MOVE,
     GROW,
@@ -37,15 +27,11 @@ enum class WarpMode {
     SWIRL_CCW
 }
 
-data class WarpBrush(
-    val radius: Float,
-    val strength: Float,
-    val hardness: Float
-)
-
 data class WarpStroke(
-    val from: Pair<Float, Float>,
-    val to: Pair<Float, Float>
+    val fromX: Float,
+    val fromY: Float,
+    val toX: Float,
+    val toY: Float
 ) {
     fun scaleToFitCanvas(
         currentSize: IntegerSize,
@@ -54,8 +40,10 @@ data class WarpStroke(
         val sx = currentSize.width.toFloat() / oldSize.width
         val sy = currentSize.height.toFloat() / oldSize.height
         return copy(
-            from = (from.first * sx) to (from.second * sy),
-            to = (to.first * sx) to (to.second * sy)
+            fromX = fromX * sx,
+            fromY = fromY * sy,
+            toX = toX * sx,
+            toY = toY * sy
         )
     }
 }

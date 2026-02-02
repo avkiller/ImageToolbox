@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ package com.t8rin.imagetoolbox.core.data.image
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.data.image.utils.ImageCompressorBackend
 import com.t8rin.imagetoolbox.core.data.utils.fileSize
@@ -37,6 +39,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.alphaContainedEntries
 import com.t8rin.imagetoolbox.core.domain.model.sizeTo
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsProvider
+import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.trickle.Trickle
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -62,15 +65,19 @@ internal class AndroidImageCompressor @Inject constructor(
         imageFormat: ImageFormat,
         quality: Quality
     ): ByteArray = withContext(encodingDispatcher) {
-        val transformedImage = image.toSoftware().let {
-            if (imageFormat !in ImageFormat.alphaContainedEntries) {
+        val transformedImage = image.toSoftware().let { software ->
+            if (imageFormat !in ImageFormat.alphaContainedEntries || quality.isNonAlpha()) {
                 withContext(defaultDispatcher) {
-                    Trickle.drawColorBehind(
-                        color = settingsState.backgroundForNoAlphaImageFormats.colorInt,
-                        input = it
-                    )
+                    if (settingsState.backgroundForNoAlphaImageFormats.colorInt == Color.Black.toArgb()) {
+                        software
+                    } else {
+                        Trickle.drawColorBehind(
+                            color = settingsState.backgroundForNoAlphaImageFormats.colorInt,
+                            input = software
+                        )
+                    }
                 }
-            } else it
+            } else software
         }
 
         ImageCompressorBackend.Factory()
@@ -124,7 +131,8 @@ internal class AndroidImageCompressor @Inject constructor(
 
         val extension = imageInfo.originalUri?.let { imageGetter.getExtension(it) }
 
-        val imageFormat = if (settingsState.overwriteFiles && extension != null) {
+        val imageFormat =
+            if (settingsState.filenameBehavior is FilenameBehavior.Overwrite && extension != null) {
             ImageFormat[extension]
         } else imageInfo.imageFormat
 
@@ -156,7 +164,7 @@ internal class AndroidImageCompressor @Inject constructor(
                 byteArray = it,
                 filename = "temp.${newInfo.imageFormat.extension}"
             )?.toUri()
-                ?.fileSize(context) ?: it.size.toLong()
+                ?.fileSize() ?: it.size.toLong()
         }
     }
 

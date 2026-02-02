@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -40,12 +41,15 @@ import com.t8rin.dynamic.theme.ColorTuple
 import com.t8rin.dynamic.theme.DynamicTheme
 import com.t8rin.dynamic.theme.rememberDynamicThemeState
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
+import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.presentation.model.defaultColorTuple
 import com.t8rin.imagetoolbox.core.settings.presentation.model.toUiState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.rememberAppColorTuple
 import com.t8rin.imagetoolbox.core.ui.utils.animation.FancyTransitionEasing
 import com.t8rin.imagetoolbox.core.ui.utils.helper.DeviceInfo
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
+import com.t8rin.imagetoolbox.core.utils.initAppContext
 
 @SuppressLint("NewApi")
 @Composable
@@ -90,6 +94,7 @@ fun ImageToolboxTheme(
             MaterialTheme(
                 motionScheme = CustomMotionScheme,
                 colorScheme = modifiedColorScheme(),
+                shapes = modifiedShapes(),
                 content = content
             )
         }
@@ -117,8 +122,11 @@ fun ImageToolboxThemeSurface(
 fun ImageToolboxThemeForPreview(
     isDarkTheme: Boolean,
     keyColor: Color? = defaultColorTuple.primary,
+    shapesType: ShapeType = ShapeType.Rounded(),
     content: @Composable () -> Unit
 ) {
+    LocalContext.current.applicationContext.initAppContext()
+
     DynamicTheme(
         state = rememberDynamicThemeState(
             initialColorTuple = ColorTuple(keyColor ?: Color.Transparent)
@@ -129,16 +137,88 @@ fun ImageToolboxThemeForPreview(
         colorAnimationSpec = snap(),
         content = {
             CompositionLocalProvider(
-                LocalSettingsState provides SettingsState.Default.toUiState()
+                LocalSettingsState provides SettingsState.Default.toUiState().copy(
+                    shapesType = shapesType
+                )
             ) {
                 MaterialTheme(
                     motionScheme = CustomMotionScheme,
                     colorScheme = modifiedColorScheme(),
+                    shapes = modifiedShapes(),
                     content = content
                 )
             }
         }
     )
+}
+
+@Composable
+private fun modifiedShapes(): Shapes {
+    val shapes = MaterialTheme.shapes
+    val shapesType = LocalSettingsState.current.shapesType
+
+    return remember(shapes, shapesType) {
+        derivedStateOf {
+            shapes.copy(
+                extraSmall = AutoCornersShape(
+                    topStart = shapes.extraSmall.topStart,
+                    topEnd = shapes.extraSmall.topEnd,
+                    bottomEnd = shapes.extraSmall.bottomEnd,
+                    bottomStart = shapes.extraSmall.bottomStart,
+                    shapesType = shapesType
+                ),
+                small = AutoCornersShape(
+                    topStart = shapes.small.topStart,
+                    topEnd = shapes.small.topEnd,
+                    bottomEnd = shapes.small.bottomEnd,
+                    bottomStart = shapes.small.bottomStart,
+                    shapesType = shapesType
+                ),
+                medium = AutoCornersShape(
+                    topStart = shapes.medium.topStart,
+                    topEnd = shapes.medium.topEnd,
+                    bottomEnd = shapes.medium.bottomEnd,
+                    bottomStart = shapes.medium.bottomStart,
+                    shapesType = shapesType
+                ),
+                large = AutoCornersShape(
+                    topStart = shapes.large.topStart,
+                    topEnd = shapes.large.topEnd,
+                    bottomEnd = shapes.large.bottomEnd,
+                    bottomStart = shapes.large.bottomStart,
+                    shapesType = shapesType
+                ),
+                extraLarge = AutoCornersShape(
+                    topStart = shapes.extraLarge.topStart,
+                    topEnd = shapes.extraLarge.topEnd,
+                    bottomEnd = shapes.extraLarge.bottomEnd,
+                    bottomStart = shapes.extraLarge.bottomStart,
+                    shapesType = shapesType
+                ),
+                largeIncreased = AutoCornersShape(
+                    topStart = shapes.largeIncreased.topStart,
+                    topEnd = shapes.largeIncreased.topEnd,
+                    bottomEnd = shapes.largeIncreased.bottomEnd,
+                    bottomStart = shapes.largeIncreased.bottomStart,
+                    shapesType = shapesType
+                ),
+                extraLargeIncreased = AutoCornersShape(
+                    topStart = shapes.extraLargeIncreased.topStart,
+                    topEnd = shapes.extraLargeIncreased.topEnd,
+                    bottomEnd = shapes.extraLargeIncreased.bottomEnd,
+                    bottomStart = shapes.extraLargeIncreased.bottomStart,
+                    shapesType = shapesType
+                ),
+                extraExtraLarge = AutoCornersShape(
+                    topStart = shapes.extraExtraLarge.topStart,
+                    topEnd = shapes.extraExtraLarge.topEnd,
+                    bottomEnd = shapes.extraExtraLarge.bottomEnd,
+                    bottomStart = shapes.extraExtraLarge.bottomStart,
+                    shapesType = shapesType
+                )
+            )
+        }
+    }.value
 }
 
 @Composable
@@ -156,3 +236,5 @@ private fun modifiedColorScheme(): ColorScheme {
         }
     }.value
 }
+
+const val DisabledAlpha = 0.38f

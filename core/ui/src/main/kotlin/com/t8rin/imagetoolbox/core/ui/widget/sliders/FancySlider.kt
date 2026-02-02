@@ -26,7 +26,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SliderColors
@@ -49,6 +48,7 @@ import com.t8rin.imagetoolbox.core.ui.utils.animation.animateFloatingRangeAsStat
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.utils.helper.rememberRipple
 import com.t8rin.imagetoolbox.core.ui.utils.provider.SafeLocalContainerColor
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.materialShadow
 import com.t8rin.imagetoolbox.core.ui.widget.sliders.custom_slider.CustomRangeSlider
@@ -74,9 +74,10 @@ fun FancySlider(
     val thumbColor by animateColorAsState(
         if (enabled) colors.thumbColor else colors.disabledThumbColor
     )
+    val settingsState = LocalSettingsState.current
 
     val thumb: @Composable (CustomSliderState) -> Unit = { sliderState ->
-        val sliderFraction by remember {
+        val sliderFraction by remember(value, sliderState) {
             derivedStateOf {
                 (value - sliderState.valueRange.start) / (sliderState.valueRange.endInclusive - sliderState.valueRange.start)
             }
@@ -97,13 +98,12 @@ fun FancySlider(
                 .materialShadow(
                     shape = thumbShape,
                     elevation = 1.dp,
-                    enabled = LocalSettingsState.current.drawSliderShadows
+                    enabled = settingsState.drawSliderShadows
                 )
                 .background(thumbColor, thumbShape)
         )
     }
 
-    val settingsState = LocalSettingsState.current
     LocalMinimumInteractiveComponentSize.ProvidesValue(Dp.Unspecified) {
         CustomSlider(
             interactionSource = interactionSource,
@@ -114,7 +114,7 @@ fun FancySlider(
                     if (drawContainer) {
                         Modifier
                             .container(
-                                shape = CircleShape,
+                                shape = ShapeDefaults.circle,
                                 autoShadowElevation = animateDpAsState(
                                     if (settingsState.drawSliderShadows) {
                                         1.dp
@@ -185,7 +185,7 @@ fun FancyRangeSlider(
                     if (drawContainer) {
                         Modifier
                             .container(
-                                shape = CircleShape,
+                                shape = ShapeDefaults.circle,
                                 autoShadowElevation = animateDpAsState(
                                     if (settingsState.drawSliderShadows) {
                                         1.dp

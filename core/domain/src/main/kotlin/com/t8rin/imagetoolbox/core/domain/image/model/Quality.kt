@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package com.t8rin.imagetoolbox.core.domain.image.model
 
 import androidx.annotation.IntRange
 
-sealed class Quality(
-    open val qualityValue: Int
-) {
+sealed interface Quality {
+    val qualityValue: Int
+
     fun coerceIn(
         imageFormat: ImageFormat
     ): Quality {
@@ -70,6 +70,10 @@ sealed class Quality(
         }
     }
 
+    fun isNonAlpha(): Boolean = if (this is Jxl) {
+        channels == Channels.RGB || channels == Channels.Monochrome
+    } else false
+
     fun isDefault(): Boolean = when (this) {
         is Base -> this == Base()
         is Avif -> this == Avif()
@@ -86,29 +90,33 @@ sealed class Quality(
         @IntRange(from = 0, to = 4)
         val speed: Int = 0,
         val channels: Channels = Channels.RGBA
-    ) : Quality(qualityValue)
+    ) : Quality
 
     data class Avif(
         @IntRange(from = 1, to = 100)
         override val qualityValue: Int = 50,
         @IntRange(from = 0, to = 9)
         val effort: Int = 0
-    ) : Quality(qualityValue)
+    ) : Quality
 
     data class PngLossy(
         @IntRange(from = 2, to = 1024)
         val maxColors: Int = 512,
         @IntRange(from = 0, to = 9)
         val compressionLevel: Int = 7,
-    ) : Quality(compressionLevel)
+    ) : Quality {
+        override val qualityValue: Int = compressionLevel
+    }
 
     data class Tiff(
         val compressionScheme: Int = 5
-    ) : Quality(compressionScheme)
+    ) : Quality {
+        override val qualityValue: Int = compressionScheme
+    }
 
     data class Base(
         override val qualityValue: Int = 100
-    ) : Quality(qualityValue)
+    ) : Quality
 
     enum class Channels {
         RGBA, RGB, Monochrome;

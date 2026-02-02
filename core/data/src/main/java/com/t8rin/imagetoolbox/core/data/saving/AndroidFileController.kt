@@ -60,6 +60,7 @@ import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.settings.domain.model.CopyToClipboardMode
+import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.imagetoolbox.core.settings.domain.model.OneTimeSaveLocation
 import com.t8rin.logger.makeLog
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -91,7 +92,7 @@ internal class AndroidFileController @Inject constructor(
     private val _settingsState = settingsManager.settingsState
     private val settingsState get() = _settingsState.value
 
-    override fun getSize(uri: String): Long? = uri.toUri().fileSize(context)
+    override fun getSize(uri: String): Long? = uri.toUri().fileSize()
 
     override val defaultSavingPath: String
         get() = settingsState.saveFolderUri.getPath(context)
@@ -161,7 +162,7 @@ internal class AndroidFileController @Inject constructor(
             val originalUri = saveTarget.originalUri.toUri()
 
             if (saveTarget is ImageSaveTarget && saveTarget.canSkipIfLarger && settingsState.allowSkipIfLarger) {
-                val originalSize = originalUri.fileSize(context)
+                val originalSize = originalUri.fileSize()
                 val newSize = data.size
 
                 if (originalSize != null && newSize > originalSize) {
@@ -169,7 +170,7 @@ internal class AndroidFileController @Inject constructor(
                 }
             }
 
-            if (settingsState.overwriteFiles) {
+            if (settingsState.filenameBehavior is FilenameBehavior.Overwrite) {
                 runCatching {
                     if (originalUri == Uri.EMPTY) throw IllegalStateException()
 
@@ -427,7 +428,7 @@ internal class AndroidFileController @Inject constructor(
         key: String,
         value: O,
     ): Boolean = withContext(ioDispatcher) {
-        "saveObject".makeLog(key)
+        "saveObject value = $value".makeLog(key)
         runCatching {
             dataStore.edit {
                 it[stringPreferencesKey("fast_$key")] =
@@ -457,7 +458,7 @@ internal class AndroidFileController @Inject constructor(
         }.onFailure {
             it.makeLog("restoreObject $key")
         }.onSuccess {
-            "restoreObject success".makeLog(key)
+            "restoreObject success value = $it".makeLog(key)
         }.getOrNull()
     }
 

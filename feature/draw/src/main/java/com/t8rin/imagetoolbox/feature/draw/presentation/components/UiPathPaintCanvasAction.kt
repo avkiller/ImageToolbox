@@ -59,9 +59,7 @@ import com.t8rin.imagetoolbox.core.ui.utils.helper.scaleToFitCanvas
 import com.t8rin.imagetoolbox.core.ui.utils.helper.toImageModel
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
-import com.t8rin.imagetoolbox.feature.draw.data.WarpEngine
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawMode
-import com.t8rin.imagetoolbox.feature.draw.domain.WarpBrush
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.clipBitmap
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.drawRepeatedImageOnPath
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.drawRepeatedTextOnPath
@@ -69,8 +67,13 @@ import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.overlay
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.pathEffectPaint
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.rememberPaint
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.transformationsForMode
+import com.t8rin.trickle.WarpBrush
+import com.t8rin.trickle.WarpEngine
+import com.t8rin.trickle.WarpMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
@@ -166,6 +169,10 @@ internal fun Canvas.UiPathPaintCanvasAction(
             mutableStateOf(false)
         }
 
+        var progress by remember {
+            mutableFloatStateOf(0f)
+        }
+
         var shaderSource by remember(backgroundColor) {
             mutableStateOf<ImageBitmap?>(null)
         }
@@ -173,35 +180,54 @@ internal fun Canvas.UiPathPaintCanvasAction(
             withContext(Dispatchers.Default) {
                 if (shaderSource == null || invalidations <= pathsCount) {
                     isLoading = true
-                    shaderSource = onRequestFiltering(
-                        drawImageBitmap.overlay(drawBitmap).asAndroidBitmap(),
-                        listOf(
-                            createFilter<Pair<ImageModel, SpotHealMode>, Filter.SpotHeal>(
-                                Pair(
-                                    createBitmap(
-                                        width = canvasSize.width,
-                                        height = canvasSize.height
-                                    ).applyCanvas {
-                                        drawColor(Color.Black.toArgb())
-                                        drawPath(
-                                            path,
-                                            paint.asFrameworkPaint()
-                                        )
-                                    }.toImageModel(),
-                                    drawMode.mode
+                    val job = launch {
+                        while (progress < 0.5f && isActive && isLoading) {
+                            progress += 0.01f
+                            delay(100)
+                        }
+                        while (progress < 0.75f && isActive && isLoading) {
+                            progress += 0.0025f
+                            delay(100)
+                        }
+                        while (progress < 1f && isActive && isLoading) {
+                            progress += 0.0025f
+                            delay(500)
+                        }
+                    }
+
+                    shaderSource = withContext(Dispatchers.IO) {
+                        onRequestFiltering(
+                            drawImageBitmap.overlay(drawBitmap).asAndroidBitmap(),
+                            listOf(
+                                createFilter<Pair<ImageModel, SpotHealMode>, Filter.SpotHeal>(
+                                    Pair(
+                                        createBitmap(
+                                            width = canvasSize.width,
+                                            height = canvasSize.height
+                                        ).applyCanvas {
+                                            drawColor(Color.Black.toArgb())
+                                            drawPath(
+                                                path,
+                                                paint.asFrameworkPaint()
+                                            )
+                                        }.toImageModel(),
+                                        drawMode.mode
+                                    )
                                 )
                             )
-                        )
-                    )?.asImageBitmap()?.clipBitmap(
-                        path = path.asComposePath(),
-                        paint = paint.apply {
-                            blendMode = BlendMode.Clear
+                        )?.asImageBitmap()?.clipBitmap(
+                            path = path.asComposePath(),
+                            paint = paint.apply {
+                                blendMode = BlendMode.Clear
+                            }
+                        )?.also {
+                            it.prepareToDraw()
+                            onInvalidate()
                         }
-                    )?.also {
-                        it.prepareToDraw()
-                        onInvalidate()
                     }
                     isLoading = false
+                    job.cancel()
+                    progress = 0f
                 }
             }
         }
@@ -218,27 +244,6 @@ internal fun Canvas.UiPathPaintCanvasAction(
             )
         }
 
-        var progress by remember {
-            mutableFloatStateOf(0f)
-        }
-        LaunchedEffect(isLoading) {
-            if (isLoading) {
-                while (progress < 0.5f) {
-                    progress += 0.01f
-                    delay(100)
-                }
-                while (progress < 0.75f) {
-                    progress += 0.0025f
-                    delay(100)
-                }
-                while (progress < 1f) {
-                    progress += 0.0025f
-                    delay(500)
-                }
-            } else {
-                progress = 1f
-            }
-        }
         LoadingDialog(
             visible = isLoading,
             canCancel = false,
@@ -274,42 +279,45 @@ internal fun Canvas.UiPathPaintCanvasAction(
         LaunchedEffect(warpedBitmap, invalidations) {
             withContext(Dispatchers.Default) {
                 if (warpedBitmap == null || invalidations <= pathsCount) {
-
                     val source = drawImageBitmap
                         .overlay(drawBitmap)
                         .asAndroidBitmap()
 
                     val engine = WarpEngine(source)
 
-                    drawMode.strokes.forEach { warp ->
-                        val stroke = warp.scaleToFitCanvas(
-                            currentSize = canvasSize,
-                            oldSize = size
-                        )
-                        engine.applyStroke(
-                            fromX = stroke.from.first,
-                            fromY = stroke.from.second,
-                            toX = stroke.to.first,
-                            toY = stroke.to.second,
-                            brush = WarpBrush(
-                                radius = strokeWidth.toPx(canvasSize),
-                                strength = drawMode.strength,
-                                hardness = drawMode.hardness
-                            ),
-                            mode = drawMode.warpMode
-                        )
-                    }
-
-                    warpedBitmap = engine
-                        .render()
-                        .asImageBitmap()
-                        .clipBitmap(
-                            path = path.asComposePath(),
-                            paint = paint
-                        ).also {
-                            it.prepareToDraw()
-                            onInvalidate()
+                    try {
+                        drawMode.strokes.forEach { warp ->
+                            val stroke = warp.scaleToFitCanvas(
+                                currentSize = canvasSize,
+                                oldSize = size
+                            )
+                            engine.applyStroke(
+                                fromX = stroke.fromX,
+                                fromY = stroke.fromY,
+                                toX = stroke.toX,
+                                toY = stroke.toY,
+                                brush = WarpBrush(
+                                    radius = strokeWidth.toPx(canvasSize),
+                                    strength = drawMode.strength,
+                                    hardness = drawMode.hardness
+                                ),
+                                mode = WarpMode.valueOf(drawMode.warpMode.name)
+                            )
                         }
+
+                        warpedBitmap = engine
+                            .render()
+                            .asImageBitmap()
+                            .clipBitmap(
+                                path = path.asComposePath(),
+                                paint = paint
+                            ).also {
+                                it.prepareToDraw()
+                                onInvalidate()
+                            }
+                    } finally {
+                        engine.release()
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,10 @@
 
 package com.t8rin.imagetoolbox.feature.media_picker.presentation.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -32,13 +28,9 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -51,19 +43,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.request.ImageRequest
+import coil3.size.Precision
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
-import com.t8rin.imagetoolbox.core.ui.theme.Red
 import com.t8rin.imagetoolbox.core.ui.theme.White
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.MediaCheckBox
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsCombinedClickable
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
+import com.t8rin.imagetoolbox.core.utils.appContext
 import com.t8rin.imagetoolbox.feature.media_picker.domain.model.Media
 
 @Composable
@@ -77,18 +73,20 @@ fun MediaImage(
     onItemClick: (Media) -> Unit,
     onItemLongClick: (Media) -> Unit,
 ) {
-    val selectedSize by animateDpAsState(
-        if (isSelected) 12.dp else 0.dp
-    )
-    val scale by animateFloatAsState(
-        if (isSelected) 0.5f else 1f
-    )
-    val selectedShapeSize by animateDpAsState(
-        if (isSelected) 16.dp else 4.dp
-    )
-    val strokeSize by animateDpAsState(
-        targetValue = if (isSelected) 2.dp else 0.dp
-    )
+    val transition = updateTransition(isSelected)
+
+    val selectedSize by transition.animateDp {
+        if (it) 12.dp else 0.dp
+    }
+    val scale by transition.animateFloat {
+        if (it) 0.5f else 1f
+    }
+    val selectedShapeSize by transition.animateDp {
+        if (it) 16.dp else 4.dp
+    }
+    val strokeSize by transition.animateDp {
+        if (it) 2.dp else 0.dp
+    }
     var isImageError by remember {
         mutableStateOf(false)
     }
@@ -117,33 +115,40 @@ fun MediaImage(
             )
             .aspectRatio(1f)
     ) {
+        val shape = AutoCornersShape(selectedShapeSize)
+
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
                 .aspectRatio(1f)
                 .padding(selectedSize)
-                .clip(RoundedCornerShape(selectedShapeSize))
+                .clip(shape)
                 .border(
                     width = strokeSize,
-                    shape = RoundedCornerShape(selectedShapeSize),
+                    shape = shape,
                     color = strokeColor
                 )
                 .then(
                     if (isSelected) {
                         Modifier.clip(
-                            RoundedCornerShape(selectedShapeSize + 2.dp)
+                            AutoCornersShape(selectedShapeSize + 2.dp)
                         )
                     } else Modifier
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    shape = RoundedCornerShape(selectedShapeSize)
+                    shape = shape
                 )
         ) {
             Picture(
-                modifier = Modifier
-                    .fillMaxSize(),
-                model = media.uri,
+                modifier = Modifier.fillMaxSize(),
+                model = remember(media.uri) {
+                    ImageRequest.Builder(appContext)
+                        .data(media.uri)
+                        .size(384)
+                        .precision(Precision.INEXACT)
+                        .build()
+                },
                 contentDescription = media.label,
                 contentScale = ContentScale.Crop,
                 onSuccess = {
@@ -171,21 +176,20 @@ fun MediaImage(
                             tint = MaterialTheme.colorScheme.onErrorContainer.copy(0.8f)
                         )
                     }
-                }
+                },
+                filterQuality = FilterQuality.High
             )
         }
 
-        AnimatedContent(
-            targetState = media.duration != null,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
+        Box(
             modifier = Modifier.align(Alignment.TopEnd)
-        ) { haveDuration ->
-            if (haveDuration) {
+        ) {
+            if (media.duration != null) {
                 MediaVideoDurationHeader(
                     modifier = Modifier
                         .padding(selectedSize / 2)
                         .scale(scale),
-                    media = media
+                    media = media,
                 )
             } else {
                 MediaExtensionHeader(
@@ -197,48 +201,21 @@ fun MediaImage(
             }
         }
 
-        AnimatedVisibility(
-            visible = media.fileSize > 0,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.BottomStart)
-        ) {
+        if (media.fileSize > 0) {
             MediaSizeFooter(
                 modifier = Modifier
+                    .align(Alignment.BottomStart)
                     .padding(selectedSize / 2)
                     .graphicsLayer {
                         scaleX = scale
                         scaleY = scale
                         transformOrigin = TransformOrigin(0.3f, 0.5f)
                     },
-                media = media
+                media = media,
             )
         }
 
-        AnimatedVisibility(
-            visible = media.isFavorite,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .padding(selectedSize / 2)
-                    .scale(scale)
-                    .padding(8.dp)
-                    .size(16.dp),
-                imageVector = Icons.Filled.Favorite,
-                tint = Red,
-                contentDescription = null
-            )
-        }
-
-        AnimatedVisibility(
-            visible = isInSelection,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
+        if (isInSelection) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -255,12 +232,12 @@ fun MediaImage(
                     } else Icons.Filled.CheckCircle,
                     selectionIndex = selectionIndex,
                     modifier = Modifier
-                        .clip(CircleShape)
+                        .clip(ShapeDefaults.circle)
                         .background(
-                            animateColorAsState(
-                                if (isSelected) MaterialTheme.colorScheme.surfaceContainer
+                            transition.animateColor {
+                                if (it) MaterialTheme.colorScheme.surfaceContainer
                                 else Color.Transparent
-                            ).value
+                            }.value
                         )
                 )
             }

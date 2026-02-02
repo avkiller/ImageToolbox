@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="size">Größe %1$s</string>
     <string name="height">Höhe %1$s</string>
     <string name="quality">Qualität</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">Normal</string>
     <string name="slow">Langsam</string>
     <string name="very_slow">Sehr langsam</string>
+    <string name="compute_percents">Berechnen Sie Prozente</string>
+    <string name="minimum_value_is">Der Mindestwert ist %1$s</string>
+    <string name="warp_sub">Verzerren Sie das Bild, indem Sie mit den Fingern zeichnen</string>
+    <string name="warp">Kette</string>
+    <string name="hardness">Härte</string>
+    <string name="warp_mode">Warp-Modus</string>
+    <string name="warp_mode_move">Bewegen</string>
+    <string name="warp_mode_grow">Wachsen</string>
+    <string name="warp_mode_shrink">Schrumpfen</string>
+    <string name="warp_mode_swirl_cw">Wirbel im Uhrzeigersinn</string>
+    <string name="warp_mode_swirl_ccw">Gegen den Uhrzeigersinn wirbeln</string>
+    <string name="fade_strength">Stärke verblassen</string>
+    <string name="top_drop">Top-Drop</string>
+    <string name="bottom_drop">Bottom Drop</string>
+    <string name="start_drop">Starten Sie Drop</string>
+    <string name="end_drop">End Drop</string>
+    <string name="downloading">Herunterladen</string>
+    <string name="smooth_shapes">Glatte Formen</string>
+    <string name="smooth_shapes_sub">Verwenden Sie Superellipsen anstelle der standardmäßigen abgerundeten Rechtecke für glattere, natürlichere Formen</string>
+    <string name="shape_type">Formtyp</string>
+    <string name="cut">Schneiden</string>
+    <string name="rounded">Gerundet</string>
+    <string name="smooth">Glatt</string>
+    <string name="cut_shapes_sub">Scharfe Kanten ohne Rundung</string>
+    <string name="rounded_shapes_sub">Klassische abgerundete Ecken</string>
+    <string name="shapes_type">Formentyp</string>
+    <string name="corners_size">Eckengröße</string>
+    <string name="squircle">Squircle</string>
+    <string name="squircle_shapes_sub">Elegante abgerundete UI-Elemente</string>
+    <string name="filename_format">Dateinamenformat</string>
+    <string name="prefix_pattern_description">Benutzerdefinierter Text wird ganz am Anfang des Dateinamens platziert, ideal für Projektnamen, Marken oder persönliche Tags.</string>
+    <string name="original_filename_pattern_description">Verwendet den ursprünglichen Dateinamen ohne Erweiterung, sodass die Quellenidentifizierung erhalten bleibt.</string>
+    <string name="width_pattern_description">Die Bildbreite in Pixel, nützlich zum Verfolgen von Auflösungsänderungen oder zum Skalieren von Ergebnissen.</string>
+    <string name="height_pattern_description">Die Bildhöhe in Pixel, hilfreich beim Arbeiten mit Seitenverhältnissen oder Exporten.</string>
+    <string name="random_numbers_pattern_description">Erzeugt zufällige Ziffern, um eindeutige Dateinamen zu gewährleisten; Fügen Sie weitere Ziffern hinzu, um die Sicherheit vor Duplikaten zu erhöhen.</string>
+    <string name="sequence_number_pattern_description">Automatisch inkrementierender Zähler für Batch-Exporte, ideal beim Speichern mehrerer Bilder in einer Sitzung.</string>
+    <string name="preset_info_pattern_description">Fügt den Namen der angewendeten Voreinstellung in den Dateinamen ein, damit Sie sich leicht daran erinnern können, wie das Bild verarbeitet wurde.</string>
+    <string name="scale_mode_pattern_description">Zeigt den Bildskalierungsmodus an, der während der Verarbeitung verwendet wird, und hilft dabei, in der Größe veränderte, zugeschnittene oder angepasste Bilder zu unterscheiden.</string>
+    <string name="suffix_pattern_description">Benutzerdefinierter Text am Ende des Dateinamens, nützlich für die Versionierung, z. B. _v2, _edited oder _final.</string>
+    <string name="extension_pattern_description">Die Dateierweiterung (png, jpg, webp usw.) passt automatisch zum tatsächlich gespeicherten Format.</string>
+    <string name="formatted_timestamp_pattern_description">Ein anpassbarer Zeitstempel, mit dem Sie Ihr eigenes Format nach Java-Spezifikation für eine perfekte Sortierung definieren können.</string>
 </resources>

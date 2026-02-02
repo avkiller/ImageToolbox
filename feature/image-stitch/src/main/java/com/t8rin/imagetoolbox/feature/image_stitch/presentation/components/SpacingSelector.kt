@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ fun SpacingSelector(
         modifier = modifier,
         value = value,
         title = stringResource(R.string.spacing),
-        valueRange = -256f..256f,
+        valueRange = -512f..256f,
         internalStateTransformation = {
             it.roundToInt()
         },

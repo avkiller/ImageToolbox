@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="language">اللغة</string>
     <string name="amoled_mode">وضع Amoled</string>
     <string name="amoled_mode_sub">إذا تم تمكين لون الأسطح فسيتم ضبطه على الظلام المطلق في الوضع الليلي</string>
@@ -2024,4 +2026,45 @@
     <string name="normal">طبيعي</string>
     <string name="slow">بطيء</string>
     <string name="very_slow">بطيء جدًا</string>
+    <string name="compute_percents">احسب النسب المئوية</string>
+    <string name="minimum_value_is">القيمة الأدنى هي %1$s</string>
+    <string name="warp_sub">شوّه الصورة بالرسم بالأصابع</string>
+    <string name="warp">طي</string>
+    <string name="hardness">الصلابة</string>
+    <string name="warp_mode">وضع الطي</string>
+    <string name="warp_mode_move">حرّك</string>
+    <string name="warp_mode_grow">وسِّع</string>
+    <string name="warp_mode_shrink">قلِّص</string>
+    <string name="warp_mode_swirl_cw">تدور في اتجاه عقارب الساعة</string>
+    <string name="warp_mode_swirl_ccw">تدور عكس عقارب الساعة</string>
+    <string name="fade_strength">قوة التلاشي</string>
+    <string name="top_drop">أعلى قطرة</string>
+    <string name="bottom_drop">إسقاط القاع</string>
+    <string name="start_drop">ابدأ بالاسقاط</string>
+    <string name="end_drop">نهاية السقوط</string>
+    <string name="downloading">يُنزّل</string>
+    <string name="smooth_shapes">الأشكال السلسة</string>
+    <string name="smooth_shapes_sub">استخدم القطع الناقص الفائق بدلاً من المستطيلات المستديرة القياسية للحصول على أشكال أكثر سلاسة وطبيعية</string>
+    <string name="shape_type">نوع الشكل</string>
+    <string name="cut">يقطع</string>
+    <string name="rounded">مدور</string>
+    <string name="smooth">سلس</string>
+    <string name="cut_shapes_sub">حواف حادة بدون تقريب</string>
+    <string name="rounded_shapes_sub">زوايا مستديرة كلاسيكية</string>
+    <string name="shapes_type">نوع الأشكال</string>
+    <string name="corners_size">حجم الزوايا</string>
+    <string name="squircle">سكويركل</string>
+    <string name="squircle_shapes_sub">عناصر واجهة المستخدم مدورة أنيقة</string>
+    <string name="filename_format">تنسيق اسم الملف</string>
+    <string name="prefix_pattern_description">نص مخصص يتم وضعه في بداية اسم الملف، وهو مثالي لأسماء المشاريع أو العلامات التجارية أو العلامات الشخصية.</string>
+    <string name="original_filename_pattern_description">يستخدم اسم الملف الأصلي بدون امتداد، مما يساعدك على الحفاظ على تعريف المصدر سليمًا.</string>
+    <string name="width_pattern_description">عرض الصورة بالبكسل، مفيد لتتبع تغييرات الدقة أو قياس النتائج.</string>
+    <string name="height_pattern_description">يعد ارتفاع الصورة بالبكسل مفيدًا عند العمل مع نسب العرض إلى الارتفاع أو الصادرات.</string>
+    <string name="random_numbers_pattern_description">يولد أرقام عشوائية لضمان أسماء ملفات فريدة من نوعها؛ أضف المزيد من الأرقام لمزيد من الأمان ضد التكرارات.</string>
+    <string name="sequence_number_pattern_description">عداد متزايد تلقائيًا لصادرات الدُفعات، وهو مثالي عند حفظ صور متعددة في جلسة واحدة.</string>
+    <string name="preset_info_pattern_description">يقوم بإدراج اسم الإعداد المسبق المطبق في اسم الملف حتى تتمكن من تذكر كيفية معالجة الصورة بسهولة.</string>
+    <string name="scale_mode_pattern_description">يعرض وضع تغيير حجم الصورة المستخدم أثناء المعالجة، مما يساعد على تمييز الصور التي تم تغيير حجمها أو اقتصاصها أو تركيبها.</string>
+    <string name="suffix_pattern_description">نص مخصص يتم وضعه في نهاية اسم الملف، وهو مفيد لإصدارات مثل _v2، أو _edited، أو _final.</string>
+    <string name="extension_pattern_description">امتداد الملف (png، jpg، webp، وما إلى ذلك)، يطابق تلقائيًا التنسيق الفعلي المحفوظ.</string>
+    <string name="formatted_timestamp_pattern_description">طابع زمني قابل للتخصيص يتيح لك تحديد التنسيق الخاص بك من خلال مواصفات جافا للفرز المثالي.</string>
 </resources>

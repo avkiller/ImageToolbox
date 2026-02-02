@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">Rozmiar %1$s</string>
     <string name="width">Szerokość %1$s</string>
     <string name="loading">Ładowanie…</string>
@@ -2022,4 +2024,45 @@
     <string name="normal">Normalna</string>
     <string name="slow">Powolny</string>
     <string name="very_slow">Bardzo powolny</string>
+    <string name="compute_percents">Oblicz procenty</string>
+    <string name="minimum_value_is">Minimalna wartość to %1$s</string>
+    <string name="warp_sub">Zniekształcanie obrazu poprzez rysowanie palcami</string>
+    <string name="warp">Osnowa</string>
+    <string name="hardness">Twardość</string>
+    <string name="warp_mode">Tryb wypaczenia</string>
+    <string name="warp_mode_move">Przenosić</string>
+    <string name="warp_mode_grow">Rosnąć</string>
+    <string name="warp_mode_shrink">Kurczyć się</string>
+    <string name="warp_mode_swirl_cw">Wir CW</string>
+    <string name="warp_mode_swirl_ccw">Wiruj CCW</string>
+    <string name="fade_strength">Siła blaknięcia</string>
+    <string name="top_drop">Najwyższy spadek</string>
+    <string name="bottom_drop">Dolny spadek</string>
+    <string name="start_drop">Rozpocznij upuszczanie</string>
+    <string name="end_drop">Koniec zrzutu</string>
+    <string name="downloading">Pobieranie</string>
+    <string name="smooth_shapes">Gładkie kształty</string>
+    <string name="smooth_shapes_sub">Użyj superelips zamiast standardowych zaokrąglonych prostokątów, aby uzyskać gładsze, bardziej naturalne kształty</string>
+    <string name="shape_type">Typ kształtu</string>
+    <string name="cut">Cięcie</string>
+    <string name="rounded">Bułczasty</string>
+    <string name="smooth">Gładki</string>
+    <string name="cut_shapes_sub">Ostre krawędzie bez zaokrągleń</string>
+    <string name="rounded_shapes_sub">Klasycznie zaokrąglone rogi</string>
+    <string name="shapes_type">Typ kształtów</string>
+    <string name="corners_size">Rozmiar narożników</string>
+    <string name="squircle">Wiercik</string>
+    <string name="squircle_shapes_sub">Eleganckie zaokrąglone elementy interfejsu użytkownika</string>
+    <string name="filename_format">Format nazwy pliku</string>
+    <string name="prefix_pattern_description">Niestandardowy tekst umieszczany na samym początku nazwy pliku, idealny do nazw projektów, marek lub osobistych tagów.</string>
+    <string name="original_filename_pattern_description">Używa oryginalnej nazwy pliku bez rozszerzenia, pomagając zachować nienaruszoną identyfikację źródła.</string>
+    <string name="width_pattern_description">Szerokość obrazu w pikselach, przydatna do śledzenia zmian rozdzielczości lub wyników skalowania.</string>
+    <string name="height_pattern_description">Wysokość obrazu w pikselach, pomocna podczas pracy ze współczynnikami proporcji lub eksportami.</string>
+    <string name="random_numbers_pattern_description">Generuje losowe cyfry, aby zagwarantować unikalne nazwy plików; dodaj więcej cyfr, aby zapewnić dodatkowe bezpieczeństwo przed duplikatami.</string>
+    <string name="sequence_number_pattern_description">Automatycznie zwiększający się licznik do eksportu wsadowego, idealny przy zapisywaniu wielu obrazów w jednej sesji.</string>
+    <string name="preset_info_pattern_description">Wstawia zastosowaną nazwę ustawienia wstępnego do nazwy pliku, dzięki czemu można łatwo zapamiętać sposób przetwarzania obrazu.</string>
+    <string name="scale_mode_pattern_description">Wyświetla tryb skalowania obrazu używany podczas przetwarzania, pomagając rozróżnić obrazy o zmienionym rozmiarze, przycięte lub dopasowane.</string>
+    <string name="suffix_pattern_description">Niestandardowy tekst umieszczony na końcu nazwy pliku, przydatny przy wersjonowaniu, takim jak _v2, _edited lub _final.</string>
+    <string name="extension_pattern_description">Rozszerzenie pliku (png, jpg, webp itp.), automatycznie dopasowujące się do aktualnie zapisanego formatu.</string>
+    <string name="formatted_timestamp_pattern_description">Konfigurowalny znacznik czasu, który pozwala zdefiniować własny format według specyfikacji Java w celu idealnego sortowania.</string>
 </resources>

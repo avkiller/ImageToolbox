@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.theme.DisabledAlpha
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
+import com.t8rin.imagetoolbox.core.ui.widget.text.marquee
 
 @Composable
 fun EnhancedButtonGroup(
@@ -123,7 +126,7 @@ fun EnhancedButtonGroup(
 }
 
 @Composable
-fun <T> EnhancedButtonGroup(
+fun <T : Any> EnhancedButtonGroup(
     modifier: Modifier = defaultModifier,
     enabled: Boolean = true,
     entries: List<T>,
@@ -134,19 +137,28 @@ fun <T> EnhancedButtonGroup(
     inactiveButtonColor: Color = MaterialTheme.colorScheme.surface,
     activeButtonColor: Color = MaterialTheme.colorScheme.secondary,
     isScrollable: Boolean = true,
-    contentPadding: PaddingValues = DefaultContentPadding
+    contentPadding: PaddingValues = DefaultContentPadding,
+    useClassFinding: Boolean = false
 ) {
     EnhancedButtonGroup(
         modifier = modifier,
         enabled = enabled,
         itemCount = entries.size,
-        selectedIndex = entries.indexOf(value),
+        selectedIndex = if (useClassFinding) {
+            entries.indexOfFirst { it::class.isInstance(value) }
+        } else {
+            entries.indexOf(value)
+        },
         itemContent = {
             itemContent(entries[it])
         },
         onIndexChange = {
             onValueChange(
-                entries[it]
+                if (useClassFinding && value::class.isInstance(entries[it])) {
+                    value
+                } else {
+                    entries[it]
+                }
             )
         },
         title = {
@@ -264,7 +276,7 @@ fun EnhancedButtonGroup(
     val settingsState = LocalSettingsState.current
 
     val disabledColor = MaterialTheme.colorScheme.onSurface
-        .copy(alpha = 0.38f)
+        .copy(alpha = DisabledAlpha)
         .compositeOver(MaterialTheme.colorScheme.surface)
 
     ProvideTextStyle(
@@ -315,45 +327,68 @@ fun EnhancedButtonGroup(
 
                             val selected = index in selectedIndices
 
-                            EnhancedToggleButton(
-                                enabled = enabled,
-                                onCheckedChange = {
-                                    onIndexChange(index)
-                                },
-                                border = BorderStroke(
-                                    width = settingsState.borderWidth,
-                                    color = MaterialTheme.colorScheme.outlineVariant(
-                                        onTopOf = if (selected) activeContainerColor
-                                        else inactiveButtonColor
-                                    )
-                                ),
-                                colors = ToggleButtonDefaults.toggleButtonColors(
-                                    containerColor = inactiveButtonColor,
-                                    contentColor = contentColorFor(inactiveButtonColor),
-                                    checkedContainerColor = activeContainerColor,
-                                    checkedContentColor = contentColorFor(activeContainerColor)
-                                ),
-                                checked = selected,
-                                shapes = when (index) {
-                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes(
-                                        pressedShape = ButtonDefaults.pressedShape
-                                    )
+                            val disableSmoothness =
+                                !selected && index == 0 || index == itemCount - 1
 
-                                    itemCount - 1 -> ButtonGroupDefaults.connectedTrailingButtonShapes(
-                                        pressedShape = ButtonDefaults.pressedShape
-                                    )
+                            val settingsState = LocalSettingsState.current
 
-                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes(
-                                        pressedShape = ButtonDefaults.pressedShape,
+                            LocalSettingsState.ProvidesValue(
+                                if (disableSmoothness && settingsState.shapesType is ShapeType.Smooth) {
+                                    settingsState.copy(
+                                        shapesType = ShapeType.Rounded()
                                     )
-                                },
-                                elevation = elevation,
-                                modifier = Modifier.then(
-                                    if (isScrollable) Modifier
-                                    else Modifier.weight(1f)
-                                )
+                                } else {
+                                    settingsState
+                                }
                             ) {
-                                itemContent(index)
+                                EnhancedToggleButton(
+                                    enabled = enabled,
+                                    onCheckedChange = {
+                                        onIndexChange(index)
+                                    },
+                                    border = BorderStroke(
+                                        width = settingsState.borderWidth,
+                                        color = MaterialTheme.colorScheme.outlineVariant(
+                                            onTopOf = if (selected) activeContainerColor
+                                            else inactiveButtonColor
+                                        )
+                                    ),
+                                    colors = ToggleButtonDefaults.toggleButtonColors(
+                                        containerColor = inactiveButtonColor,
+                                        contentColor = contentColorFor(inactiveButtonColor),
+                                        checkedContainerColor = activeContainerColor,
+                                        checkedContentColor = contentColorFor(activeContainerColor)
+                                    ),
+                                    checked = selected,
+                                    shapes = when (index) {
+                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes(
+                                            pressedShape = ButtonDefaults.pressedShape
+                                        )
+
+                                        itemCount - 1 -> ButtonGroupDefaults.connectedTrailingButtonShapes(
+                                            pressedShape = ButtonDefaults.pressedShape
+                                        )
+
+                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes(
+                                            pressedShape = ButtonDefaults.pressedShape,
+                                        )
+                                    },
+                                    elevation = elevation,
+                                    modifier = Modifier.then(
+                                        if (isScrollable) Modifier
+                                        else Modifier.weight(1f)
+                                    )
+                                ) {
+                                    if (!isScrollable) {
+                                        Row(
+                                            modifier = Modifier.marquee()
+                                        ) {
+                                            itemContent(index)
+                                        }
+                                    } else {
+                                        itemContent(index)
+                                    }
+                                }
                             }
                         }
                     }

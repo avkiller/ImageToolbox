@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="loading">লোড হচ্ছে…</string>
     <string name="image_too_large_preview">ছবিটি প্রিভিউ করার জন্য খুব বড়, তবে সেভ করার চেষ্টা করা হবে।</string>
     <string name="pick_image">শুরু করার জন্য ছবি বেছে নিন</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">স্বাভাবিক</string>
     <string name="slow">ধীর</string>
     <string name="very_slow">খুব ধীর</string>
+    <string name="compute_percents">শতাংশ গণনা করুন</string>
+    <string name="minimum_value_is">সর্বনিম্ন মান হল %1$s</string>
+    <string name="warp_sub">আঙ্গুল দিয়ে আঁকা ছবি বিকৃত</string>
+    <string name="warp">ওয়ার্প</string>
+    <string name="hardness">কঠোরতা</string>
+    <string name="warp_mode">ওয়ার্প মোড</string>
+    <string name="warp_mode_move">সরান</string>
+    <string name="warp_mode_grow">বৃদ্ধি</string>
+    <string name="warp_mode_shrink">সঙ্কুচিত</string>
+    <string name="warp_mode_swirl_cw">ঘূর্ণি CW</string>
+    <string name="warp_mode_swirl_ccw">ঘূর্ণায়মান CCW</string>
+    <string name="fade_strength">বিবর্ণ শক্তি</string>
+    <string name="top_drop">শীর্ষ ড্রপ</string>
+    <string name="bottom_drop">বটম ড্রপ</string>
+    <string name="start_drop">স্টার্ট ড্রপ</string>
+    <string name="end_drop">শেষ ড্রপ</string>
+    <string name="downloading">ডাউনলোড হচ্ছে</string>
+    <string name="smooth_shapes">মসৃণ আকার</string>
+    <string name="smooth_shapes_sub">মসৃণ, আরও প্রাকৃতিক আকৃতির জন্য আদর্শ গোলাকার আয়তক্ষেত্রের পরিবর্তে সুপারেলিপ্স ব্যবহার করুন</string>
+    <string name="shape_type">আকৃতির ধরন</string>
+    <string name="cut">কাটা</string>
+    <string name="rounded">গোলাকার</string>
+    <string name="smooth">মসৃণ</string>
+    <string name="cut_shapes_sub">বৃত্তাকার ছাড়াই ধারালো প্রান্ত</string>
+    <string name="rounded_shapes_sub">ক্লাসিক গোলাকার কোণ</string>
+    <string name="shapes_type">আকারের ধরন</string>
+    <string name="corners_size">কোণার আকার</string>
+    <string name="squircle">কাঠবিড়ালি</string>
+    <string name="squircle_shapes_sub">মার্জিত গোলাকার UI উপাদান</string>
+    <string name="filename_format">ফাইলের নাম বিন্যাস</string>
+    <string name="prefix_pattern_description">কাস্টম টেক্সট ফাইলের নামের একেবারে শুরুতে, প্রকল্পের নাম, ব্র্যান্ড বা ব্যক্তিগত ট্যাগের জন্য উপযুক্ত।</string>
+    <string name="original_filename_pattern_description">এক্সটেনশন ছাড়াই মূল ফাইলের নাম ব্যবহার করে, আপনাকে উৎস সনাক্তকরণ অক্ষত রাখতে সাহায্য করে।</string>
+    <string name="width_pattern_description">ছবির প্রস্থ পিক্সেলে, রেজোলিউশন পরিবর্তন বা স্কেলিং ফলাফল ট্র্যাক করার জন্য দরকারী।</string>
+    <string name="height_pattern_description">চিত্রের উচ্চতা পিক্সেলে, আকৃতির অনুপাত বা রপ্তানির সাথে কাজ করার সময় সহায়ক।</string>
+    <string name="random_numbers_pattern_description">অনন্য ফাইলের নাম নিশ্চিত করতে র্যান্ডম সংখ্যা তৈরি করে; ডুপ্লিকেটের বিরুদ্ধে অতিরিক্ত নিরাপত্তার জন্য আরও সংখ্যা যোগ করুন।</string>
+    <string name="sequence_number_pattern_description">ব্যাচ রপ্তানির জন্য স্বয়ংক্রিয়-বর্ধিত কাউন্টার, এক সেশনে একাধিক ছবি সংরক্ষণ করার সময় আদর্শ।</string>
+    <string name="preset_info_pattern_description">ফাইলের নামের মধ্যে প্রয়োগকৃত প্রিসেট নাম সন্নিবেশ করান যাতে আপনি সহজেই মনে রাখতে পারেন কিভাবে চিত্রটি প্রক্রিয়া করা হয়েছিল।</string>
+    <string name="scale_mode_pattern_description">প্রসেসিং এর সময় ব্যবহৃত ইমেজ স্কেলিং মোড প্রদর্শন করে, রিসাইজ করা, ক্রপ করা বা ফিট করা ছবিগুলিকে আলাদা করতে সাহায্য করে।</string>
+    <string name="suffix_pattern_description">ফাইলের নামের শেষে কাস্টম টেক্সট রাখা, _v2, _edited বা _final-এর মত সংস্করণের জন্য উপযোগী।</string>
+    <string name="extension_pattern_description">ফাইল এক্সটেনশন (png, jpg, webp, ইত্যাদি), স্বয়ংক্রিয়ভাবে প্রকৃত সংরক্ষিত বিন্যাসের সাথে মিলে যায়।</string>
+    <string name="formatted_timestamp_pattern_description">একটি কাস্টমাইজযোগ্য টাইমস্ট্যাম্প যা আপনাকে নিখুঁত সাজানোর জন্য জাভা স্পেসিফিকেশন দ্বারা আপনার নিজস্ব বিন্যাস সংজ্ঞায়িত করতে দেয়।</string>
 </resources>

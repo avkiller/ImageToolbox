@@ -27,6 +27,7 @@ import android.provider.OpenableColumns
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import com.t8rin.imagetoolbox.core.data.saving.io.StreamWriteable
 import com.t8rin.imagetoolbox.core.domain.model.ImageModel
 import com.t8rin.imagetoolbox.core.domain.saving.io.Writeable
 import com.t8rin.imagetoolbox.core.domain.utils.FileMode
@@ -118,12 +119,12 @@ private sealed interface DirUri {
     data class All(val uris: List<Uri>) : DirUri
 }
 
-fun Uri.fileSize(context: Context): Long? {
+fun Uri.fileSize(): Long? {
     if (this.toString().isEmpty()) return null
 
     if (this.scheme == "content") {
         runCatching {
-            context.contentResolver
+            appContext.contentResolver
                 .query(this, null, null, null, null, null)
                 .use { cursor ->
                     if (cursor != null && cursor.moveToFirst()) {
@@ -214,6 +215,10 @@ fun String.decodeEscaped(): String = runCatching {
     }
 }.getOrDefault(this)
 
-fun Writeable.outputStream(): OutputStream = object : OutputStream() {
-    override fun write(b: Int) = writeBytes(byteArrayOf(b.toByte()))
+fun Writeable.outputStream(): OutputStream = if (this is StreamWriteable) {
+    stream
+} else {
+    object : OutputStream() {
+        override fun write(b: Int) = writeBytes(byteArrayOf(b.toByte()))
+    }
 }

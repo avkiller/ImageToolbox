@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="flexible">Fleksibel</string>
     <string name="ok">OK</string>
     <string name="crop">Beskær</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">Normal</string>
     <string name="slow">Langsom</string>
     <string name="very_slow">Meget langsom</string>
+    <string name="compute_percents">Beregn procenter</string>
+    <string name="minimum_value_is">Min. værdi er %1$s</string>
+    <string name="warp_sub">Forvrænget billedet ved at tegne med fingrene</string>
+    <string name="warp">Warp</string>
+    <string name="hardness">Hårdhed</string>
+    <string name="warp_mode">Warp-tilstand</string>
+    <string name="warp_mode_move">Flytte</string>
+    <string name="warp_mode_grow">Dyrke</string>
+    <string name="warp_mode_shrink">Krympe</string>
+    <string name="warp_mode_swirl_cw">Swirl CW</string>
+    <string name="warp_mode_swirl_ccw">Hvirvel mod venstre</string>
+    <string name="fade_strength">Fade Styrke</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">Nederste fald</string>
+    <string name="start_drop">Start Drop</string>
+    <string name="end_drop">Slut Drop</string>
+    <string name="downloading">Downloader</string>
+    <string name="smooth_shapes">Glatte former</string>
+    <string name="smooth_shapes_sub">Brug superellipser i stedet for standard afrundede rektangler for glattere, mere naturlige former</string>
+    <string name="shape_type">Form Type</string>
+    <string name="cut">Skære</string>
+    <string name="rounded">Afrundet</string>
+    <string name="smooth">Glat</string>
+    <string name="cut_shapes_sub">Skarpe kanter uden afrunding</string>
+    <string name="rounded_shapes_sub">Klassiske afrundede hjørner</string>
+    <string name="shapes_type">Former Type</string>
+    <string name="corners_size">Hjørner Størrelse</string>
+    <string name="squircle">Squircle</string>
+    <string name="squircle_shapes_sub">Elegante afrundede UI-elementer</string>
+    <string name="filename_format">Filnavn format</string>
+    <string name="prefix_pattern_description">Brugerdefineret tekst placeret helt i begyndelsen af ​​filnavnet, perfekt til projektnavne, mærker eller personlige tags.</string>
+    <string name="original_filename_pattern_description">Bruger det originale filnavn uden filtypenavn, hvilket hjælper dig med at holde kildeidentifikationen intakt.</string>
+    <string name="width_pattern_description">Billedbredden i pixels, nyttig til sporing af opløsningsændringer eller skalering af resultater.</string>
+    <string name="height_pattern_description">Billedhøjden i pixels, nyttigt, når du arbejder med billedformater eller eksporter.</string>
+    <string name="random_numbers_pattern_description">Genererer tilfældige cifre for at garantere unikke filnavne; tilføje flere cifre for ekstra sikkerhed mod dubletter.</string>
+    <string name="sequence_number_pattern_description">Auto-inkrementerende tæller til batch-eksport, ideel, når du gemmer flere billeder i én session.</string>
+    <string name="preset_info_pattern_description">Indsætter det anvendte forudindstillede navn i filnavnet, så du nemt kan huske, hvordan billedet blev behandlet.</string>
+    <string name="scale_mode_pattern_description">Viser billedskaleringstilstanden, der bruges under behandling, og hjælper med at skelne mellem ændrede, beskårne eller tilpassede billeder.</string>
+    <string name="suffix_pattern_description">Brugerdefineret tekst placeret i slutningen af ​​filnavnet, nyttig til versionering som _v2, _edited eller _final.</string>
+    <string name="extension_pattern_description">Filtypenavnet (png, jpg, webp osv.), der automatisk matcher det faktiske gemte format.</string>
+    <string name="formatted_timestamp_pattern_description">Et tilpasseligt tidsstempel, der lader dig definere dit eget format efter java-specifikation for perfekt sortering.</string>
 </resources>

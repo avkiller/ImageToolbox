@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package com.t8rin.imagetoolbox.feature.media_picker.domain.model
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.data.utils.fileSize
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
-import com.t8rin.imagetoolbox.core.utils.appContext
 
 
 data class Media(
@@ -38,21 +37,15 @@ data class Media(
     val takenTimestamp: Long? = null,
     val fullDate: String,
     val mimeType: String,
-    val favorite: Int,
-    val trashed: Int,
     val duration: String? = null,
 ) {
-    val fileSize: Long by lazy { uri.toUri().fileSize(appContext) ?: 0 }
+    val fileSize: Long by lazy { uri.toUri().fileSize() ?: 0 }
 
     val humanFileSize: String by lazy { humanFileSize(fileSize) }
 
     val isVideo: Boolean = mimeType.startsWith("video/") && duration != null
 
     val isImage: Boolean = mimeType.startsWith("image/")
-
-    val isTrashed: Boolean = trashed == 1
-
-    val isFavorite: Boolean = favorite == 1
 
     /**
      * Used to determine if the Media object is not accessible

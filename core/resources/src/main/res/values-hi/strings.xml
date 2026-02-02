@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="stay">ठहरें</string>
     <string name="close">बंद करें</string>
     <string name="reset_image">छवि रीसेट करें</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">सामान्य</string>
     <string name="slow">धीमा</string>
     <string name="very_slow">बहुत धीमी गति से</string>
+    <string name="compute_percents">प्रतिशत की गणना करें</string>
+    <string name="minimum_value_is">न्यूनतम मान %1$s है</string>
+    <string name="warp_sub">उंगलियों से चित्र बनाकर विकृत करें</string>
+    <string name="warp">ताना</string>
+    <string name="hardness">कठोरता</string>
+    <string name="warp_mode">ताना मोड</string>
+    <string name="warp_mode_move">कदम</string>
+    <string name="warp_mode_grow">बढ़ना</string>
+    <string name="warp_mode_shrink">सिकुड़ना</string>
+    <string name="warp_mode_swirl_cw">भंवर सीडब्ल्यू</string>
+    <string name="warp_mode_swirl_ccw">भंवर CCW</string>
+    <string name="fade_strength">फीकी ताकत</string>
+    <string name="top_drop">शीर्ष ड्रॉप</string>
+    <string name="bottom_drop">नीचे की बूंद</string>
+    <string name="start_drop">ड्रॉप प्रारंभ करें</string>
+    <string name="end_drop">अंत ड्रॉप</string>
+    <string name="downloading">डाउनलोड</string>
+    <string name="smooth_shapes">चिकनी आकृतियाँ</string>
+    <string name="smooth_shapes_sub">चिकनी, अधिक प्राकृतिक आकृतियों के लिए मानक गोल आयतों के बजाय सुपरलिप्स का उपयोग करें</string>
+    <string name="shape_type">आकार प्रकार</string>
+    <string name="cut">काटना</string>
+    <string name="rounded">गोल</string>
+    <string name="smooth">चिकना</string>
+    <string name="cut_shapes_sub">बिना गोलाई के तेज किनारे</string>
+    <string name="rounded_shapes_sub">क्लासिक गोलाकार कोने</string>
+    <string name="shapes_type">आकृतियाँ प्रकार</string>
+    <string name="corners_size">कोनों का आकार</string>
+    <string name="squircle">स्क्विर्कल</string>
+    <string name="squircle_shapes_sub">सुंदर गोलाकार यूआई तत्व</string>
+    <string name="filename_format">फ़ाइल नाम प्रारूप</string>
+    <string name="prefix_pattern_description">फ़ाइल नाम की शुरुआत में कस्टम टेक्स्ट रखा गया है, जो प्रोजेक्ट नाम, ब्रांड या व्यक्तिगत टैग के लिए बिल्कुल उपयुक्त है।</string>
+    <string name="original_filename_pattern_description">बिना एक्सटेंशन के मूल फ़ाइल नाम का उपयोग करता है, जिससे आपको स्रोत पहचान बरकरार रखने में मदद मिलती है।</string>
+    <string name="width_pattern_description">पिक्सेल में छवि की चौड़ाई, रिज़ॉल्यूशन परिवर्तन या स्केलिंग परिणामों को ट्रैक करने के लिए उपयोगी है।</string>
+    <string name="height_pattern_description">पिक्सेल में छवि की ऊंचाई, पहलू अनुपात या निर्यात के साथ काम करते समय सहायक होती है।</string>
+    <string name="random_numbers_pattern_description">अद्वितीय फ़ाइल नामों की गारंटी के लिए यादृच्छिक अंक उत्पन्न करता है; डुप्लिकेट के विरुद्ध अतिरिक्त सुरक्षा के लिए अधिक अंक जोड़ें।</string>
+    <string name="sequence_number_pattern_description">बैच निर्यात के लिए ऑटो-इंक्रीमेंटिंग काउंटर, एक सत्र में एकाधिक छवियों को सहेजते समय आदर्श।</string>
+    <string name="preset_info_pattern_description">लागू प्रीसेट नाम को फ़ाइल नाम में सम्मिलित करता है ताकि आप आसानी से याद रख सकें कि छवि कैसे संसाधित की गई थी।</string>
+    <string name="scale_mode_pattern_description">प्रसंस्करण के दौरान उपयोग किए गए छवि स्केलिंग मोड को प्रदर्शित करता है, जो आकार, क्रॉप या फिट की गई छवियों को अलग करने में मदद करता है।</string>
+    <string name="suffix_pattern_description">फ़ाइल नाम के अंत में कस्टम टेक्स्ट रखा गया है, जो _v2, _edited, या _final जैसे संस्करण के लिए उपयोगी है।</string>
+    <string name="extension_pattern_description">फ़ाइल एक्सटेंशन (पीएनजी, जेपीजी, वेबपी, आदि), स्वचालित रूप से वास्तविक सहेजे गए प्रारूप से मेल खाता है।</string>
+    <string name="formatted_timestamp_pattern_description">एक अनुकूलन योग्य टाइमस्टैम्प जो आपको सही सॉर्टिंग के लिए जावा विनिर्देश द्वारा अपना स्वयं का प्रारूप परिभाषित करने देता है।</string>
 </resources>

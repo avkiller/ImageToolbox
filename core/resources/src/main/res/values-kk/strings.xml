@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="updates">Жаңартулар</string>
     <string name="palette">Палитра</string>
     <string name="image_not_saved_sub">Қазір шықсаңыз, барлық сақталмаған өңдеме жоғалады</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">Қалыпты</string>
     <string name="slow">Баяу</string>
     <string name="very_slow">Өте баяу</string>
+    <string name="compute_percents">Проценттерді есептеу</string>
+    <string name="minimum_value_is">Минималды мән – %1$s</string>
+    <string name="warp_sub">Саусақтармен сурет салу арқылы кескінді бұрмалау</string>
+    <string name="warp">Соғыс</string>
+    <string name="hardness">Қаттылық</string>
+    <string name="warp_mode">Бұрмалау режимі</string>
+    <string name="warp_mode_move">Жылжыту</string>
+    <string name="warp_mode_grow">Өсу</string>
+    <string name="warp_mode_shrink">Кішірейту</string>
+    <string name="warp_mode_swirl_cw">Swirl CW</string>
+    <string name="warp_mode_swirl_ccw">Айналмалы CCW</string>
+    <string name="fade_strength">Өшіру күші</string>
+    <string name="top_drop">Жоғарғы тамшы</string>
+    <string name="bottom_drop">Төменгі тамшы</string>
+    <string name="start_drop">Drop бастау</string>
+    <string name="end_drop">Аяқтау</string>
+    <string name="downloading">Жүктеп алынуда</string>
+    <string name="smooth_shapes">Тегіс пішіндер</string>
+    <string name="smooth_shapes_sub">Тегіс, табиғи пішіндер үшін стандартты дөңгелектелген төртбұрыштардың орнына суперэллипстерді пайдаланыңыз</string>
+    <string name="shape_type">Пішін түрі</string>
+    <string name="cut">Кесу</string>
+    <string name="rounded">Дөңгеленген</string>
+    <string name="smooth">Тегіс</string>
+    <string name="cut_shapes_sub">Дөңгелектеусіз өткір жиектер</string>
+    <string name="rounded_shapes_sub">Классикалық дөңгелек бұрыштар</string>
+    <string name="shapes_type">Фигуралар түрі</string>
+    <string name="corners_size">Бұрыштардың өлшемі</string>
+    <string name="squircle">Айналма</string>
+    <string name="squircle_shapes_sub">Керемет дөңгелектенген UI элементтері</string>
+    <string name="filename_format">Файл атауы пішімі</string>
+    <string name="prefix_pattern_description">Жоба атаулары, брендтер немесе жеке тегтер үшін тамаша файл атауының ең басында орналастырылған теңшелетін мәтін.</string>
+    <string name="original_filename_pattern_description">Бастапқы файл атауын кеңейтусіз пайдаланады, бұл бастапқы идентификацияны сақтауыңызға көмектеседі.</string>
+    <string name="width_pattern_description">Ажыратымдылық өзгерістерін немесе масштабтау нәтижелерін бақылау үшін пайдалы пиксельдегі кескін ені.</string>
+    <string name="height_pattern_description">Пиксельдегі кескін биіктігі, пропорциялармен немесе экспорттармен жұмыс істегенде пайдалы.</string>
+    <string name="random_numbers_pattern_description">Бірегей файл атауларына кепілдік беру үшін кездейсоқ сандарды жасайды; көшірмелерден қосымша қауіпсіздік үшін қосымша сандарды қосыңыз.</string>
+    <string name="sequence_number_pattern_description">Пакеттік экспортқа арналған автоматты ұлғайту есептегіші, бір сеанста бірнеше кескінді сақтау үшін өте қолайлы.</string>
+    <string name="preset_info_pattern_description">Кескіннің қалай өңделгенін оңай есте сақтау үшін қолданылатын алдын ала орнатылған атауды файл атауына енгізеді.</string>
+    <string name="scale_mode_pattern_description">Өлшемі өзгертілген, қиылған немесе орнатылған кескіндерді ажыратуға көмектесетін өңдеу кезінде пайдаланылатын кескін масштабтау режимін көрсетеді.</string>
+    <string name="suffix_pattern_description">Файл атауының соңында орналастырылған теңшелетін мәтін, _v2, _edited немесе _final сияқты нұсқалар үшін пайдалы.</string>
+    <string name="extension_pattern_description">Файл кеңейтімі (png, jpg, webp, т.б.), нақты сақталған пішімге автоматты түрде сәйкес келеді.</string>
+    <string name="formatted_timestamp_pattern_description">Керемет сұрыптау үшін java спецификациясы бойынша өз пішіміңізді анықтауға мүмкіндік беретін теңшелетін уақыт белгісі.</string>
 </resources>

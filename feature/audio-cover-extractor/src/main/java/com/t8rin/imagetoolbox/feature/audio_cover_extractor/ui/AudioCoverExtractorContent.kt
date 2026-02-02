@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material3.Icon
@@ -45,7 +43,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
@@ -66,6 +63,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedCircularProgressIn
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.FileNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.image.UrisPreview
+import com.t8rin.imagetoolbox.core.ui.widget.image.urisPreview
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.marquee
@@ -79,12 +77,10 @@ fun AudioCoverExtractorContent(
     val essentials = rememberLocalEssentials()
     val showConfetti: () -> Unit = essentials::showConfetti
 
-    val onFailure: (Throwable) -> Unit = essentials::showFailureToast
-
-    LaunchedEffect(component.initialUris, component.covers, onFailure) {
+    LaunchedEffect(component.initialUris, component.covers, essentials) {
         delay(500)
         if (component.initialUris != null && component.covers.isEmpty()) {
-            onFailure(Throwable(essentials.context.getString(R.string.no_covers_found)))
+            essentials.showFailureToast(essentials.getString(R.string.no_covers_found))
         }
     }
 
@@ -165,24 +161,7 @@ fun AudioCoverExtractorContent(
             }
 
             UrisPreview(
-                modifier = Modifier
-                    .then(
-                        if (!isPortrait) {
-                            Modifier
-                                .layout { measurable, constraints ->
-                                    val placeable = measurable.measure(
-                                        constraints = constraints.copy(
-                                            maxHeight = constraints.maxHeight + 48.dp.roundToPx()
-                                        )
-                                    )
-                                    layout(placeable.width, placeable.height) {
-                                        placeable.place(0, 0)
-                                    }
-                                }
-                                .verticalScroll(rememberScrollState())
-                        } else Modifier
-                    )
-                    .padding(vertical = 24.dp),
+                modifier = Modifier.urisPreview(),
                 uris = uris,
                 isPortrait = true,
                 onRemoveUri = component::removeCover,
@@ -235,6 +214,7 @@ fun AudioCoverExtractorContent(
         controls = {
             ImageFormatSelector(
                 value = component.imageFormat,
+                quality = component.quality,
                 onValueChange = component::setImageFormat
             )
             if (component.imageFormat.canChangeCompressionValue) {

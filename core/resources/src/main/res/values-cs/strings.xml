@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="prefix">Předpona</string>
     <string name="smth_went_wrong">Něco se pokazilo: %1$s</string>
     <string name="size">Velikost %1$s</string>
@@ -2022,4 +2024,45 @@
     <string name="normal">Normální</string>
     <string name="slow">Pomalý</string>
     <string name="very_slow">Velmi pomalé</string>
+    <string name="compute_percents">Vypočítat procenta</string>
+    <string name="minimum_value_is">Minimální hodnota je %1$s</string>
+    <string name="warp_sub">Zkreslení obrazu kresbou prsty</string>
+    <string name="warp">Warp</string>
+    <string name="hardness">Tvrdost</string>
+    <string name="warp_mode">Režim Warp</string>
+    <string name="warp_mode_move">Pohyb</string>
+    <string name="warp_mode_grow">Růst</string>
+    <string name="warp_mode_shrink">Zmenšit</string>
+    <string name="warp_mode_swirl_cw">Swirl CW</string>
+    <string name="warp_mode_swirl_ccw">Krouživým pohybem CCW</string>
+    <string name="fade_strength">Síla blednutí</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">Dolní Drop</string>
+    <string name="start_drop">Spusťte aplikaci Drop</string>
+    <string name="end_drop">End Drop</string>
+    <string name="downloading">Stahování</string>
+    <string name="smooth_shapes">Hladké tvary</string>
+    <string name="smooth_shapes_sub">Použijte superelipsy místo standardních zaoblených obdélníků pro hladší a přirozenější tvary</string>
+    <string name="shape_type">Typ tvaru</string>
+    <string name="cut">Střih</string>
+    <string name="rounded">Zaoblený</string>
+    <string name="smooth">Hladký</string>
+    <string name="cut_shapes_sub">Ostré hrany bez zaoblení</string>
+    <string name="rounded_shapes_sub">Klasické zaoblené rohy</string>
+    <string name="shapes_type">Tvary Typ</string>
+    <string name="corners_size">Velikost rohů</string>
+    <string name="squircle">Veverka</string>
+    <string name="squircle_shapes_sub">Elegantní zaoblené prvky uživatelského rozhraní</string>
+    <string name="filename_format">Formát názvu souboru</string>
+    <string name="prefix_pattern_description">Vlastní text umístěný na samém začátku názvu souboru, ideální pro názvy projektů, značky nebo osobní značky.</string>
+    <string name="original_filename_pattern_description">Používá původní název souboru bez přípony, což vám pomáhá zachovat identifikaci zdroje nedotčenou.</string>
+    <string name="width_pattern_description">Šířka obrázku v pixelech, užitečné pro sledování změn rozlišení nebo změny měřítka výsledků.</string>
+    <string name="height_pattern_description">Výška obrázku v pixelech, užitečná při práci s poměry stran nebo exportu.</string>
+    <string name="random_numbers_pattern_description">Generuje náhodné číslice pro zaručení jedinečných názvů souborů; přidejte další číslice pro větší bezpečnost proti duplikátům.</string>
+    <string name="sequence_number_pattern_description">Automatické počítadlo pro dávkové exporty, ideální při ukládání více obrázků v jedné relaci.</string>
+    <string name="preset_info_pattern_description">Vloží použitý název předvolby do názvu souboru, abyste si snadno zapamatovali, jak byl obrázek zpracován.</string>
+    <string name="scale_mode_pattern_description">Zobrazuje režim změny velikosti obrazu použitý během zpracování a pomáhá rozlišovat obrazy se změněnou velikostí, oříznuté nebo přizpůsobené obrazy.</string>
+    <string name="suffix_pattern_description">Vlastní text umístěný na konci názvu souboru, užitečný pro verzování jako _v2, _edited nebo _final.</string>
+    <string name="extension_pattern_description">Přípona souboru (png, jpg, webp atd.), automaticky odpovídající skutečně uloženému formátu.</string>
+    <string name="formatted_timestamp_pattern_description">Přizpůsobitelné časové razítko, které vám umožní definovat svůj vlastní formát pomocí specifikace Java pro dokonalé třídění.</string>
 </resources>

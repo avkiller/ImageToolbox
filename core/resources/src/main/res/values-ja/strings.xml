@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">問題が発生しました: %1$s</string>
     <string name="check_source_code_sub">最新のアップデートを入手し、問題を議論するなど</string>
     <string name="color_red">赤</string>
@@ -2019,4 +2021,45 @@
     <string name="normal">普通</string>
     <string name="slow">遅い</string>
     <string name="very_slow">非常に遅い</string>
+    <string name="compute_percents">パーセントを計算する</string>
+    <string name="minimum_value_is">最小値は %1$s です</string>
+    <string name="warp_sub">指で描いて画像を歪ませる</string>
+    <string name="warp">ワープ</string>
+    <string name="hardness">硬度</string>
+    <string name="warp_mode">ワープモード</string>
+    <string name="warp_mode_move">動く</string>
+    <string name="warp_mode_grow">育つ</string>
+    <string name="warp_mode_shrink">縮む</string>
+    <string name="warp_mode_swirl_cw">CWに旋回</string>
+    <string name="warp_mode_swirl_ccw">反時計回りに旋回</string>
+    <string name="fade_strength">フェード強度</string>
+    <string name="top_drop">トップドロップ</string>
+    <string name="bottom_drop">ボトムドロップ</string>
+    <string name="start_drop">スタートドロップ</string>
+    <string name="end_drop">エンドドロップ</string>
+    <string name="downloading">ダウンロード中</string>
+    <string name="smooth_shapes">滑らかな形状</string>
+    <string name="smooth_shapes_sub">より滑らかで自然な形状を得るには、標準の角丸長方形の代わりに超楕円を使用します。</string>
+    <string name="shape_type">形状タイプ</string>
+    <string name="cut">カット</string>
+    <string name="rounded">丸い</string>
+    <string name="smooth">スムーズ</string>
+    <string name="cut_shapes_sub">丸みのないシャープなエッジ</string>
+    <string name="rounded_shapes_sub">クラシックな丸い角</string>
+    <string name="shapes_type">形状の種類</string>
+    <string name="corners_size">コーナーサイズ</string>
+    <string name="squircle">スクワクル</string>
+    <string name="squircle_shapes_sub">エレガントな丸みを帯びた UI 要素</string>
+    <string name="filename_format">ファイル名の形式</string>
+    <string name="prefix_pattern_description">ファイル名の先頭に配置されるカスタム テキスト。プロジェクト名、ブランド、個人タグに最適です。</string>
+    <string name="original_filename_pattern_description">拡張子なしの元のファイル名を使用するため、ソースの識別をそのまま維持できます。</string>
+    <string name="width_pattern_description">ピクセル単位の画像幅。解像度の変更の追跡や結果のスケーリングに役立ちます。</string>
+    <string name="height_pattern_description">画像の高さ (ピクセル単位)。アスペクト比やエクスポートを操作するときに役立ちます。</string>
+    <string name="random_numbers_pattern_description">ランダムな数字を生成して、一意のファイル名を保証します。重複に対する安全性を高めるために、さらに桁を追加します。</string>
+    <string name="sequence_number_pattern_description">バッチエクスポート用の自動インクリメントカウンター。1 つのセッションで複数の画像を保存する場合に最適です。</string>
+    <string name="preset_info_pattern_description">適用されたプリセット名をファイル名に挿入すると、画像がどのように処理されたかを簡単に思い出すことができます。</string>
+    <string name="scale_mode_pattern_description">処理中に使用される画像スケーリング モードを表示し、サイズ変更、トリミング、またはフィットした画像を区別するのに役立ちます。</string>
+    <string name="suffix_pattern_description">ファイル名の末尾に配置されるカスタム テキスト。_v2、_edited、_final などのバージョン管理に役立ちます。</string>
+    <string name="extension_pattern_description">ファイル拡張子 (png、jpg、webp など) は、実際に保存された形式に自動的に一致します。</string>
+    <string name="formatted_timestamp_pattern_description">カスタマイズ可能なタイムスタンプを使用すると、完璧な並べ替えのために Java 仕様に従って独自の形式を定義できます。</string>
 </resources>

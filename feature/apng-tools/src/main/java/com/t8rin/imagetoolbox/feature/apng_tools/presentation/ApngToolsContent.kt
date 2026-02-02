@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
@@ -60,7 +58,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -71,7 +68,6 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormatGroup
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Apng
-import com.t8rin.imagetoolbox.core.resources.icons.Jxl
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
@@ -79,7 +75,6 @@ import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isApng
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalComponentActivity
 import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
@@ -95,6 +90,8 @@ import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImagesPreviewWithSelection
 import com.t8rin.imagetoolbox.core.ui.widget.image.UrisPreview
+import com.t8rin.imagetoolbox.core.ui.widget.image.urisPreview
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.withModifier
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
@@ -108,8 +105,6 @@ import com.t8rin.imagetoolbox.feature.apng_tools.presentation.screenLogic.ApngTo
 fun ApngToolsContent(
     component: ApngToolsComponent
 ) {
-    val context = LocalComponentActivity.current
-
     val essentials = rememberLocalEssentials()
     val showConfetti: () -> Unit = essentials::showConfetti
 
@@ -118,11 +113,11 @@ fun ApngToolsContent(
     val pickSingleApngLauncher = rememberFilePicker(
         mimeType = MimeType.Png,
         onSuccess = { uri: Uri ->
-            if (uri.isApng(context)) {
+            if (uri.isApng()) {
                 component.setApngUri(uri)
             } else {
                 essentials.showToast(
-                    message = context.getString(R.string.select_apng_image_to_start),
+                    message = essentials.getString(R.string.select_apng_image_to_start),
                     icon = Icons.Rounded.Apng
                 )
             }
@@ -133,11 +128,11 @@ fun ApngToolsContent(
         mimeType = MimeType.Png,
         onSuccess = { list: List<Uri> ->
             list.filter {
-                it.isApng(context)
+                it.isApng()
             }.let { uris ->
                 if (uris.isEmpty()) {
                     essentials.showToast(
-                        message = context.getString(R.string.select_apng_image_to_start),
+                        message = essentials.getString(R.string.select_apng_image_to_start),
                         icon = Icons.Rounded.Apng
                     )
                 } else {
@@ -153,12 +148,12 @@ fun ApngToolsContent(
         mimeType = MimeType.Png,
         onSuccess = { list: List<Uri> ->
             list.filter {
-                it.isApng(context)
+                it.isApng()
             }.let { uris ->
                 if (uris.isEmpty()) {
                     essentials.showToast(
-                        message = context.getString(R.string.select_gif_image_to_start),
-                        icon = Icons.Filled.Jxl
+                        message = essentials.getString(R.string.select_gif_image_to_start),
+                        icon = Icons.Filled.Gif
                     )
                 } else {
                     component.setType(
@@ -232,7 +227,7 @@ fun ApngToolsContent(
                 modifier = Modifier
                     .padding(8.dp)
                     .container(
-                        shape = CircleShape,
+                        shape = ShapeDefaults.circle,
                         color = MaterialTheme.colorScheme.surfaceContainerHighest,
                         resultPadding = 0.dp
                     ),
@@ -312,24 +307,7 @@ fun ApngToolsContent(
 
                             is Screen.ApngTools.Type.ApngToJxl -> {
                                 UrisPreview(
-                                    modifier = Modifier
-                                        .then(
-                                            if (!isPortrait) {
-                                                Modifier
-                                                    .layout { measurable, constraints ->
-                                                        val placeable = measurable.measure(
-                                                            constraints = constraints.copy(
-                                                                maxHeight = constraints.maxHeight + 48.dp.roundToPx()
-                                                            )
-                                                        )
-                                                        layout(placeable.width, placeable.height) {
-                                                            placeable.place(0, 0)
-                                                        }
-                                                    }
-                                                    .verticalScroll(rememberScrollState())
-                                            } else Modifier
-                                        )
-                                        .padding(vertical = 24.dp),
+                                    modifier = Modifier.urisPreview(),
                                     uris = type.apngUris ?: emptyList(),
                                     isPortrait = true,
                                     onRemoveUri = {
@@ -356,6 +334,11 @@ fun ApngToolsContent(
                     Spacer(modifier = Modifier.height(16.dp))
                     ImageFormatSelector(
                         value = component.imageFormat,
+                        quality = if (component.type is Screen.ApngTools.Type.ApngToJxl) {
+                            component.jxlQuality
+                        } else {
+                            component.params.quality
+                        },
                         onValueChange = component::setImageFormat,
                         entries = ImageFormatGroup.alphaContainedEntries
                     )
@@ -403,7 +386,7 @@ fun ApngToolsContent(
             if (component.type == null) 12.dp
             else 20.dp
         ).value,
-        buttons = {
+        buttons = { actions ->
             val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
                 component.saveBitmaps(
                     oneTimeSaveLocationUri = it,
@@ -436,7 +419,7 @@ fun ApngToolsContent(
                     } else showFolderSelectionDialog = true
                 },
                 actions = {
-                    if (isPortrait) it()
+                    if (isPortrait) actions()
                 },
                 showNullDataButtonAsContainer = true,
                 onSecondaryButtonLongClick = if (component.type is Screen.ApngTools.Type.ImageToApng || component.type == null) {

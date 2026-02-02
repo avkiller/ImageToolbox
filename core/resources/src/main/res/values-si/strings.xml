@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">ගැටලුවක් පවතී: %1$s</string>
     <string name="size">ප්‍රමාණය %1$s</string>
     <string name="loading">මොහොතක් සිටින්න…</string>
@@ -2021,4 +2023,45 @@
     <string name="normal">සාමාන්යයි</string>
     <string name="slow">මන්දගාමී</string>
     <string name="very_slow">ඉතා මන්දගාමී</string>
+    <string name="compute_percents">ප්රතිශතය ගණනය කරන්න</string>
+    <string name="minimum_value_is">අවම අගය %1$s වේ</string>
+    <string name="warp_sub">ඇඟිලි වලින් ඇඳීමෙන් රූපය විකෘති කරන්න</string>
+    <string name="warp">Warp</string>
+    <string name="hardness">දැඩි බව</string>
+    <string name="warp_mode">Warp මාදිලිය</string>
+    <string name="warp_mode_move">චලනය කරන්න</string>
+    <string name="warp_mode_grow">වැඩෙන්න</string>
+    <string name="warp_mode_shrink">හැකිලෙන්න</string>
+    <string name="warp_mode_swirl_cw">Swirl CW</string>
+    <string name="warp_mode_swirl_ccw">Swirl CCW</string>
+    <string name="fade_strength">දුර්වල ශක්තිය</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">පහළ වැටීම</string>
+    <string name="start_drop">වැටීම ආරම්භ කරන්න</string>
+    <string name="end_drop">End Drop</string>
+    <string name="downloading">බාගත කිරීම</string>
+    <string name="smooth_shapes">සිනිඳු හැඩතල</string>
+    <string name="smooth_shapes_sub">සිනිඳු, වඩාත් ස්වාභාවික හැඩතල සඳහා සම්මත වටකුරු සෘජුකෝණාස්‍ර වෙනුවට සුපිරි ඉලිප්සාකාර භාවිතා කරන්න</string>
+    <string name="shape_type">හැඩ වර්ගය</string>
+    <string name="cut">කපනවා</string>
+    <string name="rounded">වටකුරු</string>
+    <string name="smooth">සිනිඳුයි</string>
+    <string name="cut_shapes_sub">වටකුරු තොරව තියුණු දාර</string>
+    <string name="rounded_shapes_sub">සම්භාව්ය වටකුරු කොන්</string>
+    <string name="shapes_type">හැඩතල වර්ගය</string>
+    <string name="corners_size">කෝනර් ප්රමාණය</string>
+    <string name="squircle">ලේනා</string>
+    <string name="squircle_shapes_sub">අලංකාර වටකුරු UI මූලද්‍රව්‍ය</string>
+    <string name="filename_format">ගොනු නාමය ආකෘතිය</string>
+    <string name="prefix_pattern_description">ව්‍යාපෘති නම්, වෙළඳ නාම, හෝ පුද්ගලික ටැග් සඳහා පරිපූර්ණ, ගොනු නාමයේ ආරම්භයේම තබා ඇති අභිරුචි පෙළ.</string>
+    <string name="original_filename_pattern_description">මුල් ගොනු නාමය දිගුවකින් තොරව භාවිත කරයි, මූලාශ්‍ර හඳුනාගැනීම නොවෙනස්ව තබා ගැනීමට ඔබට උදවු කරයි.</string>
+    <string name="width_pattern_description">පික්සලවල රූපයේ පළල, විභේදන වෙනස්කම් හඹා යාමට හෝ ප්‍රතිඵල පරිමාණය කිරීමට ප්‍රයෝජනවත් වේ.</string>
+    <string name="height_pattern_description">පික්සලවල රූපයේ උස, දර්ශන අනුපාත හෝ අපනයන සමඟ වැඩ කිරීමේදී උපකාරී වේ.</string>
+    <string name="random_numbers_pattern_description">අද්විතීය ගොනු නාම සහතික කිරීම සඳහා අහඹු ඉලක්කම් ජනනය කරයි; අනුපිටපත් වලට එරෙහිව අමතර ආරක්ෂාවක් සඳහා තවත් ඉලක්කම් එකතු කරන්න.</string>
+    <string name="sequence_number_pattern_description">කණ්ඩායම් නිර්යාත සඳහා ස්වයංක්‍රීය වර්ධක කවුන්ටරය, එක් සැසියක පින්තූර කිහිපයක් සුරැකීමේදී වඩාත් සුදුසුය.</string>
+    <string name="preset_info_pattern_description">රූපය සැකසූ ආකාරය ඔබට පහසුවෙන් මතක තබා ගත හැකි වන පරිදි ගොනු නාමයට යොදන ලද පෙරසැකසුම් නාමය ඇතුළත් කරයි.</string>
+    <string name="scale_mode_pattern_description">ප්‍රතිප්‍රමාණ කළ, කපන ලද, හෝ සවි කළ රූප වෙන්කර හඳුනා ගැනීමට උදවු කරමින්, සැකසීමේදී භාවිත කරන ලද රූප පරිමාණ ප්‍රකාරය සංදර්ශන කරයි.</string>
+    <string name="suffix_pattern_description">අභිරුචි පෙළ ගොනු නාමයේ අවසානයේ තබා ඇත, _v2, _edited, හෝ _final වැනි අනුවාද සඳහා ප්‍රයෝජනවත් වේ.</string>
+    <string name="extension_pattern_description">ගොනු දිගුව (png, jpg, webp, ආදිය), සත්‍ය සුරැකි ආකෘතියට ස්වයංක්‍රීයව ගැලපේ.</string>
+    <string name="formatted_timestamp_pattern_description">පරිපූර්ණ වර්ග කිරීම සඳහා java පිරිවිතර මගින් ඔබේම ආකෘතිය නිර්වචනය කිරීමට ඔබට ඉඩ සලසන අභිරුචිකරණය කළ හැකි වේලා මුද්දරයක්.</string>
 </resources>

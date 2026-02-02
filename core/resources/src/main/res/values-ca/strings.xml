@@ -14,7 +14,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Alguna cosa ha anat malament: %1$s</string>
     <string name="size">Mida %1$s</string>
     <string name="pick_image">Trieu la imatge per començar</string>
@@ -2020,4 +2022,45 @@
     <string name="normal">Normal</string>
     <string name="slow">Lenta</string>
     <string name="very_slow">Molt Lent</string>
+    <string name="compute_percents">Calcular percentatges</string>
+    <string name="minimum_value_is">El valor mínim és %1$s</string>
+    <string name="warp_sub">Distorsiona la imatge dibuixant amb els dits</string>
+    <string name="warp">Deformació</string>
+    <string name="hardness">Duresa</string>
+    <string name="warp_mode">Mode Warp</string>
+    <string name="warp_mode_move">Mou-te</string>
+    <string name="warp_mode_grow">Créixer</string>
+    <string name="warp_mode_shrink">Encongir-se</string>
+    <string name="warp_mode_swirl_cw">Remolí CW</string>
+    <string name="warp_mode_swirl_ccw">Remolí cap a la dreta</string>
+    <string name="fade_strength">Força d\'esvaïment</string>
+    <string name="top_drop">Top Drop</string>
+    <string name="bottom_drop">Gota inferior</string>
+    <string name="start_drop">Inicia Drop</string>
+    <string name="end_drop">Finalitza la caiguda</string>
+    <string name="downloading">Descàrrega</string>
+    <string name="smooth_shapes">Formes llises</string>
+    <string name="smooth_shapes_sub">Utilitzeu superel·lipses en lloc de rectangles arrodonits estàndard per obtenir formes més suaus i naturals</string>
+    <string name="shape_type">Tipus de forma</string>
+    <string name="cut">Tallar</string>
+    <string name="rounded">Arrodonit</string>
+    <string name="smooth">suau</string>
+    <string name="cut_shapes_sub">Vores afilades sense arrodoniments</string>
+    <string name="rounded_shapes_sub">Clàssiques cantonades arrodonides</string>
+    <string name="shapes_type">Tipus de formes</string>
+    <string name="corners_size">Mida de les cantonades</string>
+    <string name="squircle">Esquirol</string>
+    <string name="squircle_shapes_sub">Elements d\'IU arrodonits elegants</string>
+    <string name="filename_format">Format de nom de fitxer</string>
+    <string name="prefix_pattern_description">Text personalitzat situat al principi del nom del fitxer, perfecte per a noms de projectes, marques o etiquetes personals.</string>
+    <string name="original_filename_pattern_description">Utilitza el nom del fitxer original sense extensió, ajudant-vos a mantenir intacta la identificació de la font.</string>
+    <string name="width_pattern_description">L\'amplada de la imatge en píxels, útil per fer un seguiment dels canvis de resolució o per escalar els resultats.</string>
+    <string name="height_pattern_description">L\'alçada de la imatge en píxels, útil quan es treballa amb relacions d\'aspecte o exportacions.</string>
+    <string name="random_numbers_pattern_description">Genera dígits aleatoris per garantir noms de fitxer únics; afegir més dígits per a més seguretat contra duplicats.</string>
+    <string name="sequence_number_pattern_description">Comptador d\'increment automàtic per a exportacions per lots, ideal per desar diverses imatges en una sessió.</string>
+    <string name="preset_info_pattern_description">Insereix el nom predefinit aplicat al nom del fitxer perquè pugueu recordar fàcilment com es va processar la imatge.</string>
+    <string name="scale_mode_pattern_description">Mostra el mode d\'escala de la imatge utilitzat durant el processament, ajudant a distingir les imatges redimensionades, retallades o ajustades.</string>
+    <string name="suffix_pattern_description">Text personalitzat situat al final del nom del fitxer, útil per a versions com _v2, _edited o _final.</string>
+    <string name="extension_pattern_description">L\'extensió del fitxer (png, jpg, webp, etc.), que coincideix automàticament amb el format desat real.</string>
+    <string name="formatted_timestamp_pattern_description">Una marca de temps personalitzable que us permet definir el vostre propi format mitjançant l\'especificació de Java per a una ordenació perfecta.</string>
 </resources>
