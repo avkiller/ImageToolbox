@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,14 +54,13 @@ import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBottomSheetDefault
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageHeaderState
 import com.t8rin.imagetoolbox.core.ui.widget.image.imageStickyHeader
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.drawHorizontalStroke
 import com.t8rin.imagetoolbox.core.ui.widget.saver.PtSaver
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
 import com.t8rin.imagetoolbox.core.ui.widget.utils.rememberAvailableHeight
-import com.t8rin.imagetoolbox.feature.draw.presentation.components.model.UiDrawPathMode
-import com.t8rin.imagetoolbox.feature.draw.presentation.components.model.toDomain
 import com.t8rin.imagetoolbox.feature.filters.presentation.components.UiFilterMask
 
 @Composable
@@ -95,14 +93,6 @@ fun AddEditMaskSheet(
     var strokeWidth by rememberSaveable(stateSaver = PtSaver) { mutableStateOf(settingsState.defaultDrawLineWidth.pt) }
     var brushSoftness by rememberSaveable(stateSaver = PtSaver) { mutableStateOf(20.pt) }
     var panEnabled by rememberSaveable { mutableStateOf(false) }
-    var drawPathMode by rememberSaveable {
-        mutableStateOf<UiDrawPathMode>(UiDrawPathMode.Free)
-    }
-    val domainDrawPathMode by remember(drawPathMode) {
-        derivedStateOf {
-            drawPathMode.toDomain()
-        }
-    }
 
     val canSave = component.paths.isNotEmpty() && component.filterList.isNotEmpty()
     EnhancedModalBottomSheet(
@@ -175,8 +165,7 @@ fun AddEditMaskSheet(
                 strokeWidth = strokeWidth,
                 brushSoftness = brushSoftness,
                 isEraserOn = isEraserOn,
-                panEnabled = panEnabled,
-                domainDrawPathMode = domainDrawPathMode
+                panEnabled = panEnabled
             )
         }
         Row {
@@ -189,7 +178,8 @@ fun AddEditMaskSheet(
             val internalHeight = rememberAvailableHeight(imageState = imageState)
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                flingBehavior = enhancedFlingBehavior()
             ) {
                 imageStickyHeader(
                     visible = isPortrait,
@@ -207,8 +197,6 @@ fun AddEditMaskSheet(
                     AddEditMaskSheetControls(
                         component = component,
                         imageState = imageState,
-                        domainDrawPathMode = domainDrawPathMode,
-                        onDrawPathModeChange = { drawPathMode = it },
                         strokeWidth = strokeWidth,
                         onStrokeWidthChange = { strokeWidth = it },
                         brushSoftness = brushSoftness,

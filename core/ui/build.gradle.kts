@@ -94,7 +94,7 @@ dependencies {
 
     "marketImplementation"(libs.quickie.bundled)
     "fossImplementation"(libs.quickie.foss)
-    implementation(libs.zxing.android.embedded)
+    implementation(libs.zxing.core)
 
     implementation(libs.toolbox.qrose)
 
@@ -105,4 +105,6 @@ dependencies {
     api(libs.squircle.shape)
 
     api(libs.evaluator)
+
+    api(libs.flinger)
 }

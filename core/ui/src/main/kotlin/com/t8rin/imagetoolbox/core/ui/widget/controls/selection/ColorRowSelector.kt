@@ -24,12 +24,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RichTooltip
@@ -39,7 +43,12 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,13 +56,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorSelectionRow
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorSelectionRowDefaults
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsCombinedClickable
 import com.t8rin.imagetoolbox.core.ui.widget.icon_shape.IconShapeContainer
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -64,7 +76,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ColorRowSelector(
-    value: Color,
+    value: Color?,
     onValueChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
     title: String = stringResource(R.string.background_color),
@@ -72,7 +84,9 @@ fun ColorRowSelector(
     allowAlpha: Boolean = true,
     allowScroll: Boolean = true,
     defaultColors: List<Color> = ColorSelectionRowDefaults.colorListVariant,
-    contentHorizontalPadding: Dp = 12.dp
+    topEndIcon: (@Composable () -> Unit)? = null,
+    contentHorizontalPadding: Dp = 12.dp,
+    onNullClick: (() -> Unit)? = null
 ) {
     val isCompactLayout = LocalSettingsState.current.isCompactSelectorsLayout
     val tooltipState = rememberTooltipState()
@@ -99,10 +113,21 @@ fun ColorRowSelector(
                 text = title,
                 iconEndPadding = 14.dp,
                 modifier = Modifier.padding(
-                    top = 12.dp,
+                    top = if (topEndIcon == null) {
+                        12.dp
+                    } else {
+                        6.dp
+                    },
                     start = contentHorizontalPadding,
-                    end = contentHorizontalPadding
-                )
+                    end = if (topEndIcon == null) {
+                        contentHorizontalPadding
+                    } else {
+                        (contentHorizontalPadding - 8.dp).coerceAtLeast(0.dp)
+                    }
+                ),
+                endContent = topEndIcon?.let {
+                    { it() }
+                }
             )
         }
         Row(
@@ -127,15 +152,30 @@ fun ColorRowSelector(
                                         ),
                                         title = { Text(title) },
                                         text = {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(24.dp)
-                                                    .container(
-                                                        shape = ShapeDefaults.circle,
-                                                        color = value,
-                                                        resultPadding = 0.dp
-                                                    )
-                                            )
+                                            if (value != null) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .container(
+                                                            shape = ShapeDefaults.circle,
+                                                            color = value,
+                                                            resultPadding = 0.dp
+                                                        )
+                                                )
+                                            } else {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Block,
+                                                    contentDescription = null,
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .container(
+                                                            shape = ShapeDefaults.circle,
+                                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                                            resultPadding = 0.dp
+                                                        ),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
                                         }
                                     )
                                 },
@@ -195,8 +235,51 @@ fun ColorRowSelector(
                 allowScroll = allowScroll,
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onNullClick = onNullClick
             )
+            if (isCompactLayout && topEndIcon != null) {
+                topEndIcon()
+            }
         }
+    }
+}
+
+@Composable
+@Preview
+private fun Preview() = ImageToolboxThemeForPreview(false) {
+    var color by remember {
+        mutableStateOf<Color?>(null)
+    }
+
+    CompositionLocalProvider(
+        LocalSettingsState provides LocalSettingsState.current.copy(isCompactSelectorsLayout = true)
+    ) {
+        ColorRowSelector(
+            value = color,
+            onNullClick = {
+                color = null
+            },
+            onValueChange = { color = it },
+            modifier = Modifier
+                .padding(20.dp)
+                .padding(vertical = 100.dp)
+                .fillMaxWidth()
+                .container(
+                    shape = ShapeDefaults.large
+                ),
+            icon = Icons.Rounded.Palette,
+            title = stringResource(R.string.selected_color),
+            topEndIcon = {
+                EnhancedIconButton(
+                    onClick = {}
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.PushPin,
+                        contentDescription = null
+                    )
+                }
+            }
+        )
     }
 }

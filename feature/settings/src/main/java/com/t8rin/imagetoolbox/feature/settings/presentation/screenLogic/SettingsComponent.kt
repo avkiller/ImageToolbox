@@ -43,12 +43,14 @@ import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.FilenameCreator
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.toggle
+import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.settings.domain.model.ColorHarmonizer
 import com.t8rin.imagetoolbox.core.settings.domain.model.CopyToClipboardMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.DomainFontFamily
 import com.t8rin.imagetoolbox.core.settings.domain.model.FastSettingsSide
+import com.t8rin.imagetoolbox.core.settings.domain.model.FlingType
 import com.t8rin.imagetoolbox.core.settings.domain.model.NightMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
@@ -165,9 +167,6 @@ class SettingsComponent @AssistedInject internal constructor(
 
     init {
         settingsScope {
-            _settingsState.value = getSettingsState().also {
-                if (it.clearCacheOnLaunch) clearCache()
-            }
             settingsState.onEach {
                 _settingsState.value = it
             }.collect()
@@ -178,9 +177,11 @@ class SettingsComponent @AssistedInject internal constructor(
         }
     }
 
-    fun getReadableCacheSize(): String = fileController.getReadableCacheSize()
+    fun getReadableCacheSize(): String = humanFileSize(fileController.getCacheSize(), 2)
 
-    fun clearCache(onComplete: (String) -> Unit = {}) = fileController.clearCache(onComplete)
+    fun clearCache(onComplete: (String) -> Unit = {}) = fileController.clearCache {
+        onComplete(getReadableCacheSize())
+    }
 
     fun toggleAddSequenceNumber() = settingsScope { toggleAddSequenceNumber() }
 
@@ -377,9 +378,7 @@ class SettingsComponent @AssistedInject internal constructor(
             this@SettingsComponent.settingsState.screenListWithMaxBrightnessEnforcement
                 .toggle(screen.id)
 
-        setScreensWithBrightnessEnforcement(
-            screens.joinToString("/") { it.toString() }
-        )
+        setScreensWithBrightnessEnforcement(screens)
     }
 
     fun toggleConfettiEnabled() = settingsScope { toggleConfettiEnabled() }
@@ -502,6 +501,17 @@ class SettingsComponent @AssistedInject internal constructor(
     fun setShapesType(shapeType: ShapeType) = settingsScope { setShapesType(shapeType) }
 
     fun setFilenamePattern(value: String) = settingsScope { setFilenamePattern(value) }
+
+    fun setFlingType(type: FlingType) = settingsScope { setFlingType(type) }
+
+    fun setHiddenForShareScreens(screen: Screen) = settingsScope {
+        val screens =
+            this@SettingsComponent.settingsState.hiddenForShareScreens
+                .toggle(screen.id)
+
+        setHiddenForShareScreens(screens)
+    }
+
 
     private inline fun settingsScope(
         crossinline action: suspend SettingsManager.() -> Unit

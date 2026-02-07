@@ -29,6 +29,7 @@ import com.t8rin.imagetoolbox.core.settings.domain.model.ColorHarmonizer
 import com.t8rin.imagetoolbox.core.settings.domain.model.CopyToClipboardMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.DomainFontFamily
 import com.t8rin.imagetoolbox.core.settings.domain.model.FastSettingsSide
+import com.t8rin.imagetoolbox.core.settings.domain.model.FlingType
 import com.t8rin.imagetoolbox.core.settings.domain.model.NightMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.domain.model.SliderType
@@ -137,7 +138,7 @@ interface SettingsInteractor : SimpleSettingsInteractor {
 
     suspend fun setInitialOCRLanguageCodes(list: List<String>)
 
-    suspend fun setScreensWithBrightnessEnforcement(data: String)
+    suspend fun setScreensWithBrightnessEnforcement(data: List<Int>)
 
     suspend fun toggleConfettiEnabled()
 
@@ -246,6 +247,11 @@ interface SettingsInteractor : SimpleSettingsInteractor {
     suspend fun setShapesType(shapeType: ShapeType)
 
     suspend fun setFilenamePattern(pattern: String?)
+
+    suspend fun setFlingType(type: FlingType)
+
+    suspend fun setHiddenForShareScreens(data: List<Int>)
+
 }
 
 fun SettingsInteractor.toSimpleSettingsInteractor(): SimpleSettingsInteractor =

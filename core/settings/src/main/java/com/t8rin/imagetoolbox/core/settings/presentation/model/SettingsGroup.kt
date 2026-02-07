@@ -103,6 +103,7 @@ sealed class SettingsGroup(
             Setting.SliderType,
             Setting.ShapeType,
             Setting.CornersSize,
+            Setting.FlingType,
             Setting.UseCompactSelectors,
             Setting.DragHandleWidth,
             Setting.CenterAlignDialogButtons,
@@ -383,6 +384,7 @@ sealed class SettingsGroup(
         settingsList = listOf(
             Setting.SkipFilePicking,
             Setting.AllowSkipIfLarger,
+            Setting.ToolsHiddenForShare,
             Setting.EnableToolExitConfirmation,
             Setting.ShowSettingsInLandscape,
             Setting.UseFullscreenSettings,

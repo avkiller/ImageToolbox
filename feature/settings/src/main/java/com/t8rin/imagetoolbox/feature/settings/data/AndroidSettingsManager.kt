@@ -50,6 +50,7 @@ import com.t8rin.imagetoolbox.core.settings.domain.model.CopyToClipboardMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.DomainFontFamily
 import com.t8rin.imagetoolbox.core.settings.domain.model.FastSettingsSide
 import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
+import com.t8rin.imagetoolbox.core.settings.domain.model.FlingType
 import com.t8rin.imagetoolbox.core.settings.domain.model.NightMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.OneTimeSaveLocation
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
@@ -112,9 +113,11 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.FILENAME_BEHAVIOR
 import com.t8rin.imagetoolbox.feature.settings.data.keys.FILENAME_PATTERN
 import com.t8rin.imagetoolbox.feature.settings.data.keys.FILENAME_PREFIX
 import com.t8rin.imagetoolbox.feature.settings.data.keys.FILENAME_SUFFIX
+import com.t8rin.imagetoolbox.feature.settings.data.keys.FLING_TYPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.FONT_SCALE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.GENERATE_PREVIEWS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.GROUP_OPTIONS_BY_TYPE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.HIDDEN_FOR_SHARE_SCREENS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ICON_SHAPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IMAGE_PICKER_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IMAGE_SCALE_COLOR_SPACE
@@ -520,9 +523,11 @@ internal class AndroidSettingsManager @Inject constructor(
         defaultValue = default.isScreenSelectionLauncherMode
     )
 
-    override suspend fun setScreensWithBrightnessEnforcement(data: String) = edit {
-        it[SCREENS_WITH_BRIGHTNESS_ENFORCEMENT] = data
-    }
+    override suspend fun setScreensWithBrightnessEnforcement(data: List<Int>) =
+        edit { preferences ->
+            preferences[SCREENS_WITH_BRIGHTNESS_ENFORCEMENT] =
+                data.joinToString("/") { it.toString() }
+        }
 
     override suspend fun toggleConfettiEnabled() = toggle(
         key = CONFETTI_ENABLED,
@@ -926,6 +931,14 @@ internal class AndroidSettingsManager @Inject constructor(
 
     override suspend fun setFilenamePattern(pattern: String?) = edit {
         it[FILENAME_PATTERN] = pattern.orEmpty()
+    }
+
+    override suspend fun setFlingType(type: FlingType) = edit {
+        it[FLING_TYPE] = type.ordinal
+    }
+
+    override suspend fun setHiddenForShareScreens(data: List<Int>) = edit { preferences ->
+        preferences[HIDDEN_FOR_SHARE_SCREENS] = data.joinToString("/") { it.toString() }
     }
 
     private suspend fun toggleFilenameBehavior(

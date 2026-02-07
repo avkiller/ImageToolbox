@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitBackHandler
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBar
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBarType
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.image.imageStickyHeader
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.clearFocusOnTap
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
@@ -101,6 +102,7 @@ fun AdaptiveLayoutScreen(
     showImagePreviewAsStickyHeader: Boolean = true,
     autoClearFocus: Boolean = true,
     placeImagePreview: Boolean = true,
+    useRegularStickyHeader: Boolean = false,
     addHorizontalCutoutPaddingIfNoPreview: Boolean = true,
     showActionsInTopAppBar: Boolean = true,
     underTopAppBarContent: (@Composable ColumnScope.() -> Unit)? = null,
@@ -239,24 +241,31 @@ fun AdaptiveLayoutScreen(
                                     else 1f
                                 )
                                 .fillMaxHeight()
-                                .clipToBounds()
+                                .clipToBounds(),
+                            flingBehavior = enhancedFlingBehavior()
                         ) {
-                            imageStickyHeader(
-                                visible = isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview,
-                                internalHeight = internalHeight,
-                                imageState = imageState,
-                                onStateChange = { imageState = it },
-                                imageBlock = imagePreview,
-                                onGloballyPositioned = {
-                                    if (!isScrolled) {
-                                        scope.launch {
-                                            delay(200)
-                                            listState.animateScrollToItem(0)
-                                            isScrolled = true
+                            if (useRegularStickyHeader && isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview) {
+                                stickyHeader {
+                                    imagePreview()
+                                }
+                            } else {
+                                imageStickyHeader(
+                                    visible = isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview,
+                                    internalHeight = internalHeight,
+                                    imageState = imageState,
+                                    onStateChange = { imageState = it },
+                                    imageBlock = imagePreview,
+                                    onGloballyPositioned = {
+                                        if (!isScrolled) {
+                                            scope.launch {
+                                                delay(200)
+                                                listState.animateScrollToItem(0)
+                                                isScrolled = true
+                                            }
                                         }
                                     }
-                                }
-                            )
+                                )
+                            }
                             item {
                                 Column(
                                     modifier = Modifier.fillMaxSize(),

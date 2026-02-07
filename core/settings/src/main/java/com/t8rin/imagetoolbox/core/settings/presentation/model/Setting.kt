@@ -548,4 +548,14 @@ sealed class Setting(
         subtitle = null
     )
 
+    data object FlingType : Setting(
+        title = R.string.fling_type,
+        subtitle = null
+    )
+
+    data object ToolsHiddenForShare : Setting(
+        title = R.string.hidden_for_share,
+        subtitle = null
+    )
+
 }

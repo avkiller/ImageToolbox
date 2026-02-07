@@ -37,6 +37,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material3.Icon
@@ -59,6 +60,7 @@ import com.t8rin.imagetoolbox.core.ui.theme.inverse
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.pasteColorFromClipboard
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalContainerColor
 import com.t8rin.imagetoolbox.core.ui.utils.provider.ProvideContainerDefaults
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsCombinedClickable
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
@@ -77,9 +79,10 @@ fun ColorSelectionRow(
     defaultColors: List<Color> = ColorSelectionRowDefaults.colorList,
     allowAlpha: Boolean = false,
     allowScroll: Boolean = true,
-    value: Color,
+    value: Color?,
     onValueChange: (Color) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
+    onNullClick: (() -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
     val toastHostState = LocalToastHostState.current
@@ -97,9 +100,9 @@ fun ColorSelectionRow(
     LaunchedEffect(Unit) {
         delay(250)
         if (value == customColor) {
-            listState.scrollToItem(0)
+            listState.animateScrollToItem(0)
         } else if (value in defaultColors) {
-            listState.scrollToItem(defaultColors.indexOf(value))
+            listState.animateScrollToItem(defaultColors.indexOf(value))
         }
     }
 
@@ -117,8 +120,53 @@ fun ColorSelectionRow(
             userScrollEnabled = allowScroll,
             contentPadding = contentPadding,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            flingBehavior = enhancedFlingBehavior()
         ) {
+            if (onNullClick != null) {
+                item {
+                    val background = MaterialTheme.colorScheme.surfaceVariant
+                    val isSelected = value == null
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val shape = shapeByInteraction(
+                        shape = if (isSelected) ShapeDefaults.small else AutoCornersShape(itemSize / 2),
+                        pressedShape = ShapeDefaults.pressed,
+                        interactionSource = interactionSource
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .height(itemSize)
+                            .aspectRatio(
+                                ratio = animateFloatAsState(
+                                    targetValue = if (isSelected) 1.5f else 1f,
+                                    animationSpec = tween(400)
+                                ).value,
+                                matchHeightConstraintsFirst = true
+                            )
+                            .container(
+                                shape = shape,
+                                color = background,
+                                resultPadding = 0.dp
+                            )
+                            .transparencyChecker()
+                            .background(background, shape)
+                            .hapticsCombinedClickable(
+                                indication = LocalIndication.current,
+                                interactionSource = interactionSource,
+                                onClick = onNullClick
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Block,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
             item {
                 val background = customColor ?: MaterialTheme.colorScheme.primary
                 val isSelected = customColor != null
