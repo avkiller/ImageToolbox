@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,13 @@ import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
@@ -46,6 +48,7 @@ import com.smarttoolfactory.colorpicker.util.hexRegexSingleChar
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
+import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import android.graphics.Color as AndroidColor
 
@@ -154,30 +157,32 @@ fun ColorInfoDisplay(
         var name by remember {
             mutableStateOf(ColorNameParser.parseColorName(color = value))
         }
+
+        var isFocused by remember { mutableStateOf(false) }
+
+        LaunchedEffect(value, isFocused) {
+            if (!isFocused) {
+                delay(200)
+                name = ColorNameParser.parseColorName(value)
+            }
+        }
+
         ColorEditableField(
             label = stringResource(R.string.name),
             value = name,
             onValueChange = { newName ->
                 name = newName
                 onValueChange(
-                    ColorNameParser.parseColorFromName(newName)
-                        .sortedBy { it.name.length }
-                        .run {
-                            find {
-                                it.name.equals(
-                                    other = newName,
-                                    ignoreCase = true
-                                )
-                            }?.color ?: firstOrNull()?.color ?: Color.Black
-                        }
+                    ColorNameParser.parseColorFromNameSingle(newName)
                 )
             },
             onCopy = onCopy,
-            modifier = Modifier.fillMaxWidth(),
-            onLoseFocus = {
-                name = ColorNameParser.parseColorName(value)
-                onLoseFocus()
-            }
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { focusState ->
+                    isFocused = focusState.isFocused
+                },
+            onLoseFocus = onLoseFocus
         )
     }
 }
