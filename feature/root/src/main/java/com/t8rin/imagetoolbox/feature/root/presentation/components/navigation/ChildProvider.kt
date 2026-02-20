@@ -52,7 +52,24 @@ import com.t8rin.imagetoolbox.feature.main.presentation.screenLogic.MainComponen
 import com.t8rin.imagetoolbox.feature.markup_layers.presentation.screenLogic.MarkupLayersComponent
 import com.t8rin.imagetoolbox.feature.mesh_gradients.presentation.screenLogic.MeshGradientsComponent
 import com.t8rin.imagetoolbox.feature.palette_tools.presentation.screenLogic.PaletteToolsComponent
-import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.screenLogic.PdfToolsComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.compress.screenLogic.CompressPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.crop.screenLogic.CropPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.flatten.screenLogic.FlattenPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.grayscale.screenLogic.GrayscalePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.merge.screenLogic.MergePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.metadata.screenLogic.MetadataPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr.screenLogic.OCRPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.screenLogic.PageNumbersPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.protect.screenLogic.ProtectPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rearrange.screenLogic.RearrangePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.remove_pages.screenLogic.RemovePagesPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.repair.screenLogic.RepairPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.root.screenLogic.PdfToolsComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rotate.screenLogic.RotatePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.signature.screenLogic.SignaturePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.split.screenLogic.SplitPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.unlock.screenLogic.UnlockPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.screenLogic.WatermarkPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.screenLogic.PickColorFromImageComponent
 import com.t8rin.imagetoolbox.feature.recognize.text.presentation.screenLogic.RecognizeTextComponent
 import com.t8rin.imagetoolbox.feature.resize_convert.presentation.screenLogic.ResizeAndConvertComponent
@@ -67,7 +84,9 @@ import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.Na
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ColorLibrary
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ColorTools
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Compare
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.CompressPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Crop
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.CropPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.DeleteExif
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.DocumentScanner
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Draw
@@ -75,9 +94,11 @@ import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.Na
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.EditExif
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.EraseBackground
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Filter
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.FlattenPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.FormatConversion
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.GifTools
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.GradientMaker
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.GrayscalePdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ImageCutter
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ImagePreview
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ImageSplitting
@@ -90,18 +111,31 @@ import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.Na
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.LoadNetImage
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Main
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.MarkupLayers
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.MergePdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.MeshGradients
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.MetadataPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.NoiseGeneration
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.OCRPdfTool
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.PageNumbersPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.PaletteTools
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.PdfTools
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.PickColorFromImage
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ProtectPdfTool
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.RearrangePdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.RecognizeText
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.RemovePagesPdfTool
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.RepairPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ResizeAndConvert
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.RotatePdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.ScanQrCode
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Settings
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.SignaturePdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.SingleEdit
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.SplitPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.SvgMaker
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.UnlockPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WallpapersExport
+import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WatermarkPdfTool
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.Watermarking
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WebpTools
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild.WeightResize
@@ -172,7 +206,24 @@ internal class ChildProvider @Inject constructor(
     private val wallpapersExportComponentFactory: WallpapersExportComponent.Factory,
     private val asciiArtComponentFactory: AsciiArtComponent.Factory,
     private val aiToolsComponentFactory: AiToolsComponent.Factory,
-    private val colorLibraryComponentFactory: ColorLibraryComponent.Factory
+    private val colorLibraryComponentFactory: ColorLibraryComponent.Factory,
+    private val mergePdfToolComponentFactory: MergePdfToolComponent.Factory,
+    private val splitPdfToolComponentFactory: SplitPdfToolComponent.Factory,
+    private val rotatePdfToolComponentFactory: RotatePdfToolComponent.Factory,
+    private val rearrangePdfToolComponentFactory: RearrangePdfToolComponent.Factory,
+    private val pageNumbersPdfToolComponentFactory: PageNumbersPdfToolComponent.Factory,
+    private val ocrPdfToolComponentFactory: OCRPdfToolComponent.Factory,
+    private val watermarkPdfToolComponentFactory: WatermarkPdfToolComponent.Factory,
+    private val signaturePdfToolComponentFactory: SignaturePdfToolComponent.Factory,
+    private val protectPdfToolComponentFactory: ProtectPdfToolComponent.Factory,
+    private val unlockPdfToolComponentFactory: UnlockPdfToolComponent.Factory,
+    private val compressPdfToolComponentFactory: CompressPdfToolComponent.Factory,
+    private val grayscalePdfToolComponentFactory: GrayscalePdfToolComponent.Factory,
+    private val repairPdfToolComponentFactory: RepairPdfToolComponent.Factory,
+    private val metadataPdfToolComponentFactory: MetadataPdfToolComponent.Factory,
+    private val removePagesPdfToolComponentFactory: RemovePagesPdfToolComponent.Factory,
+    private val cropPdfToolComponentFactory: CropPdfToolComponent.Factory,
+    private val flattenPdfToolComponentFactory: FlattenPdfToolComponent.Factory,
 ) {
     fun RootComponent.createChild(
         config: Screen,
@@ -612,6 +663,159 @@ internal class ChildProvider @Inject constructor(
             colorLibraryComponentFactory(
                 componentContext = componentContext,
                 onGoBack = ::navigateBack
+            )
+        )
+
+        is Screen.PdfTools.Merge -> MergePdfTool(
+            mergePdfToolComponentFactory(
+                initialUris = config.uris,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Split -> SplitPdfTool(
+            splitPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Rotate -> RotatePdfTool(
+            rotatePdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Rearrange -> RearrangePdfTool(
+            rearrangePdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.PageNumbers -> PageNumbersPdfTool(
+            pageNumbersPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.OCR -> OCRPdfTool(
+            ocrPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Watermark -> WatermarkPdfTool(
+            watermarkPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Signature -> SignaturePdfTool(
+            signaturePdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Protect -> ProtectPdfTool(
+            protectPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Unlock -> UnlockPdfTool(
+            unlockPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Compress -> CompressPdfTool(
+            compressPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Grayscale -> GrayscalePdfTool(
+            grayscalePdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Repair -> RepairPdfTool(
+            repairPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Metadata -> MetadataPdfTool(
+            metadataPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.RemovePages -> RemovePagesPdfTool(
+            removePagesPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Crop -> CropPdfTool(
+            cropPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
+            )
+        )
+
+        is Screen.PdfTools.Flatten -> FlattenPdfTool(
+            flattenPdfToolComponentFactory(
+                initialUri = config.uri,
+                componentContext = componentContext,
+                onGoBack = ::navigateBack,
+                onNavigate = ::replaceTo
             )
         )
     }

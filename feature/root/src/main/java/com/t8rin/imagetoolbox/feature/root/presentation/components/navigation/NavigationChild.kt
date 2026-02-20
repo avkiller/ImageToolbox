@@ -84,8 +84,42 @@ import com.t8rin.imagetoolbox.feature.mesh_gradients.presentation.MeshGradientsC
 import com.t8rin.imagetoolbox.feature.mesh_gradients.presentation.screenLogic.MeshGradientsComponent
 import com.t8rin.imagetoolbox.feature.palette_tools.presentation.PaletteToolsContent
 import com.t8rin.imagetoolbox.feature.palette_tools.presentation.screenLogic.PaletteToolsComponent
-import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.PdfToolsContent
-import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.screenLogic.PdfToolsComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.compress.CompressPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.compress.screenLogic.CompressPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.crop.CropPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.crop.screenLogic.CropPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.flatten.FlattenPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.flatten.screenLogic.FlattenPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.grayscale.GrayscalePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.grayscale.screenLogic.GrayscalePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.merge.MergePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.merge.screenLogic.MergePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.metadata.MetadataPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.metadata.screenLogic.MetadataPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr.OCRPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr.screenLogic.OCRPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.PageNumbersPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.screenLogic.PageNumbersPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.protect.ProtectPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.protect.screenLogic.ProtectPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rearrange.RearrangePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rearrange.screenLogic.RearrangePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.remove_pages.RemovePagesPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.remove_pages.screenLogic.RemovePagesPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.repair.RepairPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.repair.screenLogic.RepairPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.root.PdfToolsContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.root.screenLogic.PdfToolsComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rotate.RotatePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rotate.screenLogic.RotatePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.signature.SignaturePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.signature.screenLogic.SignaturePdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.split.SplitPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.split.screenLogic.SplitPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.unlock.UnlockPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.unlock.screenLogic.UnlockPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.WatermarkPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.screenLogic.WatermarkPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.PickColorFromImageContent
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.screenLogic.PickColorFromImageComponent
 import com.t8rin.imagetoolbox.feature.recognize.text.presentation.RecognizeTextContent
@@ -376,5 +410,90 @@ internal sealed interface NavigationChild {
     class ColorLibrary(private val component: ColorLibraryComponent) : NavigationChild {
         @Composable
         override fun Content() = ColorLibraryContent(component)
+    }
+
+    class MergePdfTool(private val component: MergePdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = MergePdfToolContent(component)
+    }
+
+    class SplitPdfTool(private val component: SplitPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = SplitPdfToolContent(component)
+    }
+
+    class RotatePdfTool(private val component: RotatePdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = RotatePdfToolContent(component)
+    }
+
+    class RearrangePdfTool(private val component: RearrangePdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = RearrangePdfToolContent(component)
+    }
+
+    class PageNumbersPdfTool(private val component: PageNumbersPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = PageNumbersPdfToolContent(component)
+    }
+
+    class OCRPdfTool(private val component: OCRPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = OCRPdfToolContent(component)
+    }
+
+    class WatermarkPdfTool(private val component: WatermarkPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = WatermarkPdfToolContent(component)
+    }
+
+    class SignaturePdfTool(private val component: SignaturePdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = SignaturePdfToolContent(component)
+    }
+
+    class ProtectPdfTool(private val component: ProtectPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = ProtectPdfToolContent(component)
+    }
+
+    class UnlockPdfTool(private val component: UnlockPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = UnlockPdfToolContent(component)
+    }
+
+    class CompressPdfTool(private val component: CompressPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = CompressPdfToolContent(component)
+    }
+
+    class GrayscalePdfTool(private val component: GrayscalePdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = GrayscalePdfToolContent(component)
+    }
+
+    class RepairPdfTool(private val component: RepairPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = RepairPdfToolContent(component)
+    }
+
+    class MetadataPdfTool(private val component: MetadataPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = MetadataPdfToolContent(component)
+    }
+
+    class RemovePagesPdfTool(private val component: RemovePagesPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = RemovePagesPdfToolContent(component)
+    }
+
+    class CropPdfTool(private val component: CropPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = CropPdfToolContent(component)
+    }
+
+    class FlattenPdfTool(private val component: FlattenPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = FlattenPdfToolContent(component)
     }
 }

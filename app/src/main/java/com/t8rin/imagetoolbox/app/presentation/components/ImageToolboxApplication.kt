@@ -21,10 +21,12 @@ import com.t8rin.imagetoolbox.app.presentation.components.functions.attachLogWri
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initAI
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initColorNames
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initOpenCV
+import com.t8rin.imagetoolbox.app.presentation.components.functions.initPdfBox
 import com.t8rin.imagetoolbox.app.presentation.components.functions.initQrScanner
 import com.t8rin.imagetoolbox.app.presentation.components.functions.injectBaseComponent
 import com.t8rin.imagetoolbox.app.presentation.components.functions.registerSecurityProviders
 import com.t8rin.imagetoolbox.app.presentation.components.functions.setupFlags
+import com.t8rin.imagetoolbox.app.presentation.components.utils.isMain
 import com.t8rin.imagetoolbox.core.crash.presentation.components.applyGlobalExceptionHandler
 import com.t8rin.imagetoolbox.core.domain.saving.KeepAliveService
 import com.t8rin.imagetoolbox.core.ui.utils.ComposeApplication
@@ -53,18 +55,21 @@ class ImageToolboxApplication : ComposeApplication() {
     override fun runSetup() {
         if (isSetupCompleted) return
 
-        setupFlags()
-        initAppContext()
-        initOpenCV()
-        initAI()
-        initColorNames()
-        initQrScanner()
-        attachLogWriter()
-        applyGlobalExceptionHandler()
-        registerSecurityProviders()
-        injectBaseComponent()
+        if (isMain()) {
+            setupFlags()
+            initAppContext()
+            initOpenCV()
+            initAI()
+            initColorNames()
+            initQrScanner()
+            attachLogWriter()
+            applyGlobalExceptionHandler()
+            registerSecurityProviders()
+            initPdfBox()
+            injectBaseComponent()
 
-        isSetupCompleted = true
+            isSetupCompleted = true
+        }
     }
 
 }

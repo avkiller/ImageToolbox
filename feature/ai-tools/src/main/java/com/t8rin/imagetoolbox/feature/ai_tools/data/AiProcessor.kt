@@ -44,7 +44,6 @@ import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralParams
 import com.t8rin.logger.makeLog
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -127,12 +126,6 @@ internal class AiProcessor @Inject constructor(
         listener: AiProgressListener,
         info: ModelInfo,
     ): Bitmap = withContext(defaultDispatcher) {
-        // to handle edge artifacts, dunno if it's needed for *all* models, but it helped with SCUNet
-        val inputBitmap = if (info.isScuNet) {
-            addBlackBorder(inputBitmap)
-        } else {
-            inputBitmap
-        }
         val width = inputBitmap.getWidth()
         val height = inputBitmap.getHeight()
 
@@ -148,7 +141,7 @@ internal class AiProcessor @Inject constructor(
             }
         }
 
-        val processed = if (width > effectiveMaxChunkSize || height > effectiveMaxChunkSize) {
+        if (width > effectiveMaxChunkSize || height > effectiveMaxChunkSize) {
             processTiled(
                 session = session,
                 inputBitmap = inputBitmap,
@@ -165,31 +158,6 @@ internal class AiProcessor @Inject constructor(
                 info = info
             )
         }
-
-        if (info.isScuNet) {
-            removeBlackBorder(processed)
-        } else {
-            processed
-        }
-    }
-
-    private fun addBlackBorder(bitmap: Bitmap, borderSize: Int = 8): Bitmap {
-        val newWidth = bitmap.width + 2 * borderSize
-        val newHeight = bitmap.height + 2 * borderSize
-        val borderedBitmap = createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(borderedBitmap)
-        canvas.drawColor(Color.BLACK)
-        canvas.drawBitmap(bitmap, borderSize.toFloat(), borderSize.toFloat(), null)
-        return borderedBitmap
-    }
-
-    private fun removeBlackBorder(bitmap: Bitmap, borderSize: Int = 8): Bitmap {
-        val croppedWidth = bitmap.width - 2 * borderSize
-        val croppedHeight = bitmap.height - 2 * borderSize
-        if (croppedWidth <= 0 || croppedHeight <= 0) {
-            return bitmap
-        }
-        return Bitmap.createBitmap(bitmap, borderSize, borderSize, croppedWidth, croppedHeight)
     }
 
     private suspend fun processTiled(
@@ -199,7 +167,7 @@ internal class AiProcessor @Inject constructor(
         info: ModelInfo,
         config: Bitmap.Config,
         maxChunkSize: Int
-    ): Bitmap {
+    ): Bitmap = withContext(defaultDispatcher) {
         ensureActive()
         val width = inputBitmap.width
         val height = inputBitmap.height
@@ -305,12 +273,18 @@ internal class AiProcessor @Inject constructor(
                 BitmapFactory.decodeFile(chunkInfo.processedFile.absolutePath)
             } ?: throw Exception("Failed to load processed chunk ${chunkInfo.index}")
 
-            mergeChunkWithBlending(result, loadedProcessed, chunkInfo, overlap, info.scaleFactor)
+            mergeChunkWithBlending(
+                result = result,
+                processedChunk = loadedProcessed,
+                chunkInfo = chunkInfo,
+                overlap = overlap,
+                scaleFactor = info.scaleFactor
+            )
             loadedProcessed.recycle()
         }
         clearChunks()
 
-        return result
+        result
     }
 
     private suspend fun processChunk(
@@ -319,15 +293,15 @@ internal class AiProcessor @Inject constructor(
         config: Bitmap.Config,
         info: ModelInfo
     ): Bitmap = withContext(defaultDispatcher) {
-        this@AiProcessor.ensureActive()
+        ensureActive()
 
         val originalW = chunk.width
         val originalH = chunk.height
         var w: Int
         var h: Int
+        val minModelSize = info.minSpatialSize
 
-        if (info.isScuNetColor) {
-            val minModelSize = 256
+        if (info.isScuNetColor || minModelSize > 256) {
             w = if (info.expectedWidth != null && info.expectedWidth > 0) {
                 info.expectedWidth
             } else {
@@ -366,7 +340,7 @@ internal class AiProcessor @Inject constructor(
             if (w > originalW) {
                 val rightStrip = Bitmap.createBitmap(chunk, originalW - 1, 0, 1, originalH)
                 for (x in originalW until w) {
-                    this@AiProcessor.ensureActive()
+                    ensureActive()
                     canvas.drawBitmap(rightStrip, x.toFloat(), 0f, null)
                 }
                 rightStrip.recycle()
@@ -374,7 +348,7 @@ internal class AiProcessor @Inject constructor(
             if (h > originalH) {
                 val bottomStrip = Bitmap.createBitmap(padded, 0, originalH - 1, w, 1)
                 for (y in originalH until h) {
-                    this@AiProcessor.ensureActive()
+                    ensureActive()
                     canvas.drawBitmap(bottomStrip, 0f, y.toFloat(), null)
                 }
                 bottomStrip.recycle()
@@ -391,7 +365,7 @@ internal class AiProcessor @Inject constructor(
         val inputArray = FloatArray(inputChannels * w * h)
         val alphaChannel = if (hasAlpha) FloatArray(w * h) else null
         for (i in 0 until w * h) {
-            this@AiProcessor.ensureActive()
+            ensureActive()
 
             val color = pixels[i]
             if (inputChannels == 1) {
@@ -422,17 +396,17 @@ internal class AiProcessor @Inject constructor(
         }
         inputs[info.inputName] = inputTensor
         for ((key, nodeInfo) in info.inputInfoMap) {
-            this@AiProcessor.ensureActive()
+            ensureActive()
             if (key == info.inputName) continue
             val tensorInfo = nodeInfo.info as? TensorInfo ?: continue
             if (tensorInfo.type == OnnxJavaType.FLOAT || tensorInfo.type == OnnxJavaType.FLOAT16) {
                 val shape = tensorInfo.shape.clone()
                 for (i in shape.indices) {
-                    this@AiProcessor.ensureActive()
+                    ensureActive()
                     if (shape[i] == -1L) shape[i] = 1L
                 }
                 if (shape.size == 2 && shape[0] == 1L && shape[1] == 1L) {
-                    this@AiProcessor.ensureActive()
+                    ensureActive()
                     val strengthTensor = if (tensorInfo.type == OnnxJavaType.FLOAT16) {
                         val strengthFp16 = floatToFloat16(info.strength / 100f)
                         val byteBuffer = ByteBuffer.allocateDirect(2).order(ByteOrder.nativeOrder())
@@ -452,22 +426,22 @@ internal class AiProcessor @Inject constructor(
         }
 
         try {
-            this@AiProcessor.ensureActive()
+            ensureActive()
             session.run(inputs).use { sessionResult ->
                 val outputH = h * info.scaleFactor
                 val outputW = w * info.scaleFactor
                 val (outputArray, actualOutputChannels) = extractOutputArray(
-                    sessionResult[0].value,
-                    outputChannels,
-                    outputH,
-                    outputW
+                    outputValue = sessionResult[0].value,
+                    channels = outputChannels,
+                    h = outputH,
+                    w = outputW
                 )
                 val fullResultBitmap =
                     createBitmap(width = outputW, height = outputH, config = config)
                 val outPixels = IntArray(outputW * outputH)
 
                 for (i in 0 until outputW * outputH) {
-                    this@AiProcessor.ensureActive()
+                    ensureActive()
                     val alpha = if (hasAlpha) {
                         val srcY = ((i / outputW) / info.scaleFactor).coerceIn(0, h - 1)
                         val srcX = ((i % outputW) / info.scaleFactor).coerceIn(0, w - 1)
@@ -577,10 +551,11 @@ internal class AiProcessor @Inject constructor(
         channels: Int,
         h: Int,
         w: Int
-    ): Pair<FloatArray, Int> {
+    ): Pair<FloatArray, Int> = withContext(defaultDispatcher) {
         ensureActive()
         "Output type received: ${outputValue.javaClass.name}".makeLog("AiProcessor")
-        return when (outputValue) {
+
+        when (outputValue) {
             is FloatArray -> {
                 "Output is FloatArray (FP32 or auto-converted from FP16)".makeLog("AiProcessor")
                 outputValue to channels
@@ -595,11 +570,18 @@ internal class AiProcessor @Inject constructor(
                 try {
                     val arr = outputValue as Array<Array<Array<FloatArray>>>
                     "Output is multi-dimensional FloatArray".makeLog("AiProcessor")
+                    val actualBatches = arr.size
                     val actualChannels = arr[0].size
-                    "Expected channels: $channels, Actual channels: $actualChannels".makeLog("AiProcessor")
+                    val actualHeight = arr[0][0].size
+                    val actualWidth = arr[0][0][0].size
 
-                    val out = FloatArray(channels * h * w)
-                    val channelsToProcess = minOf(channels, actualChannels)
+                    val channelsToProcess = maxOf(channels, actualChannels)
+                    "Actual tensor shape: [$actualBatches, $actualChannels, $actualHeight, $actualWidth]".makeLog(
+                        "AiProcessor"
+                    )
+                    "Requested extraction shape: [$channelsToProcess, $h, $w]".makeLog("AiProcessor")
+
+                    val out = FloatArray(channelsToProcess * h * w)
                     for (ch in 0 until channelsToProcess) {
                         for (y in 0 until h) {
                             for (x in 0 until w) {
@@ -608,16 +590,23 @@ internal class AiProcessor @Inject constructor(
                             }
                         }
                     }
-                    out to actualChannels
+                    out to channelsToProcess
                 } catch (e: Throwable) {
                     try {
                         val arr = outputValue as Array<Array<Array<ShortArray>>>
                         "Output is multi-dimensional ShortArray (FP16)".makeLog("AiProcessor")
+                        val actualBatches = arr.size
                         val actualChannels = arr[0].size
-                        "Expected channels: $channels, Actual channels: $actualChannels".makeLog("AiProcessor")
+                        val actualHeight = arr[0][0].size
+                        val actualWidth = arr[0][0][0].size
 
-                        val out = FloatArray(channels * h * w)
-                        val channelsToProcess = minOf(channels, actualChannels)
+                        val channelsToProcess = maxOf(channels, actualChannels)
+                        "Actual tensor shape: [$actualBatches, $actualChannels, $actualHeight, $actualWidth]".makeLog(
+                            "AiProcessor"
+                        )
+                        "Requested extraction shape: [$channelsToProcess, $h, $w]".makeLog("AiProcessor")
+
+                        val out = FloatArray(channelsToProcess * h * w)
                         for (ch in 0 until channelsToProcess) {
                             for (y in 0 until h) {
                                 for (x in 0 until w) {
@@ -626,7 +615,7 @@ internal class AiProcessor @Inject constructor(
                                 }
                             }
                         }
-                        out to actualChannels
+                        out to channelsToProcess
                     } catch (e2: Throwable) {
                         throw RuntimeException("Failed to extract output array: ${e.message}, ${e2.message}")
                     }
@@ -637,7 +626,7 @@ internal class AiProcessor @Inject constructor(
         }
     }
 
-    private fun clamp255(v: Float): Int = 0.coerceAtLeast(255.coerceAtMost(v.toInt()))
+    private fun clamp255(v: Float): Int = v.toInt().coerceIn(0, 255)
 
     private fun floatToFloat16(value: Float): Short {
         val bits = floatToIntBits(value)
@@ -682,8 +671,6 @@ internal class AiProcessor @Inject constructor(
 
         return intBitsToFloat(sign or ((exponent - 15 + 127) shl 23) or (mantissa shl 13))
     }
-
-    private suspend fun ensureActive() = currentCoroutineContext().ensureActive()
 
     private fun clearChunks() = chunksDir.deleteRecursively()
 }

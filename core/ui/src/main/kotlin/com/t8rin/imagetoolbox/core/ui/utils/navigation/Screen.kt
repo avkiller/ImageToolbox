@@ -337,6 +337,183 @@ sealed class Screen(
                 }
             }
         }
+
+        companion object {
+            val options: List<Screen> by lazy {
+                listOf(
+                    Merge(),
+                    Split(),
+                    RemovePages(),
+                    Rotate(),
+                    Rearrange(),
+                    Crop(),
+                    PageNumbers(),
+                    Watermark(),
+                    Signature(),
+                    Compress(),
+                    Flatten(),
+                    Grayscale(),
+                    Repair(),
+                    Protect(),
+                    Unlock(),
+                    Metadata(),
+                    OCR()
+                )
+            }
+        }
+
+        @Serializable
+        data class Merge(
+            val uris: List<Uri>? = null
+        ) : Screen(
+            id = 44,
+            title = R.string.merge_pdf,
+            subtitle = R.string.merge_pdf_sub
+        )
+
+        @Serializable
+        data class Split(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 45,
+            title = R.string.split_pdf,
+            subtitle = R.string.split_pdf_sub
+        )
+
+        @Serializable
+        data class Rotate(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 46,
+            title = R.string.rotate_pdf,
+            subtitle = R.string.rotate_pdf_sub
+        )
+
+        @Serializable
+        data class Rearrange(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 47,
+            title = R.string.rearrange_pdf,
+            subtitle = R.string.rearrange_pdf_sub
+        )
+
+        @Serializable
+        data class PageNumbers(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 48,
+            title = R.string.page_numbers,
+            subtitle = R.string.page_numbers_sub
+        )
+
+        @Serializable
+        data class OCR(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 49,
+            title = R.string.pdf_to_text,
+            subtitle = R.string.pdf_to_text_sub
+        )
+
+        @Serializable
+        data class Watermark(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 50,
+            title = R.string.watermarking,
+            subtitle = R.string.watermark_pdf_sub
+        )
+
+        @Serializable
+        data class Signature(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 51,
+            title = R.string.signature,
+            subtitle = R.string.signature_sub
+        )
+
+        @Serializable
+        data class Protect(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 52,
+            title = R.string.protect_pdf,
+            subtitle = R.string.protect_pdf_sub
+        )
+
+        @Serializable
+        data class Unlock(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 53,
+            title = R.string.unlock_pdf,
+            subtitle = R.string.unlock_pdf_sub
+        )
+
+        @Serializable
+        data class Compress(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 54,
+            title = R.string.compress_pdf,
+            subtitle = R.string.compress_pdf_sub
+        )
+
+        @Serializable
+        data class Grayscale(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 55,
+            title = R.string.grayscale,
+            subtitle = R.string.grayscale_pdf_sub
+        )
+
+        @Serializable
+        data class Repair(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 56,
+            title = R.string.repair_pdf,
+            subtitle = R.string.repair_pdf_sub
+        )
+
+        @Serializable
+        data class Metadata(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 57,
+            title = R.string.metadata,
+            subtitle = R.string.metadata_pdf_sub
+        )
+
+        @Serializable
+        data class RemovePages(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 58,
+            title = R.string.remove_pages_pdf,
+            subtitle = R.string.remove_pages_pdf_sub
+        )
+
+        @Serializable
+        data class Crop(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 59,
+            title = R.string.crop_pdf,
+            subtitle = R.string.crop_pdf_sub
+        )
+
+        @Serializable
+        data class Flatten(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 60,
+            title = R.string.flatten_pdf,
+            subtitle = R.string.flatten_pdf_sub
+        )
     }
 
     @Serializable

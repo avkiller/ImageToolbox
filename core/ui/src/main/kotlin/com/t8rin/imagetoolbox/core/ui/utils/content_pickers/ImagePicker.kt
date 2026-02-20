@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ import com.t8rin.imagetoolbox.core.ui.utils.helper.createMediaPickerIntent
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalComponentActivity
 import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.logger.makeLog
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.random.Random
 
@@ -163,7 +165,7 @@ private class ImagePickerImpl(
         }.onFailure {
             it.makeLog("Image Picker Failure")
             if (it is SecurityException && mode == ImagePickerMode.CameraCapture) {
-                onFailure(CameraException)
+                onFailure(CameraException())
             } else onFailure(it)
         }.onSuccess {
             mode.makeLog("Image Picker Success")
@@ -234,9 +236,10 @@ fun localImagePickerMode(
     picker: Picker = Picker.Single,
     mode: PicturePickerMode = LocalSettingsState.current.picturePickerMode,
 ): ImagePickerMode {
-    val multiple = picker == Picker.Multiple
-    return remember(mode, multiple) {
+    return remember(mode, picker) {
         derivedStateOf {
+            val multiple = picker == Picker.Multiple
+
             when (mode) {
                 PicturePickerMode.Embedded -> if (multiple) ImagePickerMode.EmbeddedMultiple else ImagePickerMode.Embedded
                 PicturePickerMode.PhotoPicker -> if (multiple) ImagePickerMode.PhotoPickerMultiple else ImagePickerMode.PhotoPickerSingle
@@ -296,22 +299,29 @@ fun rememberImagePicker(
     onFailure: () -> Unit = {},
     onSuccess: (List<Uri>) -> Unit,
 ): ImagePicker {
+    val essentials = rememberLocalEssentials()
     val context = LocalComponentActivity.current
 
     val photoPickerSingle = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
-            uri?.takeIf {
-                it != Uri.EMPTY
-            }?.let {
-                onSuccess(listOf(it))
-            } ?: onFailure()
+            essentials.launch {
+                delay(300)
+                uri?.takeIf {
+                    it != Uri.EMPTY
+                }?.let {
+                    onSuccess(listOf(it))
+                } ?: onFailure()
+            }
         }
     )
     val photoPickerMultiple = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { uris ->
-            uris.takeIf { it.isNotEmpty() }?.let(onSuccess) ?: onFailure()
+            essentials.launch {
+                delay(300)
+                uris.takeIf { it.isNotEmpty() }?.let(onSuccess) ?: onFailure()
+            }
         }
     )
 
@@ -333,7 +343,10 @@ fun rememberImagePicker(
                     emptyList()
                 }
 
-            resultList.takeIf { it.isNotEmpty() }?.let(onSuccess) ?: onFailure()
+            essentials.launch {
+                delay(300)
+                resultList.takeIf { it.isNotEmpty() }?.let(onSuccess) ?: onFailure()
+            }
         }
     )
 
@@ -343,15 +356,17 @@ fun rememberImagePicker(
     val takePhoto = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = {
-            val uri = takePhotoUri
-            if (it && uri != null && uri != Uri.EMPTY) {
-                onSuccess(listOf(uri))
-            } else onFailure()
-            takePhotoUri = null
+            essentials.launch {
+                val uri = takePhotoUri
+                delay(300)
+                if (it && uri != null && uri != Uri.EMPTY) {
+                    onSuccess(listOf(uri))
+                } else onFailure()
+                takePhotoUri = null
+            }
         }
     )
 
-    val essentials = rememberLocalEssentials()
     val currentAccent = LocalDynamicThemeState.current.colorTuple.value.primary
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -400,9 +415,6 @@ fun rememberImagePicker(
     }.value
 }
 
-private object CameraException : Throwable("No Camera permission") {
-    @Suppress("unused")
-    private fun readResolve(): Any = CameraException
-}
+private class CameraException : Throwable("No Camera permission")
 
 private const val DefaultExtension: String = "*"

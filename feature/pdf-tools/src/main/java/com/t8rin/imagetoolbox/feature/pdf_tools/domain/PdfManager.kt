@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,16 @@ package com.t8rin.imagetoolbox.feature.pdf_tools.domain
 
 import com.t8rin.imagetoolbox.core.domain.image.model.Preset
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
+import com.t8rin.imagetoolbox.core.domain.model.Position
+import com.t8rin.imagetoolbox.core.domain.model.RectModel
 
 interface PdfManager<I> {
+
+    fun setMasterPassword(
+        password: String?
+    )
+
+    suspend fun checkIsPdfEncrypted(uri: String): String?
 
     suspend fun getPdfPages(
         uri: String,
@@ -37,7 +45,8 @@ interface PdfManager<I> {
         onProgressChange: suspend (Int) -> Unit,
         scaleSmallImagesToLarge: Boolean,
         preset: Preset.Percentage,
-        tempFilename: String
+        tempFilename: String,
+        quality: Int = 85
     ): String
 
     suspend fun convertPdfToImages(
@@ -50,5 +59,104 @@ interface PdfManager<I> {
         onProgressChange: suspend (Int, I) -> Unit,
         onComplete: suspend () -> Unit = {}
     )
+
+    suspend fun mergePdfs(
+        uris: List<String>
+    ): String
+
+    suspend fun splitPdf(
+        uri: String,
+        pages: List<Int>?
+    ): String
+
+    suspend fun removePdfPages(
+        uri: String,
+        pages: List<Int>
+    ): String
+
+    suspend fun rotatePdf(
+        uri: String,
+        rotations: List<Int>
+    ): String
+
+    suspend fun rearrangePdf(
+        uri: String,
+        newOrder: List<Int>
+    ): String
+
+    suspend fun addPageNumbers(
+        uri: String,
+        labelFormat: String,
+        position: Position,
+        color: Int
+    ): String
+
+    suspend fun addWatermark(
+        uri: String,
+        watermarkText: String,
+        params: PdfWatermarkParams
+    ): String
+
+    suspend fun addSignature(
+        uri: String,
+        signatureImage: I,
+        params: PdfSignatureParams
+    ): String
+
+    suspend fun protectPdf(
+        uri: String,
+        password: String
+    ): String
+
+    suspend fun unlockPdf(
+        uri: String,
+        password: String
+    ): String
+
+    suspend fun extractPagesFromPdf(
+        uri: String
+    ): List<String>
+
+    suspend fun compressPdf(
+        uri: String,
+        quality: Float
+    ): String
+
+    suspend fun convertToGrayscale(
+        uri: String
+    ): String
+
+    suspend fun repairPdf(
+        uri: String
+    ): String
+
+    suspend fun changePdfMetadata(
+        uri: String,
+        metadata: PdfMetadata?
+    ): String
+
+    suspend fun getPdfMetadata(
+        uri: String
+    ): PdfMetadata
+
+    suspend fun stripText(
+        uri: String
+    ): List<String>
+
+    fun createTempName(
+        key: String,
+        uri: String? = null
+    ): String
+
+    suspend fun cropPdf(
+        uri: String,
+        pages: List<Int>? = null,
+        rect: RectModel
+    ): String
+
+    suspend fun flattenPdf(
+        uri: String,
+        quality: Float
+    ): String
 
 }

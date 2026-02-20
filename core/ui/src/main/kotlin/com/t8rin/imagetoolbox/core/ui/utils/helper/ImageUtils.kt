@@ -20,13 +20,16 @@ package com.t8rin.imagetoolbox.core.ui.utils.helper
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
-import android.provider.OpenableColumns
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
@@ -37,15 +40,16 @@ import androidx.core.graphics.applyCanvas
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
-import androidx.core.net.toFile
 import androidx.core.text.isDigitsOnly
 import coil3.Image
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.MetadataTag
+import com.t8rin.imagetoolbox.core.domain.utils.FileMode
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getStringLocalized
 import com.t8rin.imagetoolbox.core.utils.appContext
+import com.t8rin.imagetoolbox.core.utils.fileSize
 import java.util.Locale
 
 
@@ -237,28 +241,6 @@ object ImageUtils {
         it in possibleConfigs
     } ?: Bitmap.Config.ARGB_8888
 
-    private fun Uri.fileSize(): Long? {
-        if (this.scheme == "content") {
-            runCatching {
-                appContext.contentResolver
-                    .query(this, null, null, null, null, null)
-                    .use { cursor ->
-                        if (cursor != null && cursor.moveToFirst()) {
-                            val sizeIndex: Int = cursor.getColumnIndex(OpenableColumns.SIZE)
-                            if (!cursor.isNull(sizeIndex)) {
-                                return cursor.getLong(sizeIndex)
-                            }
-                        }
-                    }
-            }
-        } else {
-            runCatching {
-                return this.toFile().length()
-            }
-        }
-        return null
-    }
-
     @Composable
     fun rememberFileSize(uri: Uri?): Long {
         return remember(uri) {
@@ -274,9 +256,29 @@ object ImageUtils {
 
         return remember(size, uri) {
             derivedStateOf {
-                humanFileSize(size)
+                humanFileSize(size, 2)
             }
         }.value
+    }
+
+    @Composable
+    fun rememberPdfPages(uri: Uri?): State<Int> = key(uri) {
+        produceState(0) {
+            if (uri == null) {
+                value = 0
+                return@produceState
+            }
+            val pageCount = runCatching {
+                appContext
+                    .contentResolver
+                    .openFileDescriptor(uri, FileMode.Read.mode)
+                    ?.use { fd ->
+                        PdfRenderer(fd).use { it.pageCount }
+                    } ?: 0
+            }.getOrDefault(0)
+
+            value = pageCount
+        }
     }
 
     @Composable

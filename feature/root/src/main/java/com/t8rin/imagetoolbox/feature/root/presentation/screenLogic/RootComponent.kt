@@ -32,7 +32,9 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.items
 import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.popWhile
 import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.t8rin.imagetoolbox.core.domain.APP_RELEASES
@@ -51,11 +53,11 @@ import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
 import com.t8rin.imagetoolbox.core.ui.utils.helper.handleDeeplinks
-import com.t8rin.imagetoolbox.core.ui.utils.helper.toImageModel
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastHostState
+import com.t8rin.imagetoolbox.core.utils.toImageModel
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.ChildProvider
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild
 import com.t8rin.imagetoolbox.feature.root.presentation.components.utils.BackEventObserver
@@ -455,6 +457,16 @@ class RootComponent @AssistedInject internal constructor(
             hideSelectDialog()
             screen.simpleName.makeLog("Navigator").also(analyticsManager::registerScreenOpen)
             navController.pushNew(screen)
+        }
+    }
+
+    fun replaceTo(screen: Screen) {
+        componentScope.launch {
+            delay(100)
+            hideSelectDialog()
+            screen.simpleName.makeLog("Navigator").also(analyticsManager::registerScreenOpen)
+            navController.popWhile { it is Screen.PdfTools }
+            navController.replaceCurrent(screen)
         }
     }
 

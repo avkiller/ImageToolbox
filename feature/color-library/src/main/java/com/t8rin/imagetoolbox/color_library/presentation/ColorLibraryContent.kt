@@ -69,19 +69,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smarttoolfactory.colordetector.util.ColorUtil
-import com.t8rin.imagetoolbox.color_library.presentation.components.ColorWithNameItem
 import com.t8rin.imagetoolbox.color_library.presentation.screenLogic.ColorLibraryComponent
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBar
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBarType
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.clearFocusOnTap
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.drawHorizontalStroke
+import com.t8rin.imagetoolbox.core.ui.widget.other.ColorWithNameItem
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
 import com.t8rin.imagetoolbox.core.ui.widget.text.isKeyboardVisibleAsState
@@ -111,6 +112,9 @@ fun ColorLibraryContent(
     }
 
     val focus = LocalFocusManager.current
+    var isSearching by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     Scaffold(
         modifier = Modifier
@@ -142,9 +146,6 @@ fun ColorLibraryContent(
             )
         },
         bottomBar = {
-            var isSearching by rememberSaveable {
-                mutableStateOf(false)
-            }
             val insets = WindowInsets.navigationBars.union(
                 WindowInsets.displayCutout.only(
                     WindowInsetsSides.Horizontal
@@ -247,7 +248,7 @@ fun ColorLibraryContent(
                     ),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     flingBehavior = enhancedFlingBehavior(),
-                    columns = GridCells.Adaptive(150.dp),
+                    columns = GridCells.Adaptive(180.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(
@@ -256,14 +257,15 @@ fun ColorLibraryContent(
                     ) { colorWithName ->
                         ColorWithNameItem(
                             isFavorite = colorWithName.name in favoriteColors,
-                            colorWithName = colorWithName,
+                            color = colorWithName.color,
+                            name = colorWithName.name,
                             onToggleFavorite = { component.toggleFavoriteColor(colorWithName) },
                             onCopy = { copyColor(colorWithName.color) },
                             modifier = Modifier.animateItem()
                         )
                     }
                 }
-            } else {
+            } else if (isSearching) {
                 Column(
                     modifier = Modifier
                         .padding(contentPadding)
@@ -292,6 +294,15 @@ fun ColorLibraryContent(
                             .fillMaxSize()
                     )
                     Spacer(Modifier.weight(1f))
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    EnhancedLoadingIndicator()
                 }
             }
         }
