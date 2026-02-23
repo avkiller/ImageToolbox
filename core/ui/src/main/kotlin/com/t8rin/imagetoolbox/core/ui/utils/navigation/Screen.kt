@@ -24,19 +24,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoFixHigh
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.FilePresent
-import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.rounded.Animation
 import androidx.compose.material.icons.rounded.Gif
-import androidx.compose.material.icons.rounded.Preview
 import androidx.compose.material.icons.rounded.Texture
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Apng
+import com.t8rin.imagetoolbox.core.resources.icons.ArtTrack
 import com.t8rin.imagetoolbox.core.resources.icons.Exif
 import com.t8rin.imagetoolbox.core.resources.icons.Jpg
 import com.t8rin.imagetoolbox.core.resources.icons.Jxl
+import com.t8rin.imagetoolbox.core.resources.icons.Preview
+import com.t8rin.imagetoolbox.core.resources.icons.Scanner
 import com.t8rin.imagetoolbox.core.resources.icons.TextSearch
 import com.t8rin.imagetoolbox.core.resources.icons.Webp
 import kotlinx.serialization.SerialName
@@ -298,9 +299,9 @@ sealed class Screen(
 
             val icon: ImageVector
                 get() = when (this) {
-                    is ImagesToPdf -> Icons.Outlined.PictureAsPdf
-                    is PdfToImages -> Icons.Outlined.Collections
-                    is Preview -> Icons.Rounded.Preview
+                    is ImagesToPdf -> Icons.Outlined.Scanner
+                    is PdfToImages -> Icons.Outlined.ArtTrack
+                    is Preview -> Icons.Outlined.Preview
                 }
 
             @Serializable
@@ -357,6 +358,7 @@ sealed class Screen(
                     Protect(),
                     Unlock(),
                     Metadata(),
+                    ExtractImages(),
                     OCR()
                 )
             }
@@ -513,6 +515,15 @@ sealed class Screen(
             id = 60,
             title = R.string.flatten_pdf,
             subtitle = R.string.flatten_pdf_sub
+        )
+
+        @Serializable
+        data class ExtractImages(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 61,
+            title = R.string.extract_images,
+            subtitle = R.string.extract_images_sub
         )
     }
 

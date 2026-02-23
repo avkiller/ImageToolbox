@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,9 +34,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
-import com.t8rin.imagetoolbox.core.domain.model.ExtraDataType
-import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Pdf
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.FilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
@@ -48,12 +46,12 @@ import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitBackHandler
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
+import com.t8rin.imagetoolbox.core.ui.widget.dialogs.PasswordRequestDialog
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.FileNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
-import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.root.components.PdfPasswordRequestDialog
 
 @Composable
 internal fun BasePdfToolContent(
@@ -75,11 +73,7 @@ internal fun BasePdfToolContent(
     val showConfetti: () -> Unit = essentials::showConfetti
 
     val saveLauncher = rememberFileCreator(
-        mimeType = if (component.extraDataType == ExtraDataType.Pdf) {
-            MimeType.Pdf
-        } else {
-            MimeType.Txt
-        },
+        mimeType = component.mimeType,
         onSuccess = { uri ->
             component.saveTo(
                 uri = uri,
@@ -145,7 +139,7 @@ internal fun BasePdfToolContent(
                     )
                 },
                 dialogTitle = "PDF",
-                dialogIcon = Icons.Outlined.PictureAsPdf
+                dialogIcon = Icons.Outlined.Pdf
             )
 
             ProcessImagesPreferenceSheet(
@@ -208,7 +202,7 @@ internal fun BasePdfToolContent(
         visible = showExitDialog
     )
 
-    PdfPasswordRequestDialog(
+    PasswordRequestDialog(
         isVisible = component.showPasswordRequestDialog,
         onDismiss = {
             component.hidePasswordRequestDialog()

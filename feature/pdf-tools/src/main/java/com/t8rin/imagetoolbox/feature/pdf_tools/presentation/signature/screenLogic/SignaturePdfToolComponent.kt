@@ -26,14 +26,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
-import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
-import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfSignatureParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfSignatureParams
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common.BasePdfToolComponent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -45,10 +44,9 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
     @Assisted componentContext: ComponentContext,
     @Assisted onGoBack: () -> Unit,
     @Assisted onNavigate: (Screen) -> Unit,
-    private val pdfManager: PdfManager<Bitmap>,
+    private val pdfManager: PdfManager,
     private val shareProvider: ImageShareProvider<Bitmap>,
     private val fileController: FileController,
-    private val imageGetter: ImageGetter<Bitmap>,
     dispatchersHolder: DispatchersHolder
 ) : BasePdfToolComponent(
     onGoBack = onGoBack,
@@ -63,13 +61,15 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
     private val _uri: MutableState<Uri?> = mutableStateOf(initialUri)
     val uri by _uri
 
-    private val _signatureImageUri: MutableState<Uri> =
+    private val _signatureImage: MutableState<Any> =
         mutableStateOf("file:///android_asset/svg/emotions/aasparkles.svg".toUri())
-    val signatureImageUri by _signatureImageUri
+    val signatureImage by _signatureImage
 
     private val _params: MutableState<PdfSignatureParams> =
         mutableStateOf(PdfSignatureParams())
     val params by _params
+
+    val savedSignatures = pdfManager.savedSignatures
 
     init {
         componentScope.launch {
@@ -99,9 +99,18 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
         _params.update { params }
     }
 
-    fun updateSignatureUri(uri: Uri) {
+    fun updateSignature(
+        data: Any,
+        save: Boolean = false
+    ) {
         registerChanges()
-        _signatureImageUri.update { uri }
+        _signatureImage.update { data }
+        if (save) {
+            updateParams(params.copy(opacity = 1f))
+            componentScope.launch {
+                pdfManager.saveSignature(data)
+            }
+        }
     }
 
     override fun saveTo(
@@ -112,7 +121,7 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
             action = {
                 val processed = pdfManager.addSignature(
                     uri = _uri.value.toString(),
-                    signatureImage = imageGetter.getImage(data = signatureImageUri)!!,
+                    signatureImage = signatureImage,
                     params = params
                 )
 
@@ -149,7 +158,7 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
                     listOf(
                         pdfManager.addSignature(
                             uri = _uri.value.toString(),
-                            signatureImage = imageGetter.getImage(data = signatureImageUri)!!,
+                            signatureImage = signatureImage,
                             params = params
                         ).toUri()
                     )

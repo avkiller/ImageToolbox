@@ -15,15 +15,13 @@
  * along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
  */
 
-package com.t8rin.imagetoolbox.feature.pdf_tools.data
+package com.t8rin.imagetoolbox.feature.pdf_tools.data.utils
 
 import android.net.Uri
 import android.os.Build
 import android.os.ext.SdkExtensions
 import androidx.annotation.ChecksSdkIntAtLeast
-import com.t8rin.imagetoolbox.core.utils.appContext
 import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.pdmodel.PDPage
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.rendering.PDFRenderer
 import java.lang.AutoCloseable
@@ -35,31 +33,30 @@ class PdfRenderer(
     val pageCount: Int get() = pDocument.numberOfPages
 
     fun openPage(index: Int): Page = pDocument.getPage(index).let { page ->
-        val baseBox = page.cropBox ?: page.mediaBox
-
-        Page(
-            width = baseBox.width.roundToInt(),
-            height = baseBox.height.roundToInt(),
-            pdPage = page
-        )
+        page.cropBox.run {
+            Page(
+                width = width.roundToInt(),
+                height = height.roundToInt()
+            )
+        }
     }
 
     override fun close() = pDocument.close()
 
     class Page(
         val width: Int,
-        val height: Int,
-        val pdPage: PDPage
+        val height: Int
     )
 }
 
 fun Uri.createPdfRenderer(
     password: String?,
-    onFailure: (Throwable) -> Unit,
-    onPasswordRequest: (() -> Unit)?
+    onFailure: (Throwable) -> Unit = {},
+    onPasswordRequest: (() -> Unit)? = null
 ): PdfRenderer? = runCatching {
-    PDDocument.load(
-        appContext.contentResolver.openInputStream(this), password.orEmpty()
+    safeOpenPdf(
+        uri = this.toString(),
+        password = password
     ).let(::PdfRenderer)
 }.onFailure { throwable ->
     when (throwable) {

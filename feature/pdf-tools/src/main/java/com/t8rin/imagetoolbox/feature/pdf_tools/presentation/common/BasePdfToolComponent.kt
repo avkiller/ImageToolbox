@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -27,6 +26,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.model.ExtraDataType
+import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.domain.saving.KeepAliveService
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
@@ -58,7 +58,7 @@ abstract class BasePdfToolComponent(
     val onNavigate: (Screen) -> Unit,
     dispatchersHolder: DispatchersHolder,
     componentContext: ComponentContext,
-    private val pdfManager: PdfManager<Bitmap>,
+    private val pdfManager: PdfManager,
 ) : BaseComponent(dispatchersHolder, componentContext) {
 
     private val _isSaving: MutableState<Boolean> = mutableStateOf(false)
@@ -70,6 +70,7 @@ abstract class BasePdfToolComponent(
     protected var isRtl = false
 
     open val extraDataType: ExtraDataType = ExtraDataType.Pdf
+    open val mimeType: MimeType.Single = MimeType.Pdf
 
     init {
         doOnDestroy {

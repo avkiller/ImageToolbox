@@ -41,7 +41,7 @@ class RotatePdfToolComponent @AssistedInject internal constructor(
     @Assisted componentContext: ComponentContext,
     @Assisted onGoBack: () -> Unit,
     @Assisted onNavigate: (Screen) -> Unit,
-    private val pdfManager: PdfManager<Bitmap>,
+    private val pdfManager: PdfManager,
     private val shareProvider: ImageShareProvider<Bitmap>,
     private val fileController: FileController,
     dispatchersHolder: DispatchersHolder
@@ -77,6 +77,19 @@ class RotatePdfToolComponent @AssistedInject internal constructor(
     fun updateRotations(rotations: List<Int>) {
         registerChanges()
         _rotations.update { rotations }
+    }
+
+    fun autoRotate() {
+        doSharing(
+            action = {
+                updateRotations(
+                    pdfManager.detectPdfAutoRotations(
+                        uri?.toString() ?: return@doSharing
+                    )
+                )
+            },
+            onFailure = {}
+        )
     }
 
     override fun saveTo(

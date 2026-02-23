@@ -58,11 +58,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.PredictiveBackObserver
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.alertDialogBorder
@@ -166,7 +169,7 @@ fun BasicEnhancedAlertDialog(
     }
 
     if (visibleAnimated) {
-        FullscreenPopup(placeAboveAll = placeAboveAll) {
+        FullscreenPopupForPreview(placeAboveAll = placeAboveAll) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -347,3 +350,26 @@ private val DialogPadding = PaddingValues(all = 24.dp)
 private val IconPadding = PaddingValues(bottom = 16.dp)
 private val TitlePadding = PaddingValues(bottom = 16.dp)
 private val TextPadding = PaddingValues(bottom = 24.dp)
+
+
+@Composable
+private fun FullscreenPopupForPreview(
+    onDismiss: (() -> Unit)? = null,
+    placeAboveAll: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    if (LocalInspectionMode.current) {
+        Dialog(
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            onDismissRequest = { onDismiss?.invoke() }
+        ) {
+            content()
+        }
+    } else {
+        FullscreenPopup(
+            onDismiss = onDismiss,
+            placeAboveAll = placeAboveAll,
+            content = content
+        )
+    }
+}
