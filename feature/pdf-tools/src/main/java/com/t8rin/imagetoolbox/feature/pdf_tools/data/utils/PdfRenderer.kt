@@ -17,10 +17,12 @@
 
 package com.t8rin.imagetoolbox.feature.pdf_tools.data.utils
 
-import android.net.Uri
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.ext.SdkExtensions
 import androidx.annotation.ChecksSdkIntAtLeast
+import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
+import com.t8rin.logger.makeLog
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.rendering.PDFRenderer
@@ -31,6 +33,7 @@ class PdfRenderer(
     val pDocument: PDDocument
 ) : PDFRenderer(pDocument), AutoCloseable {
     val pageCount: Int get() = pDocument.numberOfPages
+    val pageIndices: List<Int> get() = pDocument.pageIndices
 
     fun openPage(index: Int): Page = pDocument.getPage(index).let { page ->
         page.cropBox.run {
@@ -41,21 +44,48 @@ class PdfRenderer(
         }
     }
 
+    fun safeRenderDpi(
+        pageIndex: Int,
+        dpi: Float
+    ): Bitmap = try {
+        System.gc()
+        if (openPage(pageIndex).run { width * height * 4 <= 3096 * 3096 * 4 }) {
+            renderImageWithDPI(pageIndex, dpi)
+        } else {
+            renderImage(pageIndex)
+        }
+    } catch (t1: Throwable) {
+        t1.makeLog("safeRenderDpi")
+        System.gc()
+        try {
+            renderImage(pageIndex)
+        } catch (t2: Throwable) {
+            t2.makeLog("safeRenderDpi")
+            System.gc()
+            renderImage(pageIndex, 0.5f)
+        }
+    } finally {
+        System.gc()
+    }
+
     override fun close() = pDocument.close()
 
     class Page(
         val width: Int,
         val height: Int
-    )
+    ) {
+        val size = IntegerSize(width, height)
+    }
 }
 
-fun Uri.createPdfRenderer(
+fun PdfRenderer(
+    uri: String,
     password: String?,
     onFailure: (Throwable) -> Unit = {},
     onPasswordRequest: (() -> Unit)? = null
 ): PdfRenderer? = runCatching {
     safeOpenPdf(
-        uri = this.toString(),
+        uri = uri,
         password = password
     ).let(::PdfRenderer)
 }.onFailure { throwable ->

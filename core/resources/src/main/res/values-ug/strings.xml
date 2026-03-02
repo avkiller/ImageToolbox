@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="image_too_large_preview">سۈرەت بەك چوڭ، ئالدىن كۆرگىلى بولمايدۇ، لېكىن يەنىلا ساقلاشنى سىناپ باقىمىز</string>
     <string name="pick_image">رەسىمنى تاللاپ باشلاڭ</string>
     <string name="height">ئېگىزلىك %1$s</string>
@@ -320,7 +318,7 @@
     <string name="font_scale">خەت نۇسخىسى</string>
     <string name="defaultt">سۈكۈتتىكى</string>
     <string name="using_large_fonts_warn">چوڭ خەت نۇسخىسىنى ئىشلىتىش UI كاشىلا ۋە مەسىلىلەرنى كەلتۈرۈپ چىقىرىشى مۇمكىن ، بۇ ئوڭشالمايدۇ. ئېھتىيات بىلەن ئىشلىتىڭ.</string>
-    <string name="alphabet_and_numbers">A Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 !?</string>
+    <string name="alphabet_and_numbers">ا ە ب پ ت ج چ خ د ر ز ژ س ش غ ف ق ك گ ڭ ل م ن ھ و ۇ ۆ ۈ ۋ ی 0123456789 !؟</string>
     <string name="emotions">ھېسسىيات</string>
     <string name="food_and_drink">يېمەكلىك ۋە ئىچىملىك</string>
     <string name="nature_and_animals">تەبىئەت ۋە ھايۋانلار</string>
@@ -2173,4 +2171,13 @@
     <string name="draw_signature">ئىمزا سىزىش</string>
     <string name="pen_params">قەلەم پاراملىرى</string>
     <string name="draw_signature_sub">ھۆججەتلەرگە قويماقچى بولغان رەسىمنى رەسىم سۈپىتىدە ئىشلىتىڭ</string>
+    <string name="zip_pdf">Zip PDF</string>
+    <string name="zip_pdf_sub">بېرىلگەن ئارىلىق بىلەن ھۆججەتنى پارچىلاپ ، يېڭى ھۆججەتلەرنى zip ئارخىپىغا قاچىلاڭ</string>
+    <string name="interval">ئارىلىق</string>
+    <string name="print_pdf">PDF نى بېسىڭ</string>
+    <string name="print_pdf_sub">ئىختىيارى بەت چوڭلۇقى بىلەن بېسىپ چىقىرىش ئۈچۈن ھۆججەت تەييارلاڭ</string>
+    <string name="pages_per_sheet">ھەر بىر بەت</string>
+    <string name="orientation">يۆنىلىش</string>
+    <string name="page_size">بەت چوڭلۇقى</string>
+    <string name="margin">Margin</string>
 </resources>

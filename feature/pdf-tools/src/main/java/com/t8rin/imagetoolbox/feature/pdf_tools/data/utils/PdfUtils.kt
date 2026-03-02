@@ -97,7 +97,7 @@ internal fun PDDocument.setMetadata(value: PdfMetadata?) {
     }
 }
 
-internal val PDDocument.baseFont
+internal val PDDocument.defaultFont
     get() = PDType0Font.load(
         this, appContext.resources.openRawResource(R.raw.roboto_bold)
     )
@@ -108,6 +108,8 @@ internal fun PDDocument.getPageSafe(index: Int): PDPage = getPage(
         maximumValue = numberOfPages - 1
     )
 )
+
+internal val PDDocument.pageIndices: List<Int> get() = List(numberOfPages) { it }
 
 internal fun PDPageContentStream.setAlpha(alpha: Float) {
     val gs = PDExtendedGraphicsState().apply {
@@ -130,6 +132,8 @@ internal fun PDPageContentStream.setColor(color: Color) {
         )
     )
 }
+
+internal fun PDPageContentStream.setColor(color: Int) = setColor(Color(color))
 
 internal fun <T> PDDocument.createPage(
     page: PDPage,
@@ -193,6 +197,10 @@ internal fun Bitmap.asXObject(
 
 internal fun PDDocument.getAllImages(): List<PDImageXObject> =
     pages.flatMap { it.getResources().getImages() }
+
+internal inline fun <T> createPdf(action: (PDDocument) -> T) = PDDocument().use(action)
+
+internal fun List<Int>?.orAll(document: PDDocument) = orEmpty().ifEmpty { document.pageIndices }
 
 private fun PDResources.getImages(): List<PDImageXObject> {
     val images: MutableList<PDImageXObject> = mutableListOf()

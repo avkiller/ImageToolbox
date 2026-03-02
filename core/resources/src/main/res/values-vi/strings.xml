@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Đã xảy ra lỗi: %1$s</string>
     <string name="size">Kích thước %1$s</string>
     <string name="loading">Đang tải…</string>
@@ -337,7 +335,7 @@
     <string name="font_scale">Tỷ lệ phông chữ</string>
     <string name="defaultt">Mặc định</string>
     <string name="using_large_fonts_warn">Việc sử dụng tỷ lệ phông chữ lớn có thể gây ra trục trặc và sự cố về giao diện người dùng mà sẽ không thể khắc phục được. Sử dụng thận trọng.</string>
-    <string name="alphabet_and_numbers">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 !?</string>
+    <string name="alphabet_and_numbers">Aa Ăă Ââ Bb Cc Dd Đđ Ee Êê Gg Hh Ii Kk Ll Mm Nn Oo Ôô Ơơ Pp Qq Rr Ss Tt Uu Ưư Vv Xx Yy 0123456789 !?</string>
     <string name="emotions">Cảm xúc</string>
     <string name="food_and_drink">Thức ăn và đồ uống</string>
     <string name="nature_and_animals">Thiên nhiên và Động vật</string>
@@ -2172,4 +2170,13 @@
     <string name="draw_signature">Vẽ chữ ký</string>
     <string name="pen_params">Thông số bút</string>
     <string name="draw_signature_sub">Sử dụng chữ ký của chính mình làm hình ảnh để đặt trên tài liệu</string>
+    <string name="zip_pdf">Nén PDF</string>
+    <string name="zip_pdf_sub">Chia tài liệu theo khoảng thời gian nhất định và đóng gói tài liệu mới vào kho lưu trữ zip</string>
+    <string name="interval">Khoảng thời gian</string>
+    <string name="print_pdf">In PDF</string>
+    <string name="print_pdf_sub">Chuẩn bị tài liệu để in với kích thước trang tùy chỉnh</string>
+    <string name="pages_per_sheet">Số trang trên mỗi tờ</string>
+    <string name="orientation">Định hướng</string>
+    <string name="page_size">Kích thước trang</string>
+    <string name="margin">Lề</string>
 </resources>

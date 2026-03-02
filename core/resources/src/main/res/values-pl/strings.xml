@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources xmlns:tools="http://schemas.android.com/tools">
+  --><resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">Rozmiar %1$s</string>
     <string name="width">Szerokość %1$s</string>
     <string name="loading">Ładowanie…</string>
@@ -416,7 +414,7 @@
     <string name="font_scale">Skala czcionki</string>
     <string name="defaultt">Domyślna</string>
     <string name="using_large_fonts_warn">Używanie dużych czcionek może powodować usterki interfejsu użytkownika i problemy, których nie da się naprawić. Używaj ostrożnie.</string>
-    <string name="alphabet_and_numbers">Aa Aą Bb Cc Ćc Dd Ee Eę Ff Gg Hh Ii Jj Kk Ll Łł Mm Nn Ńń Oo Oó Pp Qq Rr Ss Śś Tt Uu Vv Ww Xx Yy Zz Źź Żż 0123456789 !?</string>
+    <string name="alphabet_and_numbers">Aa Ąą Bb Cc Ćć Dd Ee Ęę Ff Gg Hh Ii Jj Kk Ll Łł Mm Nn Ńń Oo Óó Pp Qq Rr Ss Śś Tt Uu Vv Ww Xx Yy Zz Źź Żż 0123456789 !?</string>
     <string name="trim_image">Przytnij obraz</string>
     <string name="reset_settings_sub">Spowoduje to przywrócenie ustawień domyślnych. Należy pamiętać, że nie można tego cofnąć bez pliku kopii zapasowej wspomnianego powyżej.</string>
     <string name="corrupted_file_or_not_a_backup">Uszkodzony plik lub brak kopii zapasowej</string>
@@ -2175,4 +2173,13 @@
     <string name="draw_signature">Narysuj podpis</string>
     <string name="pen_params">Parametry pióra</string>
     <string name="draw_signature_sub">Użyj własnego podpisu jako obrazu do umieszczenia na dokumentach</string>
+    <string name="zip_pdf">Spakuj PDF</string>
+    <string name="zip_pdf_sub">Podziel dokument w określonym przedziale czasu i spakuj nowe dokumenty do archiwum zip</string>
+    <string name="interval">Interwał</string>
+    <string name="print_pdf">Wydrukuj PDF</string>
+    <string name="print_pdf_sub">Przygotuj dokument do druku z niestandardowym rozmiarem strony</string>
+    <string name="pages_per_sheet">Strony na arkusz</string>
+    <string name="orientation">Orientacja</string>
+    <string name="page_size">Rozmiar strony</string>
+    <string name="margin">Margines</string>
 </resources>

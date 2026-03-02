@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources>
+  --><resources>
     <string name="restart_app">Restart app</string>
     <string name="about_app">About app</string>
     <string name="no_updates">No poboljšati pronađen</string>
@@ -376,7 +374,7 @@
     <string name="font_scale">Скала фонта</string>
     <string name="defaultt">Уобичајено</string>
     <string name="using_large_fonts_warn">Коришћење великих размера фонта може да изазове грешке у корисничком интерфејсу и проблеме, који се неће поправити. Користите опрезно.</string>
-    <string name="alphabet_and_numbers">Аа Бб Цц Дд Ее Фф Гг Хх Ии Јј Кк Лл Мм Нн Оо Пп Кк Рр Сс Тт Уу Вв Кк Ии Зз 0123456789 !?</string>
+    <string name="alphabet_and_numbers">Аа Бб Вв Гг Дд Ђђ Ее Жж Зз Ии Јј Кк Лл Љљ Мм Нн Њњ Оо Пп Рр Сс Тт Ћћ Уу Фф Хх Цц Чч Џџ Шш 0123456789 !?</string>
     <string name="food_and_drink">Храна и пиће</string>
     <string name="nature_and_animals">Природа и животиње</string>
     <string name="symbols">Симболи</string>
@@ -2174,4 +2172,13 @@
     <string name="draw_signature">Драв Сигнатуре</string>
     <string name="pen_params">Пен Парамс</string>
     <string name="draw_signature_sub">Користите сопствени потпис као слику која се поставља на документе</string>
+    <string name="zip_pdf">Зип ПДФ</string>
+    <string name="zip_pdf_sub">Поделите документ са датим интервалом и спакујте нове документе у зип архиву</string>
+    <string name="interval">Интервал</string>
+    <string name="print_pdf">Штампај ПДФ</string>
+    <string name="print_pdf_sub">Припремите документ за штампање са прилагођеном величином странице</string>
+    <string name="pages_per_sheet">Странице по листу</string>
+    <string name="orientation">Оријентација</string>
+    <string name="page_size">Величина странице</string>
+    <string name="margin">Маргина</string>
 </resources>

@@ -490,6 +490,7 @@ or click one of the badges below.
     - [x] Block Glitch
     - [x] Crt Curvature
     - [x] Pixel Melt
+    - [x] Bloom
 
 
   </details>
@@ -682,6 +683,8 @@ or click one of the badges below.
     - Crop
     - Flatten
     - Extract Images
+    - Zip PDF
+    - Print PDF
     - PDF to Text (OCR)
 - Document Scanning
 - AI tools (95+ ready to use models available)

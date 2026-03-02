@@ -353,13 +353,15 @@ sealed class Screen(
                     Signature(),
                     Compress(),
                     Flatten(),
+                    Print(),
                     Grayscale(),
                     Repair(),
                     Protect(),
                     Unlock(),
                     Metadata(),
                     ExtractImages(),
-                    OCR()
+                    OCR(),
+                    ZipConvert(),
                 )
             }
         }
@@ -525,6 +527,25 @@ sealed class Screen(
             title = R.string.extract_images,
             subtitle = R.string.extract_images_sub
         )
+
+        @Serializable
+        data class ZipConvert(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 62,
+            title = R.string.zip_pdf,
+            subtitle = R.string.zip_pdf_sub
+        )
+
+        @Serializable
+        data class Print(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 63,
+            title = R.string.print_pdf,
+            subtitle = R.string.print_pdf_sub
+        )
+
     }
 
     @Serializable

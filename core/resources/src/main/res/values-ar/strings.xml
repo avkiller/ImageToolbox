@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources>
+  --><resources>
     <string name="language">اللغة</string>
     <string name="amoled_mode">وضع Amoled</string>
     <string name="amoled_mode_sub">إذا تم تمكين لون الأسطح فسيتم ضبطه على الظلام المطلق في الوضع الليلي</string>
@@ -320,7 +318,7 @@
     <string name="font_scale">مقياس الخط</string>
     <string name="restore">استعادة</string>
     <string name="tg_chat_sub">ناقش حول التطبيق واحصل على تعليقات من المستخدمين الآخرين، ويمكنك هنا أيضًا الحصول على تحديثات تجريبية</string>
-    <string name="alphabet_and_numbers">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 !?</string>
+    <string name="alphabet_and_numbers">ا أ إ آ ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي 0123456789 !؟</string>
     <string name="delete">احذف</string>
     <string name="aspect_ratio">نسبة الأبعاد</string>
     <string name="delete_color_scheme_warn">أنت على وشك حذف نظام الألوان المحدد، لا يمكن التراجع عن هذه العملية</string>
@@ -740,7 +738,7 @@
     <string name="erase_background">محو الخلفية</string>
     <string name="blur_radius">طمس نصف قطرها</string>
     <string name="create_issue">إنشاء مشكلة</string>
-    <string name="something_went_wrong_emphasis">عفوًا… حدث خطأ ما. يمكنك الكتابة لي باستخدام الخيارات أدناه وسأحاول إيجاد الحل</string>
+    <string name="something_went_wrong_emphasis">عفوًا… حدث خطأ ما. يمكنك الكتابة إليَّ باستخدام الخيارات أدناه وسأحاول إيجاد حل</string>
     <string name="resize_and_convert">تغيير الحجم والتحويل</string>
     <string name="resize_and_convert_sub">غيّر حجم الصور المعينة أو تحويلها إلى تنسيقات أخرى. يمكن أيضًا تحرير بيانات EXIF التعريفية هنا في حالة اختيار صورة واحدة.</string>
     <string name="max_colors_count">الحد الأقصى لعدد الألوان</string>
@@ -939,7 +937,7 @@
     <string name="font_size">حجم الخط</string>
     <string name="watermark_size">حجم العلامة المائية</string>
     <string name="repeat_text">تكرار النص</string>
-    <string name="tag_strip_offsets">إزاحة الشريط</string>
+    <string name="tag_strip_offsets">إزالة الإزاحات</string>
     <string name="tag_rows_per_strip">الصفوف لكل قطاع</string>
     <string name="tag_strip_byte_counts">تجريد عدد البايتات</string>
     <string name="tag_jpeg_interchange_format">تنسيق التبادل JPEG</string>
@@ -947,16 +945,16 @@
     <string name="tag_transfer_function">وظيفة النقل</string>
     <string name="tag_primary_chromaticities">اللونيات الأولية</string>
     <string name="tag_y_cb_cr_coefficients">معاملات Y Cb Cr</string>
-    <string name="tag_reference_black_white">مرجع أسود أبيض</string>
-    <string name="tag_color_space">مساحة اللون</string>
-    <string name="tag_pixel_x_dimension">البعد بكسل X</string>
-    <string name="tag_pixel_y_dimension">البعد بكسل Y</string>
-    <string name="tag_compressed_bits_per_pixel">البتات المضغوطة لكل بكسل</string>
-    <string name="tag_maker_note">ملاحظة صانع</string>
-    <string name="tag_datetime_digitized">التاريخ والوقت رقمي</string>
-    <string name="tag_offset_time">وقت الأوفست</string>
-    <string name="tag_offset_time_original">إزاحة الوقت الأصلي</string>
-    <string name="tag_offset_time_digitized">إزاحة الوقت الرقمي</string>
+    <string name="tag_reference_black_white">مرجعية الاسود الابيض</string>
+    <string name="tag_color_space">نطاق الألوان</string>
+    <string name="tag_pixel_x_dimension">بكسل × البعد</string>
+    <string name="tag_pixel_y_dimension">بكسل بُعد ص</string>
+    <string name="tag_compressed_bits_per_pixel">البت المضغوطة لكل بكسل</string>
+    <string name="tag_maker_note">ملاحظة الصانع</string>
+    <string name="tag_datetime_digitized">الوقت والتاريخ المرقم</string>
+    <string name="tag_offset_time">وقت الإزاحة</string>
+    <string name="tag_offset_time_original">وقت الإزاحة الأصلي</string>
+    <string name="tag_offset_time_digitized">وقت الإزاحة المرقم</string>
     <string name="tag_subsec_time">الوقت الفرعي ثانية</string>
     <string name="tag_subsec_time_original">الوقت الفرعي للثانية الأصلي</string>
     <string name="tag_subsec_time_digitized">وقت فرعي رقمي</string>
@@ -1084,8 +1082,8 @@
     <string name="document_scanner_sub">قم بمسح المستندات ضوئيًا وإنشاء ملف PDF أو فصل الصور عنها</string>
     <string name="click_to_start_scanning">انقر لبدء المسح</string>
     <string name="start_scanning">ابدأ المسح</string>
-    <string name="save_as_pdf">حفظ بصيغة PDF</string>
-    <string name="share_as_pdf">شارك بصيغة PDF</string>
+    <string name="save_as_pdf">احفظ ك PDF</string>
+    <string name="share_as_pdf">شارك ك PDF</string>
     <string name="options_below_is_for_images">الخيارات أدناه مخصصة لحفظ الصور، وليس PDF</string>
     <string name="equalize_histogram_hsv">معادلة الرسم البياني HSV</string>
     <string name="equalize_histogram">معادلة الرسم البياني</string>
@@ -2177,4 +2175,13 @@
     <string name="draw_signature">رسم التوقيع</string>
     <string name="pen_params">معلمات القلم</string>
     <string name="draw_signature_sub">استخدم التوقيع الخاص كصورة لوضعها على المستندات</string>
+    <string name="zip_pdf">الرمز البريدي PDF</string>
+    <string name="zip_pdf_sub">قم بتقسيم المستند بفاصل زمني محدد وحزم المستندات الجديدة في أرشيف مضغوط</string>
+    <string name="interval">فاصلة</string>
+    <string name="print_pdf">طباعة قوات الدفاع الشعبي</string>
+    <string name="print_pdf_sub">قم بإعداد المستند للطباعة بحجم صفحة مخصص</string>
+    <string name="pages_per_sheet">صفحات لكل ورقة</string>
+    <string name="orientation">توجيه</string>
+    <string name="page_size">حجم الصفحة</string>
+    <string name="margin">هامِش</string>
 </resources>

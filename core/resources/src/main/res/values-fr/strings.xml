@@ -14,9 +14,7 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  -->
-
-<resources>
+  --><resources>
     <string name="smth_went_wrong">Quelque chose s\'est mal passé: %1$s</string>
     <string name="size">Dimension %1$s</string>
     <string name="loading">Chargement…</string>
@@ -186,7 +184,7 @@
     <string name="color_filter">Filtre de couleur</string>
     <string name="brightness">Luminosité</string>
     <string name="saturation">Saturation</string>
-    <string name="filter_sub">Appliquer des chaînes de filtres aux images</string>
+    <string name="filter_sub">Appliquer des filtres aux images</string>
     <string name="alpha">Alpha</string>
     <string name="white_balance">Balance des blancs</string>
     <string name="temperature">Température</string>
@@ -265,7 +263,7 @@
     <string name="draw_sub">Dessinez sur l\'image comme dans un carnet de croquis, ou dessinez sur l\'arrière-plan lui-même</string>
     <string name="paint_alpha">Peinture alpha</string>
     <string name="draw_on_image">Dessiner sur l’image</string>
-    <string name="draw_on_background">Dessiner en arrière-plan</string>
+    <string name="draw_on_background">Dessiner sur fond uni</string>
     <string name="draw_on_background_sub">Choisissez la couleur de fond et dessinez dessus</string>
     <string name="background_color">Couleur d\'arrière-plan</string>
     <string name="paint_color">Couleur de peinture</string>
@@ -336,7 +334,7 @@
     <string name="font_scale">Taille de la Police</string>
     <string name="defaultt">Défaut</string>
     <string name="using_large_fonts_warn">L’utilisation de grandes échelles de police peut provoquer des erreurs d’interface utilisateur ainsi que d\'autres problèmes qui ne seront pas corrigés. A utiliser avec précaution.</string>
-    <string name="alphabet_and_numbers">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 !?</string>
+    <string name="alphabet_and_numbers">Aa Àà Ââ Ææ Bb Cc Çç Dd Ee Éé Èè Êê Ëë Ff Gg Hh Ii Îî Ïï Jj Kk Ll Mm Nn Oo Ôô Œœ Pp Qq Rr Ss Tt Uu Ùù Ûû Üü Vv Ww Xx Yy Zz 0123456789 !?</string>
     <string name="emotions">Emotions</string>
     <string name="food_and_drink">Nourriture et Boisson</string>
     <string name="nature_and_animals">Nature et animaux</string>
@@ -345,7 +343,7 @@
     <string name="enable_emoji">Activer les emoji</string>
     <string name="travels_and_places">Voyages et lieux</string>
     <string name="activities">Activités</string>
-    <string name="background_remover">Suppresseur d\'Arrière-plan</string>
+    <string name="background_remover">Suppresseur d\'arrière-plan</string>
     <string name="background_remover_sub">Supprimer l’arrière-plan de l’image par dessin ou utiliser l’option Auto</string>
     <string name="trim_image">Couper l’image</string>
     <string name="keep_exif_sub">Les métadonnées de l\'image originale seront conservées</string>
@@ -1438,7 +1436,7 @@
     <string name="custom_options">Options personnalisées</string>
     <string name="custom_params_info">Les options doivent être saisies en suivant ce modèle : \"--{option_name} {value}\"</string>
     <string name="auto_crop">Recadrage automatique</string>
-    <string name="free_corners">Coins gratuits</string>
+    <string name="free_corners">Coins Libres</string>
     <string name="free_corners_sub">Recadrer l\'image par polygone, cela corrige également la perspective</string>
     <string name="coerce_points_to_image_bounds">Contraindre les points aux limites de l\'image</string>
     <string name="coerce_points_to_image_bounds_sub">Les points ne seront pas limités par les limites de l\'image, ce qui est utile pour une correction de perspective plus précise</string>
@@ -1499,7 +1497,7 @@
     <string name="enable_tonemapping">Activer le mappage de tons</string>
     <string name="enter_percent">Entrer %</string>
     <string name="unknown_host">Impossible d\'accéder au site, essayez d\'utiliser un VPN ou vérifiez si l\'URL est correcte</string>
-    <string name="markup_layers">Couches de balisage</string>
+    <string name="markup_layers">Calques</string>
     <string name="markup_layers_sub">Mode Calques avec possibilité de placer librement des images, du texte et plus encore</string>
     <string name="edit_layer">Modifier le calque</string>
     <string name="layers_on_image">Calques sur l\'image</string>
@@ -1882,8 +1880,8 @@
     <string name="chroma">Chroma</string>
     <string name="pixel_melt">Fusion de pixels</string>
     <string name="max_drop">Chute maximale</string>
-    <string name="ai_tools">Outils d\'IA</string>
-    <string name="ai_tools_sub">Divers outils pour traiter les images via des modèles d\'IA comme la suppression ou le débruitage d\'artefacts</string>
+    <string name="ai_tools">Outils IA</string>
+    <string name="ai_tools_sub">Divers outils pour traiter les images via des modèles IA comme la suppression ou le débruitage d\'artefacts</string>
     <string name="model_anime_undeint">Compression, lignes irrégulières</string>
     <string name="model_broadcast">Dessins animés, compression de diffusion</string>
     <string name="model_rgb_max_denoise_fp16">Compression générale, bruit général</string>
@@ -2173,4 +2171,13 @@
     <string name="draw_signature">Dessiner une signature</string>
     <string name="pen_params">Paramètres du stylo</string>
     <string name="draw_signature_sub">Utiliser votre propre signature comme image à placer sur les documents</string>
+    <string name="zip_pdf">Zip PDF</string>
+    <string name="zip_pdf_sub">Divisez le document avec un intervalle donné et regroupez les nouveaux documents dans une archive zip</string>
+    <string name="interval">Intervalle</string>
+    <string name="print_pdf">Imprimer le PDF</string>
+    <string name="print_pdf_sub">Préparer le document pour l\'impression avec un format de page personnalisé</string>
+    <string name="pages_per_sheet">Pages par feuille</string>
+    <string name="orientation">Orientation</string>
+    <string name="page_size">Taille des pages</string>
+    <string name="margin">Marge</string>
 </resources>

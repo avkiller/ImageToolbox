@@ -102,6 +102,8 @@ import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr.OCRPdfToolConte
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr.screenLogic.OCRPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.PageNumbersPdfToolContent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.screenLogic.PageNumbersPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.print.PrintPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.print.screenLogic.PrintPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.protect.ProtectPdfToolContent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.protect.screenLogic.ProtectPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.rearrange.RearrangePdfToolContent
@@ -122,6 +124,8 @@ import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.unlock.UnlockPdfToo
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.unlock.screenLogic.UnlockPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.WatermarkPdfToolContent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.screenLogic.WatermarkPdfToolComponent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.zip_convert.ZipConvertPdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.zip_convert.screenLogic.ZipConvertPdfToolComponent
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.PickColorFromImageContent
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.screenLogic.PickColorFromImageComponent
 import com.t8rin.imagetoolbox.feature.recognize.text.presentation.RecognizeTextContent
@@ -504,4 +508,15 @@ internal sealed interface NavigationChild {
         @Composable
         override fun Content() = ExtractImagesPdfToolContent(component)
     }
+
+    class ZipConvertPdfTool(private val component: ZipConvertPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = ZipConvertPdfToolContent(component)
+    }
+
+    class PrintPdfTool(private val component: PrintPdfToolComponent) : NavigationChild {
+        @Composable
+        override fun Content() = PrintPdfToolContent(component)
+    }
+
 }

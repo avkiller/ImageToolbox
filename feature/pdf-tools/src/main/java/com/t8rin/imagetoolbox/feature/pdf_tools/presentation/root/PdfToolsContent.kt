@@ -229,6 +229,7 @@ fun PdfToolsContent(
                                     is Screen.PdfTools.Signature -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.Compress -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.Flatten -> screen.copy(uri = tempSelectionUri)
+                                    is Screen.PdfTools.Print -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.Grayscale -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.Repair -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.Protect -> screen.copy(uri = tempSelectionUri)
@@ -236,6 +237,7 @@ fun PdfToolsContent(
                                     is Screen.PdfTools.Metadata -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.ExtractImages -> screen.copy(uri = tempSelectionUri)
                                     is Screen.PdfTools.OCR -> screen.copy(uri = tempSelectionUri)
+                                    is Screen.PdfTools.ZipConvert -> screen.copy(uri = tempSelectionUri)
                                     else -> screen
                                 }
                             )

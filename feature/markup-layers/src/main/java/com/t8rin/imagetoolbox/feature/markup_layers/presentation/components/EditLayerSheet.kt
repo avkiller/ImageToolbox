@@ -32,7 +32,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.FormatAlignLeft
+import androidx.compose.material.icons.automirrored.rounded.FormatAlignRight
 import androidx.compose.material.icons.outlined.BorderColor
+import androidx.compose.material.icons.rounded.FormatAlignCenter
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -68,6 +71,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ColorRowSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.FontSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSliderItem
@@ -83,6 +87,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextFieldColors
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
 import com.t8rin.imagetoolbox.feature.markup_layers.domain.DomainTextDecoration
 import com.t8rin.imagetoolbox.feature.markup_layers.domain.LayerType
+import com.t8rin.imagetoolbox.feature.markup_layers.domain.LayerType.Text.Alignment
 import com.t8rin.imagetoolbox.feature.markup_layers.presentation.components.model.UiMarkupLayer
 import com.t8rin.imagetoolbox.feature.markup_layers.presentation.components.model.icon
 
@@ -186,12 +191,43 @@ internal fun EditLayerSheet(
                             containerColor = SafeLocalContainerColor
                         ),
                         modifier = Modifier.container(
-                            shape = ShapeDefaults.default,
+                            shape = ShapeDefaults.top,
                             color = MaterialTheme.colorScheme.surface,
                             resultPadding = 8.dp
                         ),
                         keyboardOptions = KeyboardOptions(),
                         singleLine = false
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    EnhancedButtonGroup(
+                        modifier = Modifier
+                            .container(
+                                shape = ShapeDefaults.bottom,
+                                color = MaterialTheme.colorScheme.surface
+                            ),
+                        title = stringResource(id = R.string.alignment),
+                        entries = Alignment.entries,
+                        value = type.alignment,
+                        onValueChange = {
+                            onUpdateLayer(
+                                layer.copy(
+                                    type = type.copy(alignment = it)
+                                )
+                            )
+                        },
+                        itemContent = {
+                            Icon(
+                                imageVector = when (it) {
+                                    Alignment.Start -> Icons.AutoMirrored.Rounded.FormatAlignLeft
+                                    Alignment.Center -> Icons.Rounded.FormatAlignCenter
+                                    Alignment.End -> Icons.AutoMirrored.Rounded.FormatAlignRight
+                                },
+                                contentDescription = null
+                            )
+                        },
+                        activeButtonColor = MaterialTheme.colorScheme.secondaryContainer,
+                        inactiveButtonColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        isScrollable = false
                     )
                     Spacer(Modifier.height(8.dp))
                     FontSelector(
