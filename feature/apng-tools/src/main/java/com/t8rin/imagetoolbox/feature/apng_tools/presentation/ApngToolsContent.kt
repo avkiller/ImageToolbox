@@ -30,22 +30,17 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Gif
-import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -58,7 +53,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -66,15 +60,19 @@ import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormatGroup
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Apng
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Gif
+import com.t8rin.imagetoolbox.core.resources.icons.SelectAll
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -97,6 +95,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.core.utils.isApng
 import com.t8rin.imagetoolbox.feature.apng_tools.presentation.components.ApngParamsSelector
 import com.t8rin.imagetoolbox.feature.apng_tools.presentation.screenLogic.ApngToolsComponent
@@ -105,9 +104,6 @@ import com.t8rin.imagetoolbox.feature.apng_tools.presentation.screenLogic.ApngTo
 fun ApngToolsContent(
     component: ApngToolsComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val imagePicker = rememberImagePicker(onSuccess = component::setImageUris)
 
     val pickSingleApngLauncher = rememberFilePicker(
@@ -116,8 +112,8 @@ fun ApngToolsContent(
             if (uri.isApng()) {
                 component.setApngUri(uri)
             } else {
-                essentials.showToast(
-                    message = essentials.getString(R.string.select_apng_image_to_start),
+                AppToastHost.showToast(
+                    message = getString(R.string.select_apng_image_to_start),
                     icon = Icons.Rounded.Apng
                 )
             }
@@ -131,8 +127,8 @@ fun ApngToolsContent(
                 it.isApng()
             }.let { uris ->
                 if (uris.isEmpty()) {
-                    essentials.showToast(
-                        message = essentials.getString(R.string.select_apng_image_to_start),
+                    AppToastHost.showToast(
+                        message = getString(R.string.select_apng_image_to_start),
                         icon = Icons.Rounded.Apng
                     )
                 } else {
@@ -151,9 +147,9 @@ fun ApngToolsContent(
                 it.isApng()
             }.let { uris ->
                 if (uris.isEmpty()) {
-                    essentials.showToast(
-                        message = essentials.getString(R.string.select_gif_image_to_start),
-                        icon = Icons.Filled.Gif
+                    AppToastHost.showToast(
+                        message = getString(R.string.select_gif_image_to_start),
+                        icon = Icons.Rounded.Gif
                     )
                 } else {
                     component.setType(
@@ -170,12 +166,7 @@ fun ApngToolsContent(
 
     val saveApngLauncher = rememberFileCreator(
         mimeType = MimeType.Apng,
-        onSuccess = { uri ->
-            component.saveApngTo(
-                uri = uri,
-                onResult = essentials::parseFileSaveResult
-            )
-        }
+        onSuccess = component::saveApngTo
     )
 
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
@@ -263,9 +254,7 @@ fun ApngToolsContent(
             }
             ShareButton(
                 enabled = !component.isLoading && component.type != null,
-                onShare = {
-                    component.performSharing(showConfetti)
-                },
+                onShare = component::performSharing,
                 onEdit = {
                     component.cacheImages {
                         editSheetData = it
@@ -307,7 +296,7 @@ fun ApngToolsContent(
 
                             is Screen.ApngTools.Type.ApngToJxl -> {
                                 UrisPreview(
-                                    modifier = Modifier.urisPreview(),
+                                    modifier = Modifier.urisPreview(isPortrait = isPortrait),
                                     uris = type.apngUris ?: emptyList(),
                                     isPortrait = true,
                                     onRemoveUri = {
@@ -390,8 +379,7 @@ fun ApngToolsContent(
             val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
                 component.saveBitmaps(
                     oneTimeSaveLocationUri = it,
-                    onApngSaveResult = saveApngLauncher::make,
-                    onResult = essentials::parseSaveResults
+                    onApngSaveResult = saveApngLauncher::make
                 )
             }
             var showFolderSelectionDialog by rememberSaveable {
@@ -482,20 +470,13 @@ fun ApngToolsContent(
                     preference3()
                 }
             } else {
-                val direction = LocalLayoutDirection.current
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+                    )
                 ) {
-                    Row(
-                        modifier = Modifier.padding(
-                            WindowInsets.displayCutout.asPaddingValues().let {
-                                PaddingValues(
-                                    start = it.calculateStartPadding(direction),
-                                    end = it.calculateEndPadding(direction)
-                                )
-                            }
-                        )
-                    ) {
+                    Row {
                         preference1.withModifier(modifier = Modifier.weight(1f))
                         Spacer(modifier = Modifier.width(8.dp))
                         preference2.withModifier(modifier = Modifier.weight(1f))

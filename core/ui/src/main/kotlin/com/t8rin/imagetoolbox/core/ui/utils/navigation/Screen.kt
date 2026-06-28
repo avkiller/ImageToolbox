@@ -20,26 +20,25 @@
 package com.t8rin.imagetoolbox.core.ui.utils.navigation
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoFixHigh
-import androidx.compose.material.icons.outlined.Collections
-import androidx.compose.material.icons.outlined.FilePresent
-import androidx.compose.material.icons.rounded.Animation
-import androidx.compose.material.icons.rounded.Gif
-import androidx.compose.material.icons.rounded.Texture
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Animation
 import com.t8rin.imagetoolbox.core.resources.icons.Apng
 import com.t8rin.imagetoolbox.core.resources.icons.ArtTrack
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
 import com.t8rin.imagetoolbox.core.resources.icons.Exif
+import com.t8rin.imagetoolbox.core.resources.icons.FilePresent
+import com.t8rin.imagetoolbox.core.resources.icons.Gif
 import com.t8rin.imagetoolbox.core.resources.icons.Jpg
 import com.t8rin.imagetoolbox.core.resources.icons.Jxl
-import com.t8rin.imagetoolbox.core.resources.icons.Preview
-import com.t8rin.imagetoolbox.core.resources.icons.Scanner
+import com.t8rin.imagetoolbox.core.resources.icons.Pdf
 import com.t8rin.imagetoolbox.core.resources.icons.TextSearch
+import com.t8rin.imagetoolbox.core.resources.icons.Texture
 import com.t8rin.imagetoolbox.core.resources.icons.Webp
+import com.t8rin.imagetoolbox.core.settings.presentation.model.Setting
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -79,8 +78,33 @@ sealed class Screen(
     )
 
     @Serializable
+    data object AppLogs : Screen(
+        id = -6,
+        title = 0,
+        subtitle = 0
+    )
+
+    @Serializable
+    data class Help(
+        val categoryName: String? = null,
+        val tipId: String? = null
+    ) : Screen(
+        id = -7,
+        title = 0,
+        subtitle = 0
+    )
+
+    @Serializable
+    data object UsageStatistics : Screen(
+        id = -8,
+        title = 0,
+        subtitle = 0
+    )
+
+    @Serializable
     data class Settings(
-        val searchQuery: String = ""
+        val searchQuery: String = "",
+        val targetSetting: Setting? = null
     ) : Screen(
         id = -3,
         title = 0,
@@ -153,7 +177,7 @@ sealed class Screen(
 
             val icon: ImageVector
                 get() = when (this) {
-                    is Masking -> Icons.Rounded.Texture
+                    is Masking -> Icons.Outlined.Texture
                     is Basic -> Icons.Outlined.AutoFixHigh
                 }
 
@@ -284,86 +308,38 @@ sealed class Screen(
     )
 
     @Serializable
-    data class PdfTools(
-        @SerialName("dataType") val type: Type? = null
-    ) : Screen(
+    data object PdfTools : Screen(
         id = 16,
         title = R.string.pdf_tools,
         subtitle = R.string.pdf_tools_sub
     ) {
-        @Serializable
-        sealed class Type(
-            @StringRes val title: Int,
-            @StringRes val subtitle: Int
-        ) {
-
-            val icon: ImageVector
-                get() = when (this) {
-                    is ImagesToPdf -> Icons.Outlined.Scanner
-                    is PdfToImages -> Icons.Outlined.ArtTrack
-                    is Preview -> Icons.Outlined.Preview
-                }
-
-            @Serializable
-            data class Preview(
-                val pdfUri: Uri? = null
-            ) : Type(
-                title = R.string.preview_pdf,
-                subtitle = R.string.preview_pdf_sub
+        val options: List<Screen> by lazy {
+            listOf(
+                Preview(),
+                ImagesToPdf(),
+                ExtractPages(),
+                Merge(),
+                Split(),
+                RemovePages(),
+                Rotate(),
+                Rearrange(),
+                Crop(),
+                PageNumbers(),
+                Watermark(),
+                Signature(),
+                Compress(),
+                RemoveAnnotations(),
+                Flatten(),
+                Print(),
+                Grayscale(),
+                Repair(),
+                Protect(),
+                Unlock(),
+                Metadata(),
+                ExtractImages(),
+                OCR(),
+                ZipConvert(),
             )
-
-            @Serializable
-            data class PdfToImages(
-                val pdfUri: Uri? = null
-            ) : Type(
-                title = R.string.pdf_to_images,
-                subtitle = R.string.pdf_to_images_sub
-            )
-
-            @Serializable
-            data class ImagesToPdf(
-                val imageUris: List<Uri>? = null
-            ) : Type(
-                title = R.string.images_to_pdf,
-                subtitle = R.string.images_to_pdf_sub
-            )
-
-            companion object {
-                val entries by lazy {
-                    listOf(
-                        Preview(),
-                        PdfToImages(),
-                        ImagesToPdf()
-                    )
-                }
-            }
-        }
-
-        companion object {
-            val options: List<Screen> by lazy {
-                listOf(
-                    Merge(),
-                    Split(),
-                    RemovePages(),
-                    Rotate(),
-                    Rearrange(),
-                    Crop(),
-                    PageNumbers(),
-                    Watermark(),
-                    Signature(),
-                    Compress(),
-                    Flatten(),
-                    Print(),
-                    Grayscale(),
-                    Repair(),
-                    Protect(),
-                    Unlock(),
-                    Metadata(),
-                    ExtractImages(),
-                    OCR(),
-                    ZipConvert(),
-                )
-            }
         }
 
         @Serializable
@@ -425,7 +401,7 @@ sealed class Screen(
             val uri: Uri? = null
         ) : Screen(
             id = 50,
-            title = R.string.watermarking,
+            title = R.string.watermark_pdf,
             subtitle = R.string.watermark_pdf_sub
         )
 
@@ -546,6 +522,41 @@ sealed class Screen(
             subtitle = R.string.print_pdf_sub
         )
 
+        @Serializable
+        data class Preview(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 64,
+            title = R.string.preview_pdf,
+            subtitle = R.string.preview_pdf_sub
+        )
+
+        @Serializable
+        data class ImagesToPdf(
+            val uris: List<Uri>? = null
+        ) : Screen(
+            id = 65,
+            title = R.string.images_to_pdf,
+            subtitle = R.string.images_to_pdf_sub
+        )
+
+        @Serializable
+        data class ExtractPages(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 66,
+            title = R.string.pdf_to_images,
+            subtitle = R.string.pdf_to_images_sub
+        )
+
+        @Serializable
+        data class RemoveAnnotations(
+            val uri: Uri? = null
+        ) : Screen(
+            id = 67,
+            title = R.string.remove_annotations,
+            subtitle = R.string.remove_annotations_sub
+        )
     }
 
     @Serializable
@@ -567,6 +578,7 @@ sealed class Screen(
                     is Extraction -> Icons.Outlined.TextSearch
                     is WriteToFile -> Icons.Outlined.FilePresent
                     is WriteToMetadata -> Icons.Outlined.Exif
+                    is WriteToSearchablePdf -> Icons.Outlined.Pdf
                 }
 
             @Serializable
@@ -593,12 +605,21 @@ sealed class Screen(
                 subtitle = R.string.ocr_write_to_metadata_sub
             )
 
+            @Serializable
+            data class WriteToSearchablePdf(
+                val uris: List<Uri>? = null
+            ) : Type(
+                title = R.string.ocr_write_to_searchable_pdf,
+                subtitle = R.string.ocr_write_to_searchable_pdf_sub
+            )
+
             companion object {
                 val entries by lazy {
                     listOf(
                         Extraction(),
                         WriteToFile(),
-                        WriteToMetadata()
+                        WriteToMetadata(),
+                        WriteToSearchablePdf()
                     )
                 }
             }
@@ -639,7 +660,7 @@ sealed class Screen(
 
             val icon: ImageVector
                 get() = when (this) {
-                    is GifToImage -> Icons.Outlined.Collections
+                    is GifToImage -> Icons.Outlined.ArtTrack
                     is GifToJxl -> Icons.Filled.Jxl
                     is ImageToGif -> Icons.Rounded.Gif
                     is GifToWebp -> Icons.Rounded.Webp
@@ -706,7 +727,7 @@ sealed class Screen(
 
             val icon: ImageVector
                 get() = when (this) {
-                    is ApngToImage -> Icons.Outlined.Collections
+                    is ApngToImage -> Icons.Outlined.ArtTrack
                     is ApngToJxl -> Icons.Filled.Jxl
                     is ImageToApng -> Icons.Rounded.Apng
                 }
@@ -774,7 +795,7 @@ sealed class Screen(
                 get() = when (this) {
                     is ImageToJxl -> Icons.Rounded.Animation
                     is JpegToJxl -> Icons.Filled.Jxl
-                    is JxlToImage -> Icons.Outlined.Collections
+                    is JxlToImage -> Icons.Outlined.ArtTrack
                     is JxlToJpeg -> Icons.Outlined.Jpg
                 }
 
@@ -899,7 +920,7 @@ sealed class Screen(
 
             val icon: ImageVector
                 get() = when (this) {
-                    is WebpToImage -> Icons.Outlined.Collections
+                    is WebpToImage -> Icons.Outlined.ArtTrack
                     is ImageToWebp -> Icons.Rounded.Webp
                 }
 
@@ -1039,7 +1060,15 @@ sealed class Screen(
         subtitle = R.string.color_library_sub
     )
 
+    @Serializable
+    data object ShaderStudio : Screen(
+        id = 83,
+        title = R.string.shader_studio,
+        subtitle = R.string.shader_studio_sub
+    )
+
     companion object : ScreenConstants by ScreenConstants
+
 }
 
 data class ScreenGroup(

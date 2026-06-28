@@ -26,8 +26,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ZoomIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,22 +33,29 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.colors.parser.ColorNameParser
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.AddPhotoAlt
+import com.t8rin.imagetoolbox.core.resources.icons.ZoomIn
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSimpleSettingsInteractor
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.PanModeButton
+import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ColorCopyFormatSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
@@ -69,17 +74,20 @@ fun PickColorFromImageContent(
 ) {
     val settingsState = LocalSettingsState.current
 
-    val essentials = rememberLocalEssentials()
+    val scope = rememberCoroutineScope()
 
     var panEnabled by rememberSaveable { mutableStateOf(false) }
 
     AutoContentBasedColors(component.bitmap)
     AutoContentBasedColors(component.color)
+    val displayColor = component.color.takeOrElse { Color.Transparent }
+    val displayColorName = remember(displayColor) {
+        ColorNameParser.parseColorName(displayColor)
+    }
 
     val imagePicker = rememberImagePicker { uri: Uri ->
         component.setUri(
-            uri = uri,
-            onFailure = essentials::showFailureToast
+            uri = uri
         )
     }
 
@@ -116,7 +124,7 @@ fun PickColorFromImageContent(
             },
             enableAutoShadowAndBorder = false,
             onClick = {
-                essentials.launch {
+                scope.launch {
                     settingsInteractor.toggleMagnifierEnabled()
                 }
             },
@@ -132,6 +140,9 @@ fun PickColorFromImageContent(
     var showOneTimeImagePickingDialog by rememberSaveable {
         mutableStateOf(false)
     }
+    var showColorCopyDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     Box {
         Scaffold(
@@ -145,7 +156,10 @@ fun PickColorFromImageContent(
                     onGoBack = component.onGoBack,
                     isPortrait = isPortrait,
                     magnifierButton = magnifierButton,
-                    color = component.color
+                    color = displayColor,
+                    onCopyColorRequest = {
+                        showColorCopyDialog = true
+                    }
                 )
             },
             bottomBar = {
@@ -153,7 +167,7 @@ fun PickColorFromImageContent(
                     bitmap = component.bitmap,
                     isPortrait = isPortrait,
                     switch = switch,
-                    color = component.color,
+                    color = displayColor,
                     onPickImage = pickImage,
                     onOneTimePickImage = { showOneTimeImagePickingDialog = true },
                 )
@@ -169,7 +183,7 @@ fun PickColorFromImageContent(
                 onOneTimePickImage = { showOneTimeImagePickingDialog = true },
                 magnifierButton = magnifierButton,
                 switch = switch,
-                color = component.color,
+                color = displayColor,
                 contentPadding = contentPadding
             )
         }
@@ -207,5 +221,12 @@ fun PickColorFromImageContent(
     LoadingDialog(
         visible = component.isImageLoading,
         canCancel = false
+    )
+
+    ColorCopyFormatSelectionDialog(
+        visible = showColorCopyDialog,
+        onDismiss = { showColorCopyDialog = false },
+        color = displayColor,
+        colorName = displayColorName
     )
 }

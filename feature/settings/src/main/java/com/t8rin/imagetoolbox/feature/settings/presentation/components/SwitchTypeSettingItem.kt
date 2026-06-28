@@ -17,20 +17,12 @@
 
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ToggleOff
-import androidx.compose.material.icons.outlined.ToggleOn
-import androidx.compose.material.icons.rounded.Android
-import androidx.compose.material.icons.rounded.RadioButtonChecked
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.Water
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,13 +37,22 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Android
 import com.t8rin.imagetoolbox.core.resources.icons.Cube
 import com.t8rin.imagetoolbox.core.resources.icons.HyperOS
 import com.t8rin.imagetoolbox.core.resources.icons.IOS
 import com.t8rin.imagetoolbox.core.resources.icons.MaterialDesign
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonChecked
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonUnchecked
+import com.t8rin.imagetoolbox.core.resources.icons.SamsungLetter
+import com.t8rin.imagetoolbox.core.resources.icons.ToggleOff
+import com.t8rin.imagetoolbox.core.resources.icons.ToggleOn
+import com.t8rin.imagetoolbox.core.resources.icons.Water
 import com.t8rin.imagetoolbox.core.resources.icons.Windows
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.domain.model.SwitchType
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
@@ -160,6 +161,7 @@ private val SwitchType.title: String
         SwitchType.Cupertino -> stringResource(R.string.cupertino_switch)
         SwitchType.LiquidGlass -> stringResource(R.string.liquid_glass)
         SwitchType.HyperOS -> stringResource(R.string.hyper_os)
+        SwitchType.OneUI -> stringResource(R.string.one_ui)
     }
 
 private val SwitchType.subtitle: String
@@ -172,6 +174,7 @@ private val SwitchType.subtitle: String
         SwitchType.Cupertino -> stringResource(R.string.cupertino_switch_sub)
         SwitchType.LiquidGlass -> stringResource(R.string.liquid_glass_sub)
         SwitchType.HyperOS -> stringResource(R.string.hyper_os_sub)
+        SwitchType.OneUI -> stringResource(R.string.one_ui_sub)
     }
 
 
@@ -184,4 +187,5 @@ private val SwitchType.icon: ImageVector
         SwitchType.Cupertino -> Icons.Rounded.IOS
         SwitchType.LiquidGlass -> Icons.Rounded.Water
         SwitchType.HyperOS -> Icons.Outlined.HyperOS
+        SwitchType.OneUI -> Icons.Outlined.SamsungLetter
     }

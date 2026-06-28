@@ -28,9 +28,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -44,14 +41,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.size.Precision
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Error
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.ui.theme.White
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.MediaCheckBox
@@ -157,14 +157,16 @@ fun MediaImage(
                 error = {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.background(
-                            takeColorFromScheme { isNightMode ->
-                                errorContainer.copy(
-                                    if (isNightMode) 0.25f
-                                    else 1f
-                                ).compositeOver(surface)
-                            }
-                        )
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                takeColorFromScheme { isNightMode ->
+                                    errorContainer.copy(
+                                        if (isNightMode) 0.25f
+                                        else 1f
+                                    ).compositeOverSafe(surface)
+                                }
+                            )
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.BrokenImageAlt,
@@ -181,27 +183,15 @@ fun MediaImage(
         Box(
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
-            if (media.duration != null) {
-                MediaVideoDurationHeader(
-                    modifier = Modifier
-                        .padding(selectedSize.value / 2)
-                        .graphicsLayer {
-                            scaleX = scale.value
-                            scaleY = scale.value
-                        },
-                    media = media,
-                )
-            } else {
-                MediaExtensionHeader(
-                    modifier = Modifier
-                        .padding(selectedSize.value / 2)
-                        .graphicsLayer {
-                            scaleX = scale.value
-                            scaleY = scale.value
-                        },
-                    media = media
-                )
-            }
+            MediaExtensionHeader(
+                modifier = Modifier
+                    .padding(selectedSize.value / 2)
+                    .graphicsLayer {
+                        scaleX = scale.value
+                        scaleY = scale.value
+                    },
+                media = media
+            )
         }
 
         if (media.fileSize > 0) {
@@ -231,8 +221,10 @@ fun MediaImage(
                         MaterialTheme.colorScheme.error
                     } else MaterialTheme.colorScheme.primary,
                     checkedIcon = if (isImageError) {
-                        Icons.Filled.Error
-                    } else Icons.Filled.CheckCircle,
+                        Icons.Rounded.Error
+                    } else {
+                        Icons.Rounded.CheckCircle
+                    },
                     selectionIndex = selectionIndex,
                     modifier = Modifier
                         .clip(ShapeDefaults.circle)

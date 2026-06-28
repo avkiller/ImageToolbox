@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,12 @@
 
 package com.t8rin.imagetoolbox.feature.recognize.text.presentation.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionType
 
@@ -37,23 +32,17 @@ fun RecognitionTypeSelector(
     onValueChange: (RecognitionType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    EnhancedButtonGroup(
         modifier = modifier
-            .container(shape = ShapeDefaults.extraLarge)
-            .animateContentSizeNoClip(),
-        contentAlignment = Alignment.Center
-    ) {
-        EnhancedButtonGroup(
-            modifier = Modifier.padding(8.dp),
-            enabled = true,
-            items = RecognitionType.entries.map { it.translatedName },
-            selectedIndex = RecognitionType.entries.indexOf(value),
-            title = stringResource(id = R.string.recognition_type),
-            onIndexChange = {
-                onValueChange(RecognitionType.entries[it])
-            }
-        )
-    }
+            .container(shape = ShapeDefaults.extraLarge),
+        items = RecognitionType.entries.map { it.translatedName },
+        selectedIndex = RecognitionType.entries.indexOf(value),
+        title = stringResource(id = R.string.recognition_type),
+        isScrollable = false,
+        onIndexChange = {
+            onValueChange(RecognitionType.entries[it])
+        }
+    )
 }
 
 private val RecognitionType.translatedName: String

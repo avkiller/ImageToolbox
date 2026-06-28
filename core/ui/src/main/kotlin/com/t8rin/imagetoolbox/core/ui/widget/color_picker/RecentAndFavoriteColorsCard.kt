@@ -32,10 +32,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.rounded.BookmarkBorder
-import androidx.compose.material.icons.rounded.ContentPasteGo
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -55,14 +51,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
+import com.t8rin.imagetoolbox.core.resources.icons.ContentPasteGo
 import com.t8rin.imagetoolbox.core.resources.icons.DeleteSweep
+import com.t8rin.imagetoolbox.core.resources.icons.History
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSimpleSettingsInteractor
 import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.helper.toModel
+import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ColorRowSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
@@ -78,6 +79,25 @@ import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.math.roundToInt
+
+@Composable
+internal fun BasicColorsCard(
+    value: Color,
+    onValueChange: (Color) -> Unit,
+    allowAlpha: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    ColorRowSelector(
+        value = value,
+        onValueChange = onValueChange,
+        allowAlpha = allowAlpha,
+        title = stringResource(R.string.basic),
+        modifier = modifier.container(
+            shape = ShapeDefaults.extraLarge
+        ),
+        allowCustom = false
+    )
+}
 
 @Composable
 fun RecentAndFavoriteColorsCard(
@@ -102,14 +122,19 @@ fun RecentAndFavoriteColorsCard(
                     shape = ShapeDefaults.extraLarge,
                     resultPadding = 0.dp
                 )
-                .padding(16.dp),
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp,
+                    top = 8.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             BoxAnimatedVisibility(recentColors.isNotEmpty()) {
                 Column {
                     TitleItem(
                         text = stringResource(R.string.recently_used),
-                        icon = Icons.Outlined.History,
+                        icon = Icons.Rounded.History,
                         modifier = Modifier,
                         endContent = {
                             EnhancedIconButton(
@@ -206,7 +231,7 @@ fun RecentAndFavoriteColorsCard(
                 Column {
                     TitleItem(
                         text = stringResource(R.string.favorite),
-                        icon = Icons.Rounded.BookmarkBorder,
+                        icon = Icons.Outlined.Bookmark,
                         modifier = Modifier
                     )
                     Spacer(Modifier.height(12.dp))

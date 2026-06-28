@@ -28,7 +28,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
@@ -61,9 +60,12 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
     private val _uri: MutableState<Uri?> = mutableStateOf(initialUri)
     val uri by _uri
 
-    private val _signatureImage: MutableState<Any> =
-        mutableStateOf("file:///android_asset/svg/emotions/aasparkles.svg".toUri())
-    val signatureImage by _signatureImage
+    init {
+        checkPdf(
+            uri = initialUri,
+            onDecrypted = { _uri.value = it }
+        )
+    }
 
     private val _params: MutableState<PdfSignatureParams> =
         mutableStateOf(PdfSignatureParams())
@@ -106,7 +108,11 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
         save: Boolean = false
     ) {
         registerChanges()
-        _signatureImage.update { data }
+        _params.update {
+            it.copy(
+                signatureImage = data
+            )
+        }
         if (save) {
             updateParams(params.copy(opacity = 1f))
             componentScope.launch {
@@ -116,24 +122,19 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
     }
 
     override fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
-        doSaving(
-            action = {
-                val processed = pdfManager.addSignature(
-                    uri = _uri.value.toString(),
-                    signatureImage = signatureImage,
-                    params = params
-                )
+        doSaving {
+            val processed = pdfManager.addSignature(
+                uri = _uri.value.toString(),
+                params = params
+            )
 
-                fileController.transferBytes(
-                    fromUri = processed,
-                    toUri = uri.toString()
-                ).onSuccess(::registerSave)
-            },
-            onResult = onResult
-        )
+            fileController.transferBytes(
+                fromUri = processed,
+                toUri = uri.toString()
+            ).onSuccess(::registerSave)
+        }
     }
 
     override fun performSharing(
@@ -160,7 +161,6 @@ class SignaturePdfToolComponent @AssistedInject internal constructor(
                     listOf(
                         pdfManager.addSignature(
                             uri = _uri.value.toString(),
-                            signatureImage = signatureImage,
                             params = params
                         ).toUri()
                     )

@@ -18,6 +18,9 @@
 package com.t8rin.imagetoolbox.feature.filters.presentation.screenLogic
 
 import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -25,6 +28,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.applyCanvas
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import coil3.transform.Transformation
 import com.arkivanov.decompose.ComponentContext
@@ -38,6 +45,9 @@ import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
+import com.t8rin.imagetoolbox.core.domain.model.FileModel
+import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
@@ -48,23 +58,39 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.filters.domain.FilterProvider
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.SeamCarvingParams
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
+import com.t8rin.imagetoolbox.core.filters.presentation.model.hasSameState
+import com.t8rin.imagetoolbox.core.filters.presentation.model.hasSameValue
+import com.t8rin.imagetoolbox.core.filters.presentation.model.previewKey
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheetComponent
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.ui.transformation.ImageInfoTransformation
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.scaleToFitCanvas
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.feature.draw.presentation.components.UiPathPaint
 import com.t8rin.imagetoolbox.feature.filters.domain.FilterMaskApplier
 import com.t8rin.imagetoolbox.feature.filters.presentation.components.BasicFilterState
+import com.t8rin.imagetoolbox.feature.filters.presentation.components.BasicPreviewState
+import com.t8rin.imagetoolbox.feature.filters.presentation.components.MaskPreviewState
 import com.t8rin.imagetoolbox.feature.filters.presentation.components.MaskingFilterState
+import com.t8rin.imagetoolbox.feature.filters.presentation.components.MaskingPreviewState
+import com.t8rin.imagetoolbox.feature.filters.presentation.components.PreviewRequest
 import com.t8rin.imagetoolbox.feature.filters.presentation.components.UiFilterMask
 import com.t8rin.imagetoolbox.feature.filters.presentation.components.addEditMaskSheet.AddMaskSheetComponent
+import com.t8rin.imagetoolbox.feature.filters.presentation.screenLogic.FiltersComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import android.graphics.Color as NativeColor
+import android.graphics.Paint as NativePaint
 
 class FiltersComponent @AssistedInject internal constructor(
     @Assisted componentContext: ComponentContext,
@@ -80,11 +106,15 @@ class FiltersComponent @AssistedInject internal constructor(
     private val filterProvider: FilterProvider<Bitmap>,
     private val imageInfoTransformationFactory: ImageInfoTransformation.Factory,
     private val shareProvider: ImageShareProvider<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder,
     addFiltersSheetComponentFactory: AddFiltersSheetComponent.Factory,
     filterTemplateCreationSheetComponent: FilterTemplateCreationSheetComponent.Factory,
     addMaskSheetComponentFactory: AddMaskSheetComponent.Factory,
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
@@ -200,19 +230,40 @@ class FiltersComponent @AssistedInject internal constructor(
     val filterType: Screen.Filter.Type? by _filterType
 
     fun setImageFormat(imageFormat: ImageFormat) {
-        _imageInfo.value = _imageInfo.value.copy(imageFormat = imageFormat)
+        if (_imageInfo.value.imageFormat == imageFormat) return
+        if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+            finalizePendingHistoryTransaction()
+        }
+        beginPendingHistoryTransaction(
+            mode = PendingHistoryMode.FormatChange,
+            commitDelayMillis = formatHistoryTransactionDebounce
+        )
+        _imageInfo.value = _imageInfo.value.copy(
+            imageFormat = imageFormat,
+            quality = imageInfo.quality.coerceIn(imageFormat)
+        )
         updatePreview()
         registerChanges()
+        schedulePendingHistoryCommit()
     }
 
     fun setBasicFilter(uris: List<Uri>?) {
+        clearHistory()
+        registerChangesCleared()
         _filterType.update {
             it as? Screen.Filter.Type.Basic ?: Screen.Filter.Type.Basic(uris)
         }
+        val selectedUri = uris?.firstOrNull()
         _basicFilterState.update {
             it.copy(
                 uris = uris,
-                selectedUri = uris?.firstOrNull()?.also(::updateSelectedUri)
+                selectedUri = selectedUri
+            )
+        }
+        selectedUri?.let {
+            updateSelectedUriInternal(
+                uri = it,
+                resetHistoryAfterLoad = true
             )
         }
     }
@@ -249,8 +300,11 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun setKeepExif(boolean: Boolean) {
+        if (_keepExif.value == boolean) return
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _keepExif.value = boolean
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     private var savingJob: Job? by smartJob {
@@ -258,8 +312,7 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -306,7 +359,7 @@ class FiltersComponent @AssistedInject internal constructor(
                     total = left
                 )
             }
-            onResult(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
@@ -314,6 +367,15 @@ class FiltersComponent @AssistedInject internal constructor(
     fun updateSelectedUri(
         uri: Uri,
         onFailure: (Throwable) -> Unit = {}
+    ) = updateSelectedUriInternal(
+        uri = uri,
+        onFailure = onFailure
+    )
+
+    private fun updateSelectedUriInternal(
+        uri: Uri,
+        onFailure: (Throwable) -> Unit = {},
+        resetHistoryAfterLoad: Boolean = false
     ) {
         runCatching {
             componentScope.launch {
@@ -331,9 +393,13 @@ class FiltersComponent @AssistedInject internal constructor(
                         imageFormat = req?.imageInfo?.imageFormat ?: ImageFormat.Default
                     )
                 }
-                updatePreview()
                 _basicFilterState.update {
                     it.copy(selectedUri = uri)
+                }
+                updatePreview()
+                if (resetHistoryAfterLoad) {
+                    resetHistory()
+                    registerChangesCleared()
                 }
                 _isImageLoading.update { false }
             }
@@ -341,26 +407,50 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     private fun updateCanSave() {
-        _canSave.value =
-            _bitmap.value != null && ((_filterType.value is Screen.Filter.Type.Basic && _basicFilterState.value.filters.isNotEmpty()) || (_filterType.value is Screen.Filter.Type.Masking && _maskingFilterState.value.masks.isNotEmpty()))
+        _canSave.value = calculateCanSave()
         registerChanges()
     }
 
+    private fun calculateCanSave(): Boolean =
+        _bitmap.value != null &&
+                (
+                        _filterType.value is Screen.Filter.Type.Basic &&
+                                _basicFilterState.value.filters.isNotEmpty() ||
+                                _filterType.value is Screen.Filter.Type.Masking &&
+                                _maskingFilterState.value.masks.isNotEmpty()
+                        )
+
     private var filterJob: Job? by smartJob()
+
+    private var lastPreviewRequest: PreviewRequest? = null
 
     fun <T : Any> updateFilter(
         value: T,
-        index: Int,
-        onFailure: (Throwable) -> Unit
+        index: Int
     ) {
         val list = _basicFilterState.value.filters.toMutableList()
         runCatching {
-            list[index] = list[index].copy(value)
+            val current = list[index]
+            val previewRequest = currentPreviewRequest()
+
+            if (current.hasSameValue(value) && previewRequest == lastPreviewRequest) {
+                return@updateFilter
+            }
+
+            val new = current.copy(value)
+
+            if (current.hasSameState(new) && previewRequest == lastPreviewRequest) {
+                return@updateFilter
+            }
+
+            beginPendingHistoryTransaction()
+            list[index] = new
             _basicFilterState.update {
                 it.copy(filters = list)
             }
         }.onFailure { throwable ->
-            onFailure(throwable)
+            AppToastHost.showFailureToast(throwable)
+            beginPendingHistoryTransaction()
             list[index] = list[index].newInstance()
             _basicFilterState.update {
                 it.copy(filters = list)
@@ -368,15 +458,113 @@ class FiltersComponent @AssistedInject internal constructor(
         }
         updateCanSave()
         updatePreview()
+        schedulePendingHistoryCommit()
+    }
+
+    fun updateSeamCarvingMask(
+        filterIndex: Int,
+        paths: List<UiPathPaint>,
+        onComplete: () -> Unit
+    ) {
+        val bitmap = bitmap ?: return
+        val filter = basicFilterState.filters.getOrNull(filterIndex) ?: return
+        val params = filter.value as? SeamCarvingParams ?: return
+
+        componentScope.launch {
+            val uri = withContext(defaultDispatcher) {
+                val mask = renderSeamCarvingMask(
+                    paths = paths,
+                    width = bitmap.width,
+                    height = bitmap.height
+                )
+                shareProvider.cacheImage(
+                    image = mask,
+                    imageInfo = ImageInfo(
+                        width = mask.width,
+                        height = mask.height,
+                        imageFormat = ImageFormat.Png.Lossless
+                    ),
+                    filename = "seam_carving_mask.png"
+                )
+            } ?: return@launch
+
+            updateFilter(
+                value = params.copy(maskFile = FileModel(uri)),
+                index = filterIndex
+            )
+            onComplete()
+        }
+    }
+
+    fun removeSeamCarvingMask(filterIndex: Int) {
+        val filter = basicFilterState.filters.getOrNull(filterIndex) ?: return
+        val params = filter.value as? SeamCarvingParams ?: return
+
+        updateFilter(
+            value = params.copy(
+                maskFile = FileModel(""),
+                useMaskAsRemoval = false,
+            ),
+            index = filterIndex
+        )
+    }
+
+    private fun renderSeamCarvingMask(
+        paths: List<UiPathPaint>,
+        width: Int,
+        height: Int
+    ): Bitmap = createBitmap(width, height).applyCanvas {
+        val canvasSize = IntegerSize(width, height)
+        drawColor(NativeColor.BLACK)
+
+        paths.forEach { pathPaint ->
+            val path = pathPaint.path.scaleToFitCanvas(
+                currentSize = canvasSize,
+                oldSize = pathPaint.canvasSize
+            ).asAndroidPath()
+            val drawPathMode = pathPaint.drawPathMode
+
+            drawPath(
+                path,
+                NativePaint(NativePaint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.White.toArgb()
+                    style = if (!pathPaint.isErasing && drawPathMode.isFilled) {
+                        NativePaint.Style.FILL
+                    } else {
+                        NativePaint.Style.STROKE
+                    }
+                    strokeWidth = pathPaint.strokeWidth.toPx(canvasSize)
+                    strokeCap = if (drawPathMode.isSharpEdge && !pathPaint.isErasing) {
+                        NativePaint.Cap.SQUARE
+                    } else {
+                        NativePaint.Cap.ROUND
+                    }
+                    strokeJoin = NativePaint.Join.ROUND
+
+                    if (pathPaint.isErasing) {
+                        xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+                    }
+                    if (pathPaint.brushSoftness.value > 0f) {
+                        maskFilter = BlurMaskFilter(
+                            pathPaint.brushSoftness.toPx(canvasSize),
+                            BlurMaskFilter.Blur.NORMAL
+                        )
+                    }
+                }
+            )
+        }
     }
 
     fun updateFiltersOrder(value: List<UiFilter<*>>) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _basicFilterState.update {
             it.copy(filters = value)
         }
         filterJob = null
         updateCanSave()
         updatePreview()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun addFilterNewInstance(filter: UiFilter<*>) {
@@ -384,15 +572,20 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun addFilter(filter: UiFilter<*>) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _basicFilterState.update {
             it.copy(filters = it.filters + filter)
         }
         updateCanSave()
         filterJob = null
         updatePreview()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun removeFilterAtIndex(index: Int) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _basicFilterState.update {
             it.copy(
                 filters = it.filters.toMutableList().apply {
@@ -403,11 +596,12 @@ class FiltersComponent @AssistedInject internal constructor(
         updateCanSave()
         filterJob = null
         updatePreview()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun canShow(): Boolean = bitmap?.let { imagePreviewCreator.canShow(it) } == true
 
-    fun performSharing(onComplete: () -> Unit) {
+    fun performSharing() {
         savingJob = trackProgress {
             _isSaving.value = true
             _done.value = 0
@@ -428,7 +622,7 @@ class FiltersComponent @AssistedInject internal constructor(
                         },
                         onProgressChange = {
                             if (it == -1) {
-                                onComplete()
+                                AppToastHost.showConfetti()
                                 _isSaving.value = false
                                 _done.value = 0
                             } else {
@@ -472,7 +666,7 @@ class FiltersComponent @AssistedInject internal constructor(
                                 ),
                                 onComplete = {
                                     _isSaving.value = false
-                                    onComplete()
+                                    AppToastHost.showConfetti()
                                 }
                             )
                         }
@@ -485,13 +679,22 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun setQuality(quality: Quality) {
+        val coercedQuality = quality.coerceIn(imageInfo.imageFormat)
+        if (_imageInfo.value.quality == coercedQuality) return
+        beginPendingHistoryTransaction()
         _imageInfo.update(onValueChanged = ::updatePreview) {
-            it.copy(quality = quality)
+            it.copy(quality = coercedQuality)
         }
+        registerChanges()
+        schedulePendingHistoryCommit()
     }
 
     private fun updatePreview() {
         _bitmap.value?.let { bitmap ->
+            val previewRequest = currentPreviewRequest(bitmap)
+            if (_previewBitmap.value != null && previewRequest == lastPreviewRequest) return
+
+            lastPreviewRequest = previewRequest
             filterJob = componentScope.launch {
                 delay(200L)
                 _isImageLoading.value = true
@@ -545,16 +748,24 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun setMaskFilter(uri: Uri?) {
+        clearHistory()
+        registerChangesCleared()
         _filterType.update {
             it as? Screen.Filter.Type.Masking ?: Screen.Filter.Type.Masking(uri)
         }
-        uri?.let { updateSelectedUri(it) }
+        uri?.let {
+            updateSelectedUriInternal(
+                uri = it,
+                resetHistoryAfterLoad = true
+            )
+        }
         _maskingFilterState.value = MaskingFilterState(uri)
         updatePreview()
         updateCanSave()
     }
 
     fun clearType() {
+        clearHistory()
         _filterType.update { null }
         _basicFilterState.update { BasicFilterState() }
         _maskingFilterState.update { MaskingFilterState() }
@@ -566,8 +777,7 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun saveMaskedBitmap(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (saveResult: SaveResult) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -592,7 +802,7 @@ class FiltersComponent @AssistedInject internal constructor(
                         }
                     }
                 )?.let { localBitmap ->
-                    onComplete(
+                    parseSaveResult(
                         fileController.save(
                             saveTarget = ImageSaveTarget(
                                 imageInfo = imageInfo.copy(
@@ -620,19 +830,22 @@ class FiltersComponent @AssistedInject internal constructor(
     }
 
     fun updateMasksOrder(uiFilterMasks: List<UiFilterMask>) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _maskingFilterState.update {
             it.copy(masks = uiFilterMasks)
         }
         updatePreview()
         updateCanSave()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun updateMask(
         value: UiFilterMask,
-        index: Int,
-        showError: (Throwable) -> Unit
+        index: Int
     ) {
         runCatching {
+            beginPendingHistoryTransaction()
             _maskingFilterState.update {
                 it.copy(
                     masks = it.masks.toMutableList().apply {
@@ -642,10 +855,16 @@ class FiltersComponent @AssistedInject internal constructor(
             }
             updatePreview()
             updateCanSave()
-        }.onFailure(showError)
+            schedulePendingHistoryCommit()
+        }.onFailure {
+            cancelPendingHistoryTransaction()
+            AppToastHost.showFailureToast(it)
+        }
     }
 
     fun removeMaskAtIndex(index: Int) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _maskingFilterState.update {
             it.copy(
                 masks = it.masks.toMutableList().apply {
@@ -655,9 +874,12 @@ class FiltersComponent @AssistedInject internal constructor(
         }
         updatePreview()
         updateCanSave()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun addMask(value: UiFilterMask) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _maskingFilterState.update {
             it.copy(
                 masks = it.masks + value
@@ -665,6 +887,7 @@ class FiltersComponent @AssistedInject internal constructor(
         }
         updatePreview()
         updateCanSave()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun cacheCurrentImage(onComplete: (Uri) -> Unit) {
@@ -829,6 +1052,102 @@ class FiltersComponent @AssistedInject internal constructor(
         else -> null
     }
 
+    private fun currentPreviewRequest(): PreviewRequest? =
+        _bitmap.value?.let(::currentPreviewRequest)
+
+    private fun currentPreviewRequest(bitmap: Bitmap): PreviewRequest = PreviewRequest(
+        bitmapId = System.identityHashCode(bitmap),
+        imageInfo = imageInfo.copy(sizeInBytes = 0),
+        filterType = filterType?.let { it::class.simpleName },
+        basicState = (filterType as? Screen.Filter.Type.Basic)?.let {
+            BasicPreviewState(
+                uris = basicFilterState.uris,
+                selectedUri = basicFilterState.selectedUri,
+                filters = basicFilterState.filters.map { filter ->
+                    filter.previewKey()
+                }
+            )
+        },
+        maskingState = (filterType as? Screen.Filter.Type.Masking)?.let {
+            MaskingPreviewState(
+                uri = maskingFilterState.uri,
+                masks = maskingFilterState.masks.map { mask ->
+                    mask.previewKey()
+                }
+            )
+        }
+    )
+
+    private fun UiFilterMask.previewKey(): MaskPreviewState = MaskPreviewState(
+        filters = filters.map { filter ->
+            filter.previewKey()
+        },
+        maskPaints = maskPaints,
+        isInverseFillType = isInverseFillType
+    )
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        imageInfo = imageInfo.asHistoryImageInfo(),
+        keepExif = keepExif,
+        filterType = filterType,
+        basicFilterState = basicFilterState,
+        maskingFilterState = maskingFilterState,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _imageInfo.update {
+            it.copy(
+                imageFormat = snapshot.imageInfo.imageFormat,
+                quality = snapshot.imageInfo.quality
+            )
+        }
+        val selectedUri = basicFilterState.selectedUri
+        _keepExif.value = snapshot.keepExif
+        _filterType.value = snapshot.filterType
+        _basicFilterState.value = snapshot.basicFilterState.copy(
+            selectedUri = selectedUri
+                ?.takeIf { it in snapshot.basicFilterState.uris.orEmpty() }
+                ?: snapshot.basicFilterState.selectedUri
+        )
+        _maskingFilterState.value = snapshot.maskingFilterState
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        lastPreviewRequest = null
+        filterJob = null
+        _canSave.value = calculateCanSave()
+        updatePreview()
+    }
+
+    override fun hasSameUndoState(
+        first: HistorySnapshot,
+        second: HistorySnapshot
+    ): Boolean = first.normalized() == second.normalized()
+
+    private fun ImageInfo.asHistoryImageInfo(): ImageInfo = ImageInfo(
+        imageFormat = imageFormat,
+        quality = quality
+    )
+
+    private fun HistorySnapshot.normalized(): HistorySnapshot = copy(
+        imageInfo = imageInfo.asHistoryImageInfo(),
+        basicFilterState = basicFilterState.copy(selectedUri = null)
+    )
+
+    data class HistorySnapshot(
+        val imageInfo: ImageInfo = ImageInfo(),
+        val keepExif: Boolean = false,
+        val filterType: Screen.Filter.Type? = null,
+        val basicFilterState: BasicFilterState = BasicFilterState(),
+        val maskingFilterState: MaskingFilterState = MaskingFilterState(),
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
+
     @AssistedFactory
     fun interface Factory {
         operator fun invoke(
@@ -838,5 +1157,4 @@ class FiltersComponent @AssistedInject internal constructor(
             onNavigate: (Screen) -> Unit,
         ): FiltersComponent
     }
-
 }

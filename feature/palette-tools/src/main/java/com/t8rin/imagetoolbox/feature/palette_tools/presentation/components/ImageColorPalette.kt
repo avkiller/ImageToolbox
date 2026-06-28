@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,8 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.colordetector.PaletteData
-import com.smarttoolfactory.colordetector.model.ColorData
+import com.t8rin.colors.PaletteData
+import com.t8rin.colors.model.ColorData
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.PaletteSwatch
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable

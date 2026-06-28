@@ -30,14 +30,11 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
-import androidx.compose.material.icons.automirrored.rounded.NoteAdd
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +47,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
@@ -61,11 +57,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AddPhotoAlt
+import com.t8rin.imagetoolbox.core.resources.icons.File
+import com.t8rin.imagetoolbox.core.resources.icons.RemoveCircle
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.rememberFilename
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.shareUris
-import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedVerticalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
@@ -83,7 +82,7 @@ fun UrisPreview(
     isAddUrisVisible: Boolean = true,
     addUrisContent: @Composable BoxScope.(width: Dp) -> Unit = { width ->
         Icon(
-            imageVector = Icons.AutoMirrored.Rounded.NoteAdd,
+            imageVector = Icons.Outlined.AddPhotoAlt,
             contentDescription = stringResource(R.string.add),
             modifier = Modifier.size(width / 3f)
         )
@@ -91,7 +90,7 @@ fun UrisPreview(
     onClickUri: ((Uri) -> Unit)? = null,
     errorContent: @Composable BoxScope.(index: Int, width: Dp) -> Unit = { _, width ->
         Icon(
-            imageVector = Icons.AutoMirrored.Outlined.InsertDriveFile,
+            imageVector = Icons.Outlined.File,
             contentDescription = null,
             modifier = Modifier
                 .size(width / 3f)
@@ -124,8 +123,10 @@ fun UrisPreview(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            uris.forEachIndexed { index, uri ->
-                if (uri != Uri.EMPTY) {
+            repeat(uris.size + 1) { index ->
+                val uri = uris.getOrNull(index)
+
+                if (uri != null && uri != Uri.EMPTY) {
                     Box(
                         modifier = Modifier.container(
                             shape = ShapeDefaults.extraSmall,
@@ -140,6 +141,7 @@ fun UrisPreview(
                             model = uri,
                             error = {
                                 Box(
+                                    modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.Center,
                                     content = {
                                         errorContent(index, width)
@@ -186,7 +188,7 @@ fun UrisPreview(
                             )
                             if (onRemoveUri != null) {
                                 Icon(
-                                    imageVector = Icons.Rounded.RemoveCircleOutline,
+                                    imageVector = Icons.Outlined.RemoveCircle,
                                     contentDescription = stringResource(R.string.remove),
                                     modifier = Modifier
                                         .padding(4.dp)
@@ -269,25 +271,23 @@ fun UrisPreview(
     }
 }
 
+@Composable
 fun Modifier.urisPreview(
+    isPortrait: Boolean,
     scrollState: ScrollState? = null
-): Modifier = this.composed {
-    val isPortrait by isPortraitOrientationAsState()
-
-    if (!isPortrait) {
-        Modifier
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(
-                    constraints = constraints.copy(
-                        maxHeight = constraints.maxHeight + 48.dp.roundToPx()
-                    )
+): Modifier = this then if (!isPortrait) {
+    Modifier
+        .layout { measurable, constraints ->
+            val placeable = measurable.measure(
+                constraints = constraints.copy(
+                    maxHeight = constraints.maxHeight + 48.dp.roundToPx()
                 )
-                layout(placeable.width, placeable.height) {
-                    placeable.place(0, 0)
-                }
+            )
+            layout(placeable.width, placeable.height) {
+                placeable.place(0, 0)
             }
-            .enhancedVerticalScroll(scrollState ?: rememberScrollState())
-    } else {
-        Modifier
-    }.padding(vertical = 24.dp)
-}
+        }
+        .enhancedVerticalScroll(scrollState ?: rememberScrollState())
+} else {
+    Modifier
+}.padding(vertical = 24.dp)

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Emergency
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,10 +40,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Emergency
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
-import com.t8rin.imagetoolbox.core.ui.utils.confetti.LocalConfettiHostState
 import com.t8rin.imagetoolbox.core.ui.utils.confetti.Particles
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedChip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
@@ -64,8 +64,6 @@ fun ConfettiTypeSettingItem(
     }
 
     val enabled = settingsState.isConfettiEnabled
-
-    val confettiHostState = LocalConfettiHostState.current
 
     Box {
         Column(
@@ -89,7 +87,7 @@ fun ConfettiTypeSettingItem(
                 ),
                 iconEndPadding = 14.dp,
                 text = stringResource(R.string.confetti_type),
-                icon = Icons.Outlined.Emergency
+                icon = Icons.Rounded.Emergency
             )
 
             FlowRow(
@@ -110,11 +108,11 @@ fun ConfettiTypeSettingItem(
                 items.forEach {
                     EnhancedChip(
                         onClick = {
-                            confettiHostState.currentToastData?.dismiss()
+                            AppToastHost.dismissToasts()
                             onValueChange(it.ordinal)
                             scope.launch {
                                 delay(200L)
-                                confettiHostState.showConfetti()
+                                AppToastHost.showConfetti()
                             }
                         },
                         selected = it.ordinal == value,

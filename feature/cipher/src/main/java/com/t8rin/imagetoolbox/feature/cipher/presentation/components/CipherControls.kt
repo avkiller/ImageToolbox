@@ -30,15 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.HelpOutline
-import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
-import androidx.compose.material.icons.outlined.Cancel
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.FileDownload
-import androidx.compose.material.icons.rounded.Key
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -59,7 +50,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.model.CipherType
 import com.t8rin.imagetoolbox.core.domain.utils.toInt
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Cancel
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Download
+import com.t8rin.imagetoolbox.core.resources.icons.File
+import com.t8rin.imagetoolbox.core.resources.icons.HashTag
+import com.t8rin.imagetoolbox.core.resources.icons.Help
+import com.t8rin.imagetoolbox.core.resources.icons.Share
+import com.t8rin.imagetoolbox.core.resources.icons.Shuffle
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.Green
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
@@ -67,7 +67,6 @@ import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.rememberFilename
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.rememberHumanFileSize
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.DataSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
@@ -84,16 +83,9 @@ import kotlin.random.Random
 internal fun CipherControls(component: CipherComponent) {
     val settingsState = LocalSettingsState.current
     val isPortrait by isPortraitOrientationAsState()
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
 
     val saveLauncher = rememberFileCreator(
-        onSuccess = { uri ->
-            component.saveCryptographyTo(
-                uri = uri,
-                onResult = essentials::parseFileSaveResult
-            )
-        }
+        onSuccess = component::saveCryptographyTo
     )
 
     val filename = component.uri?.let {
@@ -133,7 +125,7 @@ internal fun CipherControls(component: CipherComponent) {
                 onClick = component::showTip
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.HelpOutline,
+                    imageVector = Icons.Outlined.Help,
                     contentDescription = "Info"
                 )
             }
@@ -153,7 +145,7 @@ internal fun CipherControls(component: CipherComponent) {
                     rememberHumanFileSize(it)
                 )
             },
-            startIcon = Icons.AutoMirrored.Rounded.InsertDriveFile
+            startIcon = Icons.Rounded.File
         )
         Spacer(Modifier.height(16.dp))
         RoundedTextField(
@@ -287,7 +279,7 @@ internal fun CipherControls(component: CipherComponent) {
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.FileDownload,
+                                imageVector = Icons.Rounded.Download,
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -302,8 +294,7 @@ internal fun CipherControls(component: CipherComponent) {
                             component.byteArray?.let {
                                 component.shareFile(
                                     it = it,
-                                    filename = name,
-                                    onComplete = showConfetti
+                                    filename = name
                                 )
                             }
                         },
@@ -343,7 +334,7 @@ internal fun CipherControls(component: CipherComponent) {
             onValueChange = component::updateCipherType,
             entries = CipherType.entries,
             title = stringResource(R.string.algorithms),
-            titleIcon = Icons.Rounded.Key,
+            titleIcon = Icons.Rounded.HashTag,
             itemContentText = {
                 it.name
             },

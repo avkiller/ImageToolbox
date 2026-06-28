@@ -28,11 +28,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.RotateLeft
-import androidx.compose.material.icons.automirrored.rounded.RotateRight
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Flip
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,11 +39,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
 import com.t8rin.imagetoolbox.core.resources.icons.CropSmall
 import com.t8rin.imagetoolbox.core.resources.icons.Curve
 import com.t8rin.imagetoolbox.core.resources.icons.Draw
 import com.t8rin.imagetoolbox.core.resources.icons.Eraser
 import com.t8rin.imagetoolbox.core.resources.icons.Exif
+import com.t8rin.imagetoolbox.core.resources.icons.Flip
+import com.t8rin.imagetoolbox.core.resources.icons.RotateLeft
+import com.t8rin.imagetoolbox.core.resources.icons.RotateRight
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.theme.onMixedContainer
@@ -121,7 +121,7 @@ fun ImageTransformBar(
                 enabled = canRotate
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.RotateLeft,
+                    imageVector = Icons.Rounded.RotateLeft,
                     contentDescription = "Rotate Left"
                 )
             }
@@ -131,7 +131,7 @@ fun ImageTransformBar(
                 onClick = onFlip
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Flip,
+                    imageVector = Icons.Outlined.Flip,
                     contentDescription = "Flip"
                 )
             }
@@ -142,7 +142,7 @@ fun ImageTransformBar(
                 enabled = canRotate
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.RotateRight,
+                    imageVector = Icons.Rounded.RotateRight,
                     contentDescription = "Rotate Right"
                 )
             }

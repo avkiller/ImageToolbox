@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilterFrames
-import androidx.compose.material.icons.outlined.Opacity
-import androidx.compose.material.icons.outlined.PhotoSizeSelectLarge
-import androidx.compose.material.icons.outlined.RepeatOne
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -39,7 +35,11 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Counter
-import com.t8rin.imagetoolbox.core.resources.icons.Stack
+import com.t8rin.imagetoolbox.core.resources.icons.FilterFrames
+import com.t8rin.imagetoolbox.core.resources.icons.Opacity
+import com.t8rin.imagetoolbox.core.resources.icons.PhotoSizeSelectLarge
+import com.t8rin.imagetoolbox.core.resources.icons.RepeatOne
+import com.t8rin.imagetoolbox.core.resources.icons.Stacks
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ResizeImageField
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSliderItem
@@ -101,7 +101,7 @@ fun GifParamsSelector(
                     value.copy(dontStack = it)
                 )
             },
-            startIcon = Icons.Outlined.Stack,
+            startIcon = Icons.Outlined.Stacks,
             modifier = Modifier.fillMaxWidth(),
             containerColor = Color.Unspecified,
             shape = ShapeDefaults.extraLarge
@@ -121,7 +121,7 @@ fun GifParamsSelector(
         Spacer(modifier = Modifier.height(8.dp))
         EnhancedSliderItem(
             value = value.repeatCount,
-            icon = Icons.Outlined.RepeatOne,
+            icon = Icons.Rounded.RepeatOne,
             title = stringResource(id = R.string.repeat_count),
             valueRange = 0f..10f,
             steps = 10,
@@ -169,7 +169,7 @@ fun GifParamsSelector(
                     )
                 )
             },
-            startIcon = Icons.Outlined.Opacity,
+            startIcon = Icons.Rounded.Opacity,
             modifier = Modifier.fillMaxWidth(),
             containerColor = Color.Unspecified,
             shape = ShapeDefaults.extraLarge

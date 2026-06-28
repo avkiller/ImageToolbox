@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 
 package com.t8rin.imagetoolbox.core.crash.presentation.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -25,13 +28,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.MobileScreenShare
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,20 +44,26 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.TELEGRAM_GROUP_LINK
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Github
+import com.t8rin.imagetoolbox.core.resources.icons.MobileShare
 import com.t8rin.imagetoolbox.core.resources.icons.Telegram
 import com.t8rin.imagetoolbox.core.ui.theme.Black
 import com.t8rin.imagetoolbox.core.ui.theme.Blue
 import com.t8rin.imagetoolbox.core.ui.theme.White
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
+import com.t8rin.imagetoolbox.core.ui.utils.animation.springySpec
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedCircularProgressIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun CrashActionButtons(
     onCopyCrashInfo: () -> Unit,
     onShareLogs: () -> Unit,
+    isSendingLogs: Boolean,
     githubLink: String
 ) {
     BoxWithConstraints(
@@ -104,8 +114,9 @@ internal fun CrashActionButtons(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                icon = Icons.AutoMirrored.Rounded.MobileScreenShare,
+                icon = Icons.Rounded.MobileShare,
                 text = stringResource(id = R.string.send_logs),
+                isLoading = isSendingLogs
             )
         }
     }
@@ -118,8 +129,27 @@ private fun LargeEnhancedButton(
     contentColor: Color,
     icon: ImageVector,
     text: String,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val progressAnimatable = remember { Animatable(if (isLoading) 1f else 0f) }
+    val progress = progressAnimatable.value
+
+    LaunchedEffect(isLoading) {
+        delay(400)
+        if (isLoading) {
+            progressAnimatable.animateTo(
+                targetValue = 1f,
+                animationSpec = springySpec()
+            )
+        } else {
+            progressAnimatable.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(200)
+            )
+        }
+    }
+
     EnhancedButton(
         onClick = onClick,
         modifier = modifier
@@ -131,19 +161,30 @@ private fun LargeEnhancedButton(
         ),
         contentPadding = ButtonDefaults.ButtonWithIconContentPadding
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = text
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            AutoSizeText(
-                text = text,
-                maxLines = 1
-            )
+        AnimatedContent(progress > 0) { showLoading ->
+            if (showLoading) {
+                EnhancedCircularProgressIndicator(
+                    modifier = Modifier.size(24.dp * progress),
+                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(0.2f),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 3.dp
+                )
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = text
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    AutoSizeText(
+                        text = text,
+                        maxLines = 1
+                    )
+                }
+            }
         }
     }
 }

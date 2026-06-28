@@ -21,18 +21,16 @@ package com.t8rin.imagetoolbox.feature.erase_background.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.DownloadForOffline
-import androidx.compose.material.icons.rounded.SettingsBackupRestore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -56,17 +54,21 @@ import com.t8rin.imagetoolbox.core.domain.saving.updateProgress
 import com.t8rin.imagetoolbox.core.domain.utils.Flavor
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.toggle
 import com.t8rin.imagetoolbox.core.domain.utils.throttleLatest
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.DownloadForOffline
+import com.t8rin.imagetoolbox.core.resources.icons.SettingsBackupRestore
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.theme.onMixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalKeepAliveService
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
-import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAutoCircularProgressIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedCancellableCircularProgressIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.erase_background.domain.model.BgModelType
 import com.t8rin.neural_tools.DownloadProgress
 import com.t8rin.neural_tools.bgremover.BgRemover
@@ -111,7 +113,7 @@ fun AutoEraseBackgroundCard(
 
     LaunchedEffect(downloadedModels) {
         if (!downloadedModels.contains(selectedModel)) {
-            selectedModel = BgModelType.U2NetP
+            selectedModel = BgModelType.Default
         }
     }
 
@@ -121,7 +123,6 @@ fun AutoEraseBackgroundCard(
     }
 
     val keepAliveService = LocalKeepAliveService.current
-    val essentials = rememberLocalEssentials()
 
     Column(
         Modifier
@@ -133,7 +134,9 @@ fun AutoEraseBackgroundCard(
     ) {
         if (flavoredEntries.size > 1) {
             EnhancedButtonGroup(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
                 entries = flavoredEntries,
                 value = selectedModel,
                 title = null,
@@ -152,7 +155,7 @@ fun AutoEraseBackgroundCard(
                             keepAliveService.track(
                                 initial = {
                                     updateOrStart(
-                                        title = essentials.getString(R.string.downloading)
+                                        title = getString(R.string.downloading)
                                     )
                                 }
                             ) {
@@ -170,7 +173,7 @@ fun AutoEraseBackgroundCard(
                                         BgRemover.getRemover(type.toLib()).checkModel()
                                     }
                                     .catch {
-                                        selectedModel = BgModelType.U2NetP
+                                        selectedModel = BgModelType.Default
                                         downloadProgresses.remove(type)
                                         downloadJob = null
                                     }
@@ -180,7 +183,7 @@ fun AutoEraseBackgroundCard(
                                     .throttleLatest(50)
                                     .collect {
                                         updateProgress(
-                                            title = essentials.getString(R.string.downloading),
+                                            title = getString(R.string.downloading),
                                             done = (it.currentPercent * 100).roundToInt(),
                                             total = 100
                                         )
@@ -190,27 +193,30 @@ fun AutoEraseBackgroundCard(
                     }
                 },
                 itemContent = { type ->
-                    if (type == BgModelType.MlKit) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
                         Text(
                             text = type.title
                         )
-                    } else {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = type.title
-                            )
 
+                        if (type != BgModelType.MlKit) {
                             AnimatedVisibility(type !in downloadedModels) {
                                 downloadProgresses[type]?.let { progress ->
-                                    EnhancedAutoCircularProgressIndicator(
+                                    EnhancedCancellableCircularProgressIndicator(
                                         progress = { progress.currentPercent },
                                         modifier = Modifier
                                             .padding(start = 8.dp)
                                             .size(24.dp),
                                         trackColor = MaterialTheme.colorScheme.primary.copy(0.2f),
-                                        strokeWidth = 3.dp
+                                        strokeWidth = 3.dp,
+                                        onCancel = {
+                                            downloadJob?.cancel()
+                                            selectedModel = BgModelType.Default
+                                            downloadProgresses.remove(type)
+                                            downloadJob = null
+                                        }
                                     )
                                 } ?: Icon(
                                     imageVector = Icons.Rounded.DownloadForOffline,
@@ -283,6 +289,8 @@ private fun BgModelType.toLib(): BgRemover.Type = when (this) {
     BgModelType.InSPyReNet -> BgRemover.Type.InSPyReNet
     BgModelType.BiRefNetTiny -> BgRemover.Type.BiRefNetTiny
     BgModelType.ISNet -> BgRemover.Type.ISNet
+    BgModelType.YOLO -> BgRemover.Type.YOLO
+    BgModelType.MODNet -> BgRemover.Type.MODNet
 }
 
 private fun BgRemover.Type.toDomain(): BgModelType? = when (this) {
@@ -293,4 +301,6 @@ private fun BgRemover.Type.toDomain(): BgModelType? = when (this) {
     BgRemover.Type.BiRefNetTiny -> BgModelType.BiRefNetTiny
     BgRemover.Type.BiRefNet -> null
     BgRemover.Type.ISNet -> BgModelType.ISNet
+    BgRemover.Type.YOLO -> BgModelType.YOLO
+    BgRemover.Type.MODNet -> BgModelType.MODNet
 }

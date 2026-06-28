@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.feature.checksum_tools.presentation.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -32,10 +31,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.CompareArrows
-import androidx.compose.material.icons.rounded.Calculate
-import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
@@ -60,8 +55,13 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.imagetoolbox.core.resources.icons.FolderCompare
+import com.t8rin.imagetoolbox.core.resources.icons.Calculate
+import com.t8rin.imagetoolbox.core.resources.icons.CompareArrows
+import com.t8rin.imagetoolbox.core.resources.icons.FolderMatch
+import com.t8rin.imagetoolbox.core.resources.icons.TextFields
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.longPress
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
@@ -130,8 +130,8 @@ internal fun ChecksumToolsTabs(
                 val (icon, textRes) = when (index) {
                     0 -> Icons.Rounded.Calculate to R.string.calculate
                     1 -> Icons.Rounded.TextFields to R.string.text_hash
-                    2 -> Icons.AutoMirrored.Rounded.CompareArrows to R.string.compare
-                    3 -> Icons.Rounded.FolderCompare to R.string.batch_compare
+                    2 -> Icons.Rounded.CompareArrows to R.string.compare
+                    3 -> Icons.Rounded.FolderMatch to R.string.batch_compare
                     else -> throw IllegalArgumentException("Not presented index $index of ChecksumPage")
                 }
 

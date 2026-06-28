@@ -27,6 +27,7 @@ import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageCompressor
+import com.t8rin.imagetoolbox.core.domain.image.ImageExportProfilesUseCase
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
 import com.t8rin.imagetoolbox.core.domain.image.ImagePreviewCreator
 import com.t8rin.imagetoolbox.core.domain.image.ImageScaler
@@ -36,6 +37,7 @@ import com.t8rin.imagetoolbox.core.domain.image.Metadata
 import com.t8rin.imagetoolbox.core.domain.image.clearAllAttributes
 import com.t8rin.imagetoolbox.core.domain.image.clearAttribute
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageData
+import com.t8rin.imagetoolbox.core.domain.image.model.ImageExportProfile
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageScaleMode
@@ -43,6 +45,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.MetadataTag
 import com.t8rin.imagetoolbox.core.domain.image.model.Preset
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.ResizeType
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
@@ -53,11 +56,15 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.settings.domain.SettingsProvider
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.ui.transformation.ImageInfoTransformation
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.ImageExportProfilesHolder
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.coroutineScope
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.feature.resize_convert.presentation.screenLogic.ResizeAndConvertComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -77,18 +84,20 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
     private val imageScaler: ImageScaler<Bitmap>,
     private val shareProvider: ImageShareProvider<Bitmap>,
     private val imageInfoTransformationFactory: ImageInfoTransformation.Factory,
-    settingsProvider: SettingsProvider,
+    private val settingsManager: SettingsManager,
+    private val imageExportProfilesUseCase: ImageExportProfilesUseCase,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+), ImageExportProfilesHolder by ImageExportProfilesHolder(
+    imageExportProfilesUseCase = imageExportProfilesUseCase,
+    componentScope = componentContext.coroutineScope
+) {
 
     init {
         debounce {
-            initialUris?.let {
-                updateUris(
-                    uris = it,
-                    onFailure = {}
-                )
-            }
+            initialUris?.let(::setUris)
         }
     }
 
@@ -131,9 +140,14 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
     private val _selectedUri: MutableState<Uri?> = mutableStateOf(null)
     val selectedUri by _selectedUri
 
+    private val isAlwaysClearExif: Boolean get() = settingsManager.settingsState.value.isAlwaysClearExif
+
+    override val currentProfileKeepExif: Boolean
+        get() = keepExif
+
     init {
         componentScope.launch {
-            val settingsState = settingsProvider.getSettingsState()
+            val settingsState = settingsManager.getSettingsState()
             _imageInfo.update {
                 it.copy(resizeType = settingsState.defaultResizeType)
             }
@@ -144,10 +158,11 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
         _isImageLoading.update { false }
     }
 
-    fun updateUris(
-        uris: List<Uri>?,
-        onFailure: (Throwable) -> Unit
+    fun setUris(
+        uris: List<Uri>?
     ) {
+        clearHistory()
+        registerChangesCleared()
         _uris.update { null }
         _uris.update { uris }
         _selectedUri.update { uris?.firstOrNull() }
@@ -161,7 +176,7 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
                     uri = uri.toString(),
                     originalSize = true,
                     onGetImage = ::setImageData,
-                    onFailure = onFailure
+                    onFailure = AppToastHost::showFailureToast
                 )
             }
         }
@@ -191,23 +206,31 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
     }
 
     private suspend fun checkBitmapAndUpdate(
-        resetPreset: Boolean = false
+        resetPreset: Boolean = false,
+        clearPreview: Boolean = true,
+        previewImageInfo: ImageInfo = imageInfo
     ) {
         if (resetPreset) {
             _presetSelected.update { Preset.None }
         }
         _bitmap.value?.let { bmp ->
-            val preview = updatePreview(bmp)
-            _previewBitmap.update { null }
+            val preview = updatePreview(
+                bitmap = bmp,
+                previewImageInfo = previewImageInfo
+            )
+            if (clearPreview) {
+                _previewBitmap.update { null }
+            }
             _shouldShowPreview.update { imagePreviewCreator.canShow(preview) }
             if (shouldShowPreview) _previewBitmap.update { preview }
         }
     }
 
     private suspend fun updatePreview(
-        bitmap: Bitmap
+        bitmap: Bitmap,
+        previewImageInfo: ImageInfo = imageInfo
     ): Bitmap? = withContext(defaultDispatcher) {
-        return@withContext imageInfo.run {
+        return@withContext previewImageInfo.run {
             _showWarning.update { width * height * 4L >= 10_000 * 10_000 * 3L }
             imagePreviewCreator.createPreview(
                 image = bitmap,
@@ -223,9 +246,8 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
         if (_imageInfo.value != newInfo) {
             _imageInfo.update { newInfo }
             debouncedImageCalculation {
-                checkBitmapAndUpdate()
+                checkBitmapAndUpdate(previewImageInfo = newInfo)
             }
-            registerChanges()
         }
     }
 
@@ -233,6 +255,8 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
         saveFormat: Boolean = false,
         resetPreset: Boolean = true
     ) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _imageInfo.update {
             ImageInfo(
                 width = _originalSize.value?.width ?: 0,
@@ -248,12 +272,13 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
                 resetPreset = resetPreset
             )
         }
+        commitHistoryFrom(beforeSnapshot)
     }
 
     private fun setImageData(imageData: ImageData<Bitmap>) {
         job = componentScope.launch {
             _isImageLoading.update { true }
-            _exif.update { imageData.metadata }
+            _exif.update { imageData.metadata.takeIf { !isAlwaysClearExif } }
             val bitmap = imageData.image
             val size = bitmap.width to bitmap.height
             _originalSize.update { size.run { IntegerSize(width = first, height = second) } }
@@ -268,11 +293,15 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
             checkBitmapAndUpdate(
                 resetPreset = _presetSelected.value == Preset.Telegram && imageData.imageInfo.imageFormat != ImageFormat.Png.Lossless
             )
+            resetHistory()
+            registerChangesCleared()
             _isImageLoading.update { false }
         }
     }
 
     fun rotateLeft() {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _imageInfo.update {
             it.copy(
                 rotationDegrees = it.rotationDegrees - 90f,
@@ -283,10 +312,12 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
         debouncedImageCalculation {
             checkBitmapAndUpdate()
         }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun rotateRight() {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _imageInfo.update {
             it.copy(
                 rotationDegrees = it.rotationDegrees + 90f,
@@ -297,59 +328,84 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
         debouncedImageCalculation {
             checkBitmapAndUpdate()
         }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun flip() {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _imageInfo.update {
             it.copy(isFlipped = !it.isFlipped)
         }
         debouncedImageCalculation {
             checkBitmapAndUpdate()
         }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun updateWidth(width: Int) {
         if (imageInfo.width != width) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
             _imageInfo.update {
                 it.copy(width = width)
             }
             debouncedImageCalculation {
                 checkBitmapAndUpdate(true)
             }
-            registerChanges()
+            commitHistoryFrom(beforeSnapshot)
         }
     }
 
     fun updateHeight(height: Int) {
         if (imageInfo.height != height) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
             _imageInfo.update {
                 it.copy(height = height)
             }
             debouncedImageCalculation {
                 checkBitmapAndUpdate(true)
             }
-            registerChanges()
+            commitHistoryFrom(beforeSnapshot)
         }
     }
 
     fun setQuality(quality: Quality) {
-        if (imageInfo.quality != quality) {
+        val currentQuality = imageInfo.quality
+        val coercedQuality = quality.coerceIn(imageInfo.imageFormat)
+        if (
+            quality::class != coercedQuality::class &&
+            currentQuality::class == coercedQuality::class
+        ) return
+
+        if (currentQuality != coercedQuality) {
+            beginPendingHistoryTransaction()
             _imageInfo.update {
-                it.copy(quality = quality)
+                it.copy(quality = coercedQuality)
             }
             debouncedImageCalculation {
                 checkBitmapAndUpdate()
             }
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
     fun setImageFormat(imageFormat: ImageFormat) {
         if (imageInfo.imageFormat != imageFormat) {
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
             _imageInfo.update {
-                it.copy(imageFormat = imageFormat)
+                it.copy(
+                    imageFormat = imageFormat,
+                    quality = it.quality.coerceIn(imageFormat)
+                )
             }
             debouncedImageCalculation {
                 checkBitmapAndUpdate(
@@ -357,11 +413,14 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
                 )
             }
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
     fun setResizeType(type: ResizeType) {
         if (imageInfo.resizeType != type) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
             _imageInfo.update {
                 it.copy(
                     resizeType = type.withOriginalSizeIfCrop(originalSize)
@@ -370,13 +429,15 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
             debouncedImageCalculation {
                 checkBitmapAndUpdate()
             }
-            registerChanges()
+            commitHistoryFrom(beforeSnapshot)
         }
     }
 
     fun setKeepExif(boolean: Boolean) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _keepExif.update { boolean }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     private var savingJob: Job? by smartJob {
@@ -384,9 +445,9 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
+        finalizePendingHistoryTransaction()
         savingJob = trackProgress {
             _isSaving.update { true }
             val results = mutableListOf<SaveResult>()
@@ -433,15 +494,12 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
                     total = uris.orEmpty().size
                 )
             }
-            onComplete(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.update { false }
         }
     }
 
-    fun updateSelectedUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit = {}
-    ) {
+    fun updateSelectedUri(uri: Uri) {
         runCatching {
             _selectedUri.update { uri }
             componentScope.launch {
@@ -477,22 +535,76 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
                 checkBitmapAndUpdate()
                 _isImageLoading.update { false }
             }
-        }.onFailure(onFailure)
+        }.onFailure(AppToastHost::showFailureToast)
     }
 
-    fun updatePreset(preset: Preset) {
+    override fun updateProfile(profile: Preset) {
         componentScope.launch {
-            if (preset is Preset.AspectRatio && preset.ratio != 1f) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
+            if (profile is Preset.AspectRatio && profile.ratio != 1f) {
                 _imageInfo.update { it.copy(rotationDegrees = 0f) }
             }
             setBitmapInfo(
                 imageTransformer.applyPresetBy(
                     image = bitmap,
-                    preset = preset,
-                    currentInfo = imageInfo
+                    preset = profile,
+                    currentInfo = imageInfo.copy(
+                        originalUri = selectedUri?.toString()
+                    )
                 )
             )
-            _presetSelected.update { preset }
+            _presetSelected.update { profile }
+            commitHistoryFrom(beforeSnapshot)
+        }
+    }
+
+    override fun saveProfile(name: String) {
+        componentScope.launch {
+            imageExportProfilesUseCase.upsert(
+                ImageExportProfile.from(
+                    name = name,
+                    imageInfo = imageInfo,
+                    preset = presetSelected,
+                    keepExif = keepExif,
+                    backgroundColorForNoAlphaFormats = settingsManager
+                        .settingsState
+                        .value
+                        .backgroundForNoAlphaImageFormats
+                )
+            )
+        }
+    }
+
+    override fun applyProfile(profile: ImageExportProfile) {
+        componentScope.launch {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
+            restoreProfileBackgroundColor(profile)
+            val restoredInfo = profile.toImageInfo(imageInfo).copy(
+                originalUri = selectedUri?.toString()
+            )
+            setBitmapInfo(
+                profile.applyExportSettingsTo(
+                    imageTransformer.applyPresetBy(
+                        image = bitmap,
+                        preset = profile.preset,
+                        currentInfo = restoredInfo
+                    )
+                )
+            )
+            _presetSelected.update { profile.preset }
+            profile.keepExif?.let { keepExif ->
+                _keepExif.update { keepExif }
+            }
+            commitHistoryFrom(beforeSnapshot)
+        }
+    }
+
+    private suspend fun restoreProfileBackgroundColor(profile: ImageExportProfile) {
+        val color = profile.backgroundColorModel() ?: return
+        if (settingsManager.settingsState.value.backgroundForNoAlphaImageFormats != color) {
+            settingsManager.setBackgroundColorForNoAlphaFormats(color)
         }
     }
 
@@ -516,11 +628,11 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
             ?.let(::updateSelectedUri)
     }
 
-    fun performSharing(onComplete: () -> Unit) {
+    fun performSharing() {
         cacheImages { uris ->
             componentScope.launch {
                 shareProvider.shareUris(uris.map { it.toString() })
-                onComplete()
+                AppToastHost.showConfetti()
             }
         }
     }
@@ -533,7 +645,6 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
 
     fun updateExif(metadata: Metadata?) {
         _exif.update { metadata }
-        registerChanges()
     }
 
     fun removeExifTag(tag: MetadataTag) {
@@ -554,6 +665,8 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
     }
 
     fun setImageScaleMode(imageScaleMode: ImageScaleMode) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _imageInfo.update {
             it.copy(
                 imageScaleMode = imageScaleMode
@@ -562,7 +675,7 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
         debouncedImageCalculation {
             checkBitmapAndUpdate()
         }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun cacheCurrentImage(onComplete: (Uri) -> Unit) {
@@ -636,6 +749,49 @@ class ResizeAndConvertComponent @AssistedInject internal constructor(
             imageInfo = imageInfo,
             preset = presetSelected
         )
+    )
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        imageInfo = imageInfo.asHistoryImageInfo(),
+        preset = presetSelected,
+        keepExif = keepExif,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _imageInfo.value = snapshot.imageInfo
+        _presetSelected.value = snapshot.preset
+        _keepExif.value = snapshot.keepExif
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        debouncedImageCalculation {
+            bitmap?.let {
+                checkBitmapAndUpdate(clearPreview = false)
+            }
+        }
+    }
+
+    private fun ImageInfo.asHistoryImageInfo(): ImageInfo = copy(sizeInBytes = 0)
+
+    override fun hasSameUndoState(
+        first: HistorySnapshot,
+        second: HistorySnapshot
+    ): Boolean = first.normalized() == second.normalized()
+
+    private fun HistorySnapshot.normalized(): HistorySnapshot = copy(
+        imageInfo = imageInfo.asHistoryImageInfo()
+    )
+
+    data class HistorySnapshot(
+        val imageInfo: ImageInfo = ImageInfo(),
+        val preset: Preset = Preset.None,
+        val keepExif: Boolean = false,
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
     )
 
     @AssistedFactory

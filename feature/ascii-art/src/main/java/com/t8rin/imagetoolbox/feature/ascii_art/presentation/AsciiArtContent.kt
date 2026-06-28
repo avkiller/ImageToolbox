@@ -20,8 +20,7 @@ package com.t8rin.imagetoolbox.feature.ascii_art.presentation
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -35,17 +34,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import coil3.toBitmap
 import com.t8rin.imagetoolbox.core.data.utils.safeAspectRatio
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ContentCopy
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.shareText
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
@@ -56,6 +60,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ZoomModalSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
 import com.t8rin.imagetoolbox.core.ui.widget.utils.AutoContentBasedColors
+import com.t8rin.imagetoolbox.core.utils.appContext
 import com.t8rin.imagetoolbox.feature.ascii_art.presentation.components.AsciiArtControls
 import com.t8rin.imagetoolbox.feature.ascii_art.presentation.screenLogic.AsciiArtComponent
 
@@ -63,8 +68,6 @@ import com.t8rin.imagetoolbox.feature.ascii_art.presentation.screenLogic.AsciiAr
 fun AsciiArtContent(
     component: AsciiArtComponent
 ) {
-    val essentials = rememberLocalEssentials()
-
     AutoContentBasedColors(component.uri)
 
     val imagePicker = rememberImagePicker(onSuccess = component::setUri)
@@ -120,12 +123,32 @@ fun AsciiArtContent(
             )
         },
         actions = {
+            if (!isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
             ShareButton(
                 enabled = component.uri != Uri.EMPTY,
                 onShare = {
-                    component.convertToAsciiString(essentials::shareText)
+                    component.convertToAsciiString {
+                        appContext.shareText(it)
+                    }
                 },
             )
+            if (isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
         },
         imagePreview = {
             Box(
@@ -166,7 +189,7 @@ fun AsciiArtContent(
                 },
                 primaryButtonIcon = Icons.Rounded.ContentCopy,
                 onPrimaryButtonClick = {
-                    component.convertToAsciiString(essentials::copyToClipboard)
+                    component.convertToAsciiString(Clipboard::copy)
                 },
                 actions = {
                     if (isPortrait) it()

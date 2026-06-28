@@ -24,6 +24,7 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import androidx.compose.animation.core.snap
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -53,6 +54,8 @@ import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsS
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSimpleSettingsInteractor
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getStringLocalized
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalResourceManager
+import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
+import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberScreenSize
 import com.t8rin.imagetoolbox.core.utils.appContext
 import com.t8rin.imagetoolbox.core.utils.initAppContext
 import java.util.Locale
@@ -63,6 +66,7 @@ fun ImageToolboxThemeForPreview(
     isDarkTheme: Boolean,
     keyColor: Color? = defaultColorTuple.primary,
     shapesType: ShapeType = ShapeType.Rounded(),
+    mapSettings: (SettingsState) -> SettingsState = { it },
     content: @Composable () -> Unit
 ) {
     LocalContext.current.applicationContext.initAppContext()
@@ -80,15 +84,16 @@ fun ImageToolboxThemeForPreview(
             colorAnimationSpec = snap(),
             content = {
                 CompositionLocalProvider(
-                    LocalSettingsState provides SettingsState.Default.toUiState().copy(
-                        shapesType = shapesType
+                    LocalSettingsState provides mapSettings(SettingsState.Default).toUiState().copy(
+                        shapesType = shapesType,
+                        isNightMode = isDarkTheme
                     ),
                     LocalSimpleSettingsInteractor provides FakeSettings,
-                    LocalResourceManager provides FakeRes
+                    LocalResourceManager provides FakeRes,
+                    LocalScreenSize provides rememberScreenSize()
                 ) {
-                    MaterialTheme(
+                    MaterialExpressiveTheme(
                         motionScheme = CustomMotionScheme,
-                        colorScheme = modifiedColorScheme(),
                         shapes = modifiedShapes(),
                         content = {
                             Surface {
@@ -247,6 +252,8 @@ private val FakeSettings = object : SimpleSettingsInteractor {
     override suspend fun toggleCustomAsciiGradient(gradient: String) = Unit
 
     override suspend fun toggleOverwriteFiles() = Unit
+
+    override suspend fun toggleSaveToOriginalFolder() = Unit
 
     override suspend fun setSpotHealMode(mode: Int) = Unit
     override suspend fun setBorderWidth(width: Float) = Unit

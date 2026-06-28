@@ -71,3 +71,65 @@
 -keepclassmembers class * extends java.lang.Enum {
     public java.lang.String name();
 }
+
+-keep class ai.onnxruntime.** { *; }
+
+-keep class com.google.firebase.crashlytics.** { *; }
+-keep class com.google.firebase.analytics.** { *; }
+-keep class androidx.pdf.** { *; }
+-keepnames class androidx.pdf.** { *; }
+
+# Moshi reflective adapters need generic signatures in release.
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class kotlin.Metadata { *; }
+
+-keep class com.t8rin.imagetoolbox.core.filters.domain.model.shader.** { *; }
+-keep class  com.t8rin.imagetoolbox.core.filters.domain.model.shader.**
+-keep class  com.t8rin.imagetoolbox.core.filters.domain.model.shader.*
+
+-keep class com.t8rin.imagetoolbox.feature.markup_layers.data.project.** { *; }
+-keep class  com.t8rin.imagetoolbox.feature.markup_layers.data.project.**
+-keep class  com.t8rin.imagetoolbox.feature.markup_layers.data.project.*
+
+# Moshi reflects image export preset models when saving/loading presets.
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.ImageExportProfiles { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.ImageExportProfile { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.Preset { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.Preset$* { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.ResizeType { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.ResizeType$* { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.Quality { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.image.model.Quality$* { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.model.IntegerSize { *; }
+-keep class com.t8rin.imagetoolbox.core.data.json.PresetJson { *; }
+-keep class com.t8rin.imagetoolbox.core.data.json.ResizeTypeJson { *; }
+-keep class com.t8rin.imagetoolbox.core.data.json.ImageScaleModeJson { *; }
+
+# Moshi reflects app history/statistics models for recent tools.
+-keep class com.t8rin.imagetoolbox.core.domain.history.model.LastUsedTool { *; }
+-keep class com.t8rin.imagetoolbox.core.domain.history.model.AppUsageStatistics { *; }
+-keep class com.t8rin.imagetoolbox.core.data.history.LastUsedTools { *; }
+-keep class com.t8rin.imagetoolbox.core.data.history.SavedFormatCounters { *; }
+
+# coil-resvg uses JNA/Uniffi generated names at runtime.
+-keep class com.hashsequence.coilresvg.** { *; }
+-keep class com.sun.jna.** { *; }
+-dontwarn java.awt.Component
+-dontwarn java.awt.GraphicsEnvironment
+-dontwarn java.awt.HeadlessException
+-dontwarn java.awt.Window
+
+-dontwarn javax.naming.NamingEnumeration
+-dontwarn javax.naming.NamingException
+-dontwarn javax.naming.directory.Attribute
+-dontwarn javax.naming.directory.Attributes
+-dontwarn javax.naming.directory.DirContext
+-dontwarn javax.naming.directory.InitialDirContext
+-dontwarn javax.naming.directory.SearchControls
+-dontwarn javax.naming.directory.SearchResult
+
+-assumevalues public class androidx.compose.runtime.ComposeRuntimeFlags {
+    static boolean isLinkBufferComposerEnabled return true;
+}

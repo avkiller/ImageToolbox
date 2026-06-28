@@ -80,6 +80,10 @@ interface SettingsInteractor : SimpleSettingsInteractor {
 
     suspend fun toggleGroupOptionsByTypes()
 
+    suspend fun toggleShowFavoriteToolsInGroupedMode()
+
+    suspend fun toggleShowFavoriteAsLast()
+
     suspend fun toggleRandomizeFilename()
 
     suspend fun createBackupFile(): ByteArray
@@ -134,6 +138,8 @@ interface SettingsInteractor : SimpleSettingsInteractor {
 
     suspend fun setDefaultImageScaleMode(imageScaleMode: ImageScaleMode)
 
+    suspend fun toggleDrawBitmapBorder()
+
     suspend fun toggleExifWidgetInitialState()
 
     suspend fun setInitialOCRLanguageCodes(list: List<String>)
@@ -145,6 +151,8 @@ interface SettingsInteractor : SimpleSettingsInteractor {
     suspend fun toggleSecureMode()
 
     suspend fun toggleUseRandomEmojis()
+
+    suspend fun toggleUseAnimatedEmojis()
 
     suspend fun setIconShape(iconShape: Int)
 
@@ -206,6 +214,10 @@ interface SettingsInteractor : SimpleSettingsInteractor {
 
     suspend fun setInitialOcrMode(mode: Int)
 
+    suspend fun setInitialOcrEngine(engine: Int)
+
+    suspend fun setInitialPaddleOcrModel(model: Int)
+
     suspend fun toggleUseCompactSelectorsLayout()
 
     suspend fun setMainScreenTitle(title: String)
@@ -246,11 +258,23 @@ interface SettingsInteractor : SimpleSettingsInteractor {
 
     suspend fun setShapesType(shapeType: ShapeType)
 
+    suspend fun setShapeByInteractionThrottle(delay: Long)
+
     suspend fun setFilenamePattern(pattern: String?)
 
     suspend fun setFlingType(type: FlingType)
 
     suspend fun setHiddenForShareScreens(data: List<Int>)
+
+    suspend fun toggleKeepDateTime()
+
+    suspend fun toggleAlwaysClearExif()
+
+    suspend fun toggleEnableBackgroundColorForAlphaFormats()
+
+    suspend fun toggleShowToolsHistory()
+
+    suspend fun setMotionDurationScale(scale: Float)
 
 }
 

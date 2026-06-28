@@ -18,13 +18,6 @@
 package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.crop.components
 
 import android.net.Uri
-import androidx.compose.animation.core.InfiniteTransition
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -45,7 +38,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -54,6 +46,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.t8rin.imagetoolbox.core.data.coil.PdfImageRequest
+import com.t8rin.imagetoolbox.core.domain.model.RectModel
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.Black
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
@@ -63,44 +57,67 @@ import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
+import com.t8rin.imagetoolbox.core.ui.widget.other.rememberAnimatedBorder
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCropParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common.PageSwitcher
 
 @Composable
 internal fun CropPreview(
     uri: Uri?,
-    cropRect: Rect
+    params: PdfCropParams,
+    pageCount: Int
 ) {
-    Box(
-        modifier = Modifier
-            .container()
-            .padding(4.dp)
-            .animateContentSizeNoClip(
-                alignment = Alignment.Center
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        var aspectRatio by rememberSaveable {
-            mutableFloatStateOf(1f)
-        }
-
+    PageSwitcher(
+        activePages = params.pages,
+        pageCount = pageCount
+    ) { page ->
         Box(
             modifier = Modifier
-                .aspectRatio(aspectRatio)
-                .clip(MaterialTheme.shapes.small)
+                .container()
+                .padding(4.dp)
+                .animateContentSizeNoClip(
+                    alignment = Alignment.Center
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Picture(
-                model = uri,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.matchParentSize(),
-                onSuccess = {
-                    aspectRatio = it.result.image.safeAspectRatio
-                },
-                shape = RectangleShape
-            )
+            var aspectRatio by rememberSaveable {
+                mutableFloatStateOf(1f)
+            }
 
-            CropFrameBorder(
-                modifier = Modifier.matchParentSize(),
-                cropRect = cropRect
-            )
+            Box(
+                modifier = Modifier
+                    .aspectRatio(aspectRatio)
+                    .clip(MaterialTheme.shapes.small)
+            ) {
+                Picture(
+                    model = remember(uri, page) {
+                        PdfImageRequest(
+                            data = uri,
+                            pdfPage = page
+                        )
+                    },
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.matchParentSize(),
+                    onSuccess = {
+                        aspectRatio = it.result.image.safeAspectRatio
+                    },
+                    shape = RectangleShape
+                )
+
+                if (params.pages == null || page in params.pages) {
+                    CropFrameBorder(
+                        modifier = Modifier.matchParentSize(),
+                        cropRect = remember(params.rect) {
+                            Rect(
+                                left = params.rect.left,
+                                top = params.rect.top,
+                                right = params.rect.right,
+                                bottom = params.rect.bottom
+                            )
+                        }
+                    )
+                }
+            }
         }
     }
 }
@@ -126,19 +143,7 @@ private fun CropFrameBorder(
         }
     }
 
-    val transition: InfiniteTransition = rememberInfiniteTransition()
-
-    val phase = transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 80f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 1000,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Restart
-        )
-    )
+    val pathEffect = rememberAnimatedBorder()
 
     Canvas(
         modifier = modifier.graphicsLayer {
@@ -182,10 +187,7 @@ private fun CropFrameBorder(
             color = colorScheme.primaryContainer,
             style = Stroke(
                 width = 1.5.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(
-                    floatArrayOf(20f, 20f),
-                    phase.value
-                )
+                pathEffect = pathEffect
             ),
             topLeft = topLeft,
             size = size
@@ -198,13 +200,17 @@ private fun CropFrameBorder(
 private fun Preview() = ImageToolboxThemeForPreview(false) {
     LocalLayoutDirection.ProvidesValue(LayoutDirection.Ltr) {
         CropPreview(
-            "111".toUri(),
-            Rect(
-                left = 0.4f,
-                top = 0.4f,
-                right = 0.9f,
-                bottom = 0.9f
-            )
+            uri = "111".toUri(),
+            pageCount = 100,
+            params = PdfCropParams(
+                rect = RectModel(
+                    left = 0.4f,
+                    top = 0.4f,
+                    right = 0.9f,
+                    bottom = 0.9f
+                ),
+                pages = null
+            ),
         )
     }
 }

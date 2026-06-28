@@ -17,6 +17,7 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.image
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDp
@@ -43,9 +44,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -61,7 +59,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
@@ -70,7 +67,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFrames
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonUnchecked
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.ui.theme.White
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.rememberFileExtension
@@ -176,7 +177,7 @@ fun ImagesPreviewWithSelection(
                 modifier = Modifier
                     .fillMaxSize()
                     .dragHandler(
-                        key = null,
+                        key = enableSelection to imageUris,
                         lazyGridState = state,
                         isVertical = false,
                         selectedItems = privateSelectedItems,
@@ -249,7 +250,7 @@ fun ImagesPreviewWithSelection(
                 modifier = Modifier
                     .fillMaxSize()
                     .dragHandler(
-                        key = enableSelection,
+                        key = enableSelection to imageUris,
                         lazyGridState = state,
                         isVertical = true,
                         selectedItems = if (enableSelection) {
@@ -338,6 +339,9 @@ private fun ImageItem(
     aboveImageContent: @Composable BoxScope.(index: Int) -> Unit,
     contentScale: ContentScale
 ) {
+    val extracted = remember(uri) {
+        uri.extractUri()
+    }
     val transition = updateTransition(selected)
     val padding by transition.animateDp { s ->
         if (s) 10.dp else 0.dp
@@ -360,22 +364,22 @@ private fun ImageItem(
                 .padding(padding)
                 .clip(shape)
                 .background(MaterialTheme.colorScheme.surface),
-            onError = if (uri is String) {
-                {
-                    onError(uri)
-                }
-            } else null,
+            onError = extracted?.let {
+                { onError(extracted.toString()) }
+            },
             error = {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.background(
-                        takeColorFromScheme { isNightMode ->
-                            errorContainer.copy(
-                                if (isNightMode) 0.25f
-                                else 1f
-                            ).compositeOver(surface)
-                        }
-                    )
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            takeColorFromScheme { isNightMode ->
+                                errorContainer.copy(
+                                    if (isNightMode) 0.25f
+                                    else 1f
+                                ).compositeOverSafe(surface)
+                            }
+                        )
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.BrokenImageAlt,
@@ -404,9 +408,9 @@ private fun ImageItem(
             content = {
                 aboveImageContent(index)
 
-                if (showExtension && uri is String) {
-                    val extension = rememberFileExtension(uri.toUri())?.uppercase()
-                    val humanFileSize = rememberHumanFileSize(uri.toUri())
+                if (showExtension && extracted != null) {
+                    val extension = rememberFileExtension(extracted)?.uppercase()
+                    val humanFileSize = rememberHumanFileSize(extracted)
 
                     extension?.let {
                         Row(
@@ -465,7 +469,7 @@ private fun ImageItem(
             if (isSelectionMode) {
                 if (selected) {
                     Icon(
-                        imageVector = Icons.Filled.CheckCircle,
+                        imageVector = Icons.Rounded.CheckCircle,
                         tint = MaterialTheme.colorScheme.primary,
                         contentDescription = null,
                         modifier = Modifier
@@ -476,7 +480,7 @@ private fun ImageItem(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Filled.RadioButtonUnchecked,
+                        imageVector = Icons.Rounded.RadioButtonUnchecked,
                         tint = Color.White.copy(alpha = 0.7f),
                         contentDescription = null,
                         modifier = Modifier.padding(6.dp)
@@ -486,3 +490,5 @@ private fun ImageItem(
         }
     }
 }
+
+private fun Any.extractUri() = (this as? String)?.toUri() ?: this as? Uri

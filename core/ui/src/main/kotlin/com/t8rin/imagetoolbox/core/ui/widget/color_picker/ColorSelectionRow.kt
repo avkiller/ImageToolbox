@@ -35,11 +35,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.DoneAll
-import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -47,7 +42,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +50,13 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.Block
+import com.t8rin.imagetoolbox.core.resources.icons.Done
+import com.t8rin.imagetoolbox.core.resources.icons.Error
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.pasteColorFromClipboard
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalContainerColor
 import com.t8rin.imagetoolbox.core.ui.utils.provider.ProvideContainerDefaults
@@ -69,9 +69,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
-import com.t8rin.imagetoolbox.core.ui.widget.other.LocalToastHostState
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun ColorSelectionRow(
@@ -82,10 +80,9 @@ fun ColorSelectionRow(
     value: Color?,
     onValueChange: (Color) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
-    onNullClick: (() -> Unit)? = null
+    onNullClick: (() -> Unit)? = null,
+    allowCustom: Boolean = true
 ) {
-    val scope = rememberCoroutineScope()
-    val toastHostState = LocalToastHostState.current
     val context = LocalContext.current
     var customColor by remember { mutableStateOf<Color?>(null) }
     var showColorPicker by remember { mutableStateOf(false) }
@@ -167,78 +164,78 @@ fun ColorSelectionRow(
                     }
                 }
             }
-            item {
-                val background = customColor ?: MaterialTheme.colorScheme.primary
-                val isSelected = customColor != null
-                val interactionSource = remember { MutableInteractionSource() }
-                val shape = shapeByInteraction(
-                    shape = if (isSelected) ShapeDefaults.small else AutoCornersShape(itemSize / 2),
-                    pressedShape = ShapeDefaults.pressed,
-                    interactionSource = interactionSource
-                )
+            if (allowCustom) {
+                item {
+                    val background = customColor ?: MaterialTheme.colorScheme.primary
+                    val isSelected = customColor != null
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val shape = shapeByInteraction(
+                        shape = if (isSelected) ShapeDefaults.small else AutoCornersShape(itemSize / 2),
+                        pressedShape = ShapeDefaults.pressed,
+                        interactionSource = interactionSource
+                    )
 
-                Box(
-                    modifier = Modifier
-                        .height(itemSize)
-                        .aspectRatio(
-                            ratio = animateFloatAsState(
-                                targetValue = if (isSelected) 1.5f else 1f,
-                                animationSpec = tween(400)
-                            ).value,
-                            matchHeightConstraintsFirst = true
-                        )
-                        .container(
-                            shape = shape,
-                            color = background,
-                            resultPadding = 0.dp
-                        )
-                        .transparencyChecker()
-                        .background(background, shape)
-                        .hapticsCombinedClickable(
-                            indication = LocalIndication.current,
-                            interactionSource = interactionSource,
-                            onLongClick = {
-                                context.pasteColorFromClipboard(
-                                    onPastedColor = {
-                                        val color = if (allowAlpha) it else it.copy(1f)
+                    Box(
+                        modifier = Modifier
+                            .height(itemSize)
+                            .aspectRatio(
+                                ratio = animateFloatAsState(
+                                    targetValue = if (isSelected) 1.5f else 1f,
+                                    animationSpec = tween(400)
+                                ).value,
+                                matchHeightConstraintsFirst = true
+                            )
+                            .container(
+                                shape = shape,
+                                color = background,
+                                resultPadding = 0.dp
+                            )
+                            .transparencyChecker()
+                            .background(background, shape)
+                            .hapticsCombinedClickable(
+                                indication = LocalIndication.current,
+                                interactionSource = interactionSource,
+                                onLongClick = {
+                                    context.pasteColorFromClipboard(
+                                        onPastedColor = {
+                                            val color = if (allowAlpha) it else it.copy(1f)
 
-                                        onValueChange(color)
-                                        customColor = color
-                                    },
-                                    onPastedColorFailure = { message ->
-                                        scope.launch {
-                                            toastHostState.showToast(
+                                            onValueChange(color)
+                                            customColor = color
+                                        },
+                                        onPastedColorFailure = { message ->
+                                            AppToastHost.showToast(
                                                 message = message,
                                                 icon = Icons.Outlined.Error
                                             )
                                         }
-                                    }
+                                    )
+                                },
+                                onClick = {
+                                    showColorPicker = true
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Palette,
+                            contentDescription = null,
+                            tint = background.inverse(
+                                fraction = {
+                                    if (it) 0.8f
+                                    else 0.5f
+                                },
+                                darkMode = background.luminance() < 0.3f
+                            ),
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    color = background.copy(alpha = 1f),
+                                    shape = shape
                                 )
-                            },
-                            onClick = {
-                                showColorPicker = true
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Palette,
-                        contentDescription = null,
-                        tint = background.inverse(
-                            fraction = {
-                                if (it) 0.8f
-                                else 0.5f
-                            },
-                            darkMode = background.luminance() < 0.3f
-                        ),
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = background.copy(alpha = 1f),
-                                shape = shape
-                            )
-                            .padding(4.dp)
-                    )
+                                .padding(4.dp)
+                        )
+                    }
                 }
             }
             items(
@@ -288,7 +285,7 @@ fun ColorSelectionRow(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.DoneAll,
+                                imageVector = Icons.Rounded.Done,
                                 contentDescription = null,
                                 tint = color.inverse(
                                     fraction = {

@@ -33,10 +33,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGri
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ColorLens
-import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material.icons.rounded.Stream
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,10 +56,14 @@ import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.TiffCompressionScheme
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
 import com.t8rin.imagetoolbox.core.resources.icons.QualityHigh
 import com.t8rin.imagetoolbox.core.resources.icons.QualityLow
 import com.t8rin.imagetoolbox.core.resources.icons.QualityMedium
+import com.t8rin.imagetoolbox.core.resources.icons.Speed
+import com.t8rin.imagetoolbox.core.resources.icons.Stream
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedChip
@@ -138,9 +138,9 @@ fun QualitySelector(
                     derivedStateOf {
                         when {
                             icon != null -> icon
-                            actualImageFormat.isHighQuality(quality.qualityValue) -> Icons.Rounded.QualityHigh
-                            actualImageFormat.isMidQuality(quality.qualityValue) -> Icons.Rounded.QualityMedium
-                            else -> Icons.Rounded.QualityLow
+                            actualImageFormat.isHighQuality(quality.qualityValue) -> Icons.Outlined.QualityHigh
+                            actualImageFormat.isMidQuality(quality.qualityValue) -> Icons.Outlined.QualityMedium
+                            else -> Icons.Outlined.QualityLow
                         }
                     }
                 }
@@ -159,6 +159,7 @@ fun QualitySelector(
                                 is Quality.PngLossy -> quality.compressionLevel
                                 is Quality.Avif -> quality.effort
                                 is Quality.Tiff -> quality.qualityValue
+                                is Quality.PngQuant -> quality.qualityValue
                             }
                         }
 
@@ -183,6 +184,7 @@ fun QualitySelector(
                                         is Quality.PngLossy -> quality.copy(compressionLevel = it.toInt())
                                         is Quality.Avif -> quality.copy(effort = it.toInt())
                                         is Quality.Tiff -> quality.copy(compressionScheme = it.toInt())
+                                        is Quality.PngQuant -> quality.copy(quality = it.toInt())
                                     }.coerceIn(actualImageFormat)
                                 )
                             }
@@ -195,6 +197,7 @@ fun QualitySelector(
                                         is Quality.PngLossy -> quality.copy(compressionLevel = it.toInt())
                                         is Quality.Avif -> quality.copy(qualityValue = it.toInt())
                                         is Quality.Tiff -> quality.copy(compressionScheme = it.toInt())
+                                        is Quality.PngQuant -> quality.copy(quality = it.toInt())
                                     }.coerceIn(actualImageFormat)
                                 )
                             }
@@ -301,7 +304,7 @@ fun QualitySelector(
                 EnhancedSliderItem(
                     value = pngLossyQuality?.maxColors ?: 0,
                     title = stringResource(R.string.max_colors_count),
-                    icon = Icons.Outlined.ColorLens,
+                    icon = Icons.Outlined.Palette,
                     valueRange = 2f..1024f,
                     internalStateTransformation = {
                         it.roundToInt().coerceIn(2..1024).toFloat()
@@ -381,6 +384,60 @@ fun QualitySelector(
                             }
                         }
                     }
+                }
+            }
+            AnimatedVisibility(actualImageFormat is ImageFormat.Png.ImageQuant) {
+                val pngQuantQuality = quality as? Quality.PngQuant
+                Column {
+                    EnhancedSliderItem(
+                        value = pngQuantQuality?.speed ?: 0,
+                        title = stringResource(R.string.speed),
+                        icon = Icons.Outlined.Speed,
+                        valueRange = 1f..10f,
+                        steps = 8,
+                        internalStateTransformation = {
+                            it.roundToInt().coerceIn(0..10).toFloat()
+                        },
+                        onValueChange = {
+                            pngQuantQuality?.copy(
+                                speed = it.roundToInt()
+                            )?.coerceIn(actualImageFormat)?.let(onQualityChange)
+                        },
+                        behaveAsContainer = false
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.speed_sub,
+                                1, 10
+                            ),
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 12.sp,
+                            color = LocalContentColor.current.copy(0.5f),
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .container(
+                                    shape = ShapeDefaults.large,
+                                    color = MaterialTheme.colorScheme.surface
+                                )
+                                .padding(6.dp)
+                        )
+                    }
+                    EnhancedSliderItem(
+                        value = pngQuantQuality?.maxColors ?: 0,
+                        title = stringResource(R.string.max_colors_count),
+                        icon = Icons.Outlined.Palette,
+                        valueRange = 2f..1024f,
+                        internalStateTransformation = {
+                            it.roundToInt().coerceIn(2..1024).toFloat()
+                        },
+                        onValueChange = {
+                            pngQuantQuality?.copy(
+                                maxColors = it.roundToInt()
+                            )?.coerceIn(actualImageFormat)?.let(onQualityChange)
+                        },
+                        behaveAsContainer = false
+                    )
                 }
             }
         }

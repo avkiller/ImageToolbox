@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,19 +35,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.Padding
-import androidx.compose.material.icons.outlined.PhotoSizeSelectLarge
-import androidx.compose.material.icons.outlined.RoundedCorner
-import androidx.compose.material.icons.rounded.Circle
-import androidx.compose.material.icons.rounded.RoundedCorner
-import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.TableRows
-import androidx.compose.material.icons.rounded.ViewColumn
-import androidx.compose.material.icons.sharp.Square
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -63,12 +51,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.extendedcolors.util.roundToTwoDigits
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.toggle
 import com.t8rin.imagetoolbox.core.domain.utils.safeCast
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Circle
+import com.t8rin.imagetoolbox.core.resources.icons.Code
+import com.t8rin.imagetoolbox.core.resources.icons.DarkMode
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.LightMode
+import com.t8rin.imagetoolbox.core.resources.icons.Padding
+import com.t8rin.imagetoolbox.core.resources.icons.PhotoSizeSelectLarge
+import com.t8rin.imagetoolbox.core.resources.icons.RoundedCorner
+import com.t8rin.imagetoolbox.core.resources.icons.Shuffle
+import com.t8rin.imagetoolbox.core.resources.icons.Square
+import com.t8rin.imagetoolbox.core.resources.icons.TableRows
 import com.t8rin.imagetoolbox.core.resources.icons.TopLeft
+import com.t8rin.imagetoolbox.core.resources.icons.ViewColumn
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ColorRowSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
@@ -105,7 +104,7 @@ internal fun QrParamsSelector(
     ) {
         TitleItem(
             text = stringResource(R.string.code_customization),
-            icon = Icons.Outlined.Code,
+            icon = Icons.Rounded.Code,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Column(
@@ -295,7 +294,7 @@ internal fun QrParamsSelector(
                                         )
                                     )
                                 },
-                                icon = Icons.Outlined.RoundedCorner,
+                                icon = Icons.Rounded.RoundedCorner,
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 shape = ShapeDefaults.byIndex(
                                     index = 3,
@@ -498,7 +497,7 @@ private fun PixelShape.Content() {
         is PixelShape.Predefined -> {
             Icon(
                 imageVector = when (this) {
-                    PixelShape.Square -> Icons.Sharp.Square
+                    PixelShape.Square -> Icons.Rounded.Square
                     PixelShape.RoundSquare -> Icons.Rounded.RoundedCorner
                     PixelShape.Circle -> Icons.Rounded.Circle
                     PixelShape.Vertical -> Icons.Rounded.ViewColumn
@@ -568,7 +567,7 @@ private fun BallShape.Content() {
         is BallShape.Predefined -> {
             Icon(
                 imageVector = when (this) {
-                    BallShape.Square -> Icons.Sharp.Square
+                    BallShape.Square -> Icons.Rounded.Square
                     BallShape.Circle -> Icons.Rounded.Circle
                 },
                 contentDescription = null,

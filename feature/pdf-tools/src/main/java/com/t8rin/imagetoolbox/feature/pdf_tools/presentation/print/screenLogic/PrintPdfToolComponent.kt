@@ -21,14 +21,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
@@ -60,8 +58,12 @@ class PrintPdfToolComponent @AssistedInject internal constructor(
     private val _uri: MutableState<Uri?> = mutableStateOf(initialUri)
     val uri by _uri
 
-    private val _quality: MutableState<Float> = mutableFloatStateOf(0.85f)
-    val quality by _quality
+    init {
+        checkPdf(
+            uri = initialUri,
+            onDecrypted = { _uri.value = it }
+        )
+    }
 
     private val _params: MutableState<PrintPdfParams> =
         mutableStateOf(PrintPdfParams())
@@ -82,35 +84,25 @@ class PrintPdfToolComponent @AssistedInject internal constructor(
         )
     }
 
-    fun updateQuality(quality: Float) {
-        registerChanges()
-        _quality.update { quality }
-    }
-
     fun updateParams(params: PrintPdfParams) {
         registerChanges()
         _params.update { params }
     }
 
     override fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
-        doSaving(
-            action = {
-                val processed = pdfManager.printPdf(
-                    uri = _uri.value.toString(),
-                    quality = quality,
-                    params = params
-                )
+        doSaving {
+            val processed = pdfManager.printPdf(
+                uri = _uri.value.toString(),
+                params = params
+            )
 
-                fileController.transferBytes(
-                    fromUri = processed,
-                    toUri = uri.toString()
-                ).onSuccess(::registerSave)
-            },
-            onResult = onResult
-        )
+            fileController.transferBytes(
+                fromUri = processed,
+                toUri = uri.toString()
+            ).onSuccess(::registerSave)
+        }
     }
 
     override fun performSharing(
@@ -137,7 +129,6 @@ class PrintPdfToolComponent @AssistedInject internal constructor(
                     listOf(
                         pdfManager.printPdf(
                             uri = _uri.value.toString(),
-                            quality = quality,
                             params = params
                         ).toUri()
                     )

@@ -28,10 +28,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,11 +43,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Album
 import com.t8rin.imagetoolbox.core.resources.icons.MusicAdd
+import com.t8rin.imagetoolbox.core.resources.icons.NoteAdd
+import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -74,13 +76,10 @@ import kotlinx.coroutines.delay
 fun AudioCoverExtractorContent(
     component: AudioCoverExtractorComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
-    LaunchedEffect(component.initialUris, component.covers, essentials) {
+    LaunchedEffect(component.initialUris, component.covers) {
         delay(500)
         if (component.initialUris != null && component.covers.isEmpty()) {
-            essentials.showFailureToast(essentials.getString(R.string.no_covers_found))
+            AppToastHost.showFailureToast(R.string.no_covers_found)
         }
     }
 
@@ -133,7 +132,7 @@ fun AudioCoverExtractorContent(
             ShareButton(
                 onShare = {
                     component.performSharing(
-                        onComplete = showConfetti
+                        onComplete = AppToastHost::showConfetti
                     )
                 },
                 onEdit = {
@@ -154,22 +153,33 @@ fun AudioCoverExtractorContent(
             )
         },
         imagePreview = {
-            val uris by remember(covers) {
-                derivedStateOf {
-                    covers.map { it.imageCoverUri ?: it.audioUri } + Uri.EMPTY
-                }
+            val uris = remember(covers) {
+                covers.map { it.imageCoverUri ?: it.audioUri }
             }
 
             UrisPreview(
-                modifier = Modifier.urisPreview(),
+                modifier = Modifier.urisPreview(isPortrait = isPortrait),
                 uris = uris,
                 isPortrait = true,
                 onRemoveUri = component::removeCover,
                 onAddUris = addAudioPicker::pickFile,
+                addUrisContent = { width ->
+                    Icon(
+                        imageVector = Icons.Rounded.NoteAdd,
+                        contentDescription = stringResource(R.string.add),
+                        modifier = Modifier.size(width / 3f)
+                    )
+                },
                 errorContent = { index, width ->
+                    val isNightMode = LocalSettingsState.current.isNightMode
+
                     Box(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.scrim.copy(0.5f))
+                            .background(
+                                takeColorFromScheme {
+                                    if (isNightMode) errorContainer else error
+                                }.copy(0.5f)
+                            )
                             .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
@@ -183,7 +193,9 @@ fun AudioCoverExtractorContent(
                             modifier = Modifier
                                 .size(size)
                                 .padding(8.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = takeColorFromScheme {
+                                if (isNightMode) onErrorContainer else onError
+                            }.copy(0.5f)
                         )
                         AnimatedVisibility(
                             visible = cover.isLoading,
@@ -229,8 +241,7 @@ fun AudioCoverExtractorContent(
         buttons = {
             val save: (oneTimeSaveLocationUri: String?) -> Unit = { uri ->
                 component.save(
-                    oneTimeSaveLocationUri = uri,
-                    onResult = essentials::parseSaveResults
+                    oneTimeSaveLocationUri = uri
                 )
             }
             var showFolderSelectionDialog by rememberSaveable {

@@ -17,10 +17,11 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.enhanced
 
-import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -31,38 +32,55 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.DisabledAlpha
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
+import com.t8rin.imagetoolbox.core.ui.utils.animation.lessSpringySpec
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCircleShape
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.marquee
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @Composable
 fun EnhancedButtonGroup(
@@ -72,7 +90,10 @@ fun EnhancedButtonGroup(
     selectedIndex: Int,
     title: String? = null,
     onIndexChange: (Int) -> Unit,
-    inactiveButtonColor: Color = MaterialTheme.colorScheme.surface
+    isScrollable: Boolean = true,
+    contentPadding: PaddingValues = DefaultContentPadding,
+    inactiveButtonColor: Color = MaterialTheme.colorScheme.surface,
+    activeButtonColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
     EnhancedButtonGroup(
         enabled = enabled,
@@ -90,7 +111,10 @@ fun EnhancedButtonGroup(
                 )
             }
         },
-        inactiveButtonColor = inactiveButtonColor
+        isScrollable = isScrollable,
+        contentPadding = contentPadding,
+        inactiveButtonColor = inactiveButtonColor,
+        activeButtonColor = activeButtonColor,
     )
 }
 
@@ -102,7 +126,10 @@ fun EnhancedButtonGroup(
     selectedIndex: Int,
     title: @Composable RowScope.() -> Unit = {},
     onIndexChange: (Int) -> Unit,
-    inactiveButtonColor: Color = MaterialTheme.colorScheme.surface
+    isScrollable: Boolean = true,
+    contentPadding: PaddingValues = DefaultContentPadding,
+    inactiveButtonColor: Color = MaterialTheme.colorScheme.surface,
+    activeButtonColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
     EnhancedButtonGroup(
         modifier = modifier,
@@ -120,7 +147,10 @@ fun EnhancedButtonGroup(
         },
         onIndexChange = onIndexChange,
         title = title,
-        inactiveButtonColor = inactiveButtonColor
+        isScrollable = isScrollable,
+        contentPadding = contentPadding,
+        inactiveButtonColor = inactiveButtonColor,
+        activeButtonColor = activeButtonColor,
     )
 }
 
@@ -276,7 +306,7 @@ fun EnhancedButtonGroup(
 
     val disabledColor = MaterialTheme.colorScheme.onSurface
         .copy(alpha = DisabledAlpha)
-        .compositeOver(MaterialTheme.colorScheme.surface)
+        .compositeOverSafe(MaterialTheme.colorScheme.surface)
 
     ProvideTextStyle(
         value = LocalTextStyle.current.copy(
@@ -294,105 +324,196 @@ fun EnhancedButtonGroup(
                 content = title
             )
             val scrollState = rememberScrollState()
-            val elevation by animateDpAsState(
-                if (settingsState.borderWidth > 0.dp || !enabled) 0.dp else 0.5.dp
-            )
 
             LocalMinimumInteractiveComponentSize.ProvidesValue(Dp.Unspecified) {
-                MaterialTheme(
-                    motionScheme = object : MotionScheme by MotionScheme.expressive() {
-                        override fun <T> fastSpatialSpec(): FiniteAnimationSpec<T> = tween(400)
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .height(IntrinsicSize.Max)
-                            .then(
-                                if (isScrollable) {
-                                    Modifier
-                                        .fadingEdges(scrollState)
-                                        .enhancedHorizontalScroll(scrollState)
-                                } else Modifier.fillMaxWidth()
-                            )
-                            .padding(contentPadding),
-                        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
-                    ) {
-                        repeat(itemCount) { index ->
-                            val activeContainerColor = if (enabled) {
-                                activeButtonColor
+                val animationSpec = remember { lessSpringySpec<Float>() }
+
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Max)
+                        .then(
+                            if (isScrollable) {
+                                Modifier
+                                    .fadingEdges(scrollState)
+                                    .enhancedHorizontalScroll(scrollState)
                             } else {
-                                MaterialTheme.colorScheme.surfaceContainer
+                                Modifier.fillMaxWidth()
                             }
+                        )
+                        .padding(contentPadding),
+                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+                ) {
+                    repeat(itemCount) { index ->
+                        val interactionSource = remember { MutableInteractionSource() }
 
-                            val selected = index in selectedIndices
+                        val activeContainerColor = if (enabled) {
+                            activeButtonColor
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainer
+                        }
 
-                            val disableSmoothness =
-                                !selected && index == 0 || index == itemCount - 1
+                        val selected = index in selectedIndices
 
-                            val settingsState = LocalSettingsState.current
+                        val disableSmoothness =
+                            !selected && index == 0 || index == itemCount - 1
 
-                            LocalSettingsState.ProvidesValue(
-                                if (disableSmoothness && settingsState.shapesType is ShapeType.Smooth) {
-                                    settingsState.copy(
-                                        shapesType = ShapeType.Rounded()
+                        LocalSettingsState.ProvidesValue(
+                            if (disableSmoothness && settingsState.shapesType is ShapeType.Smooth) {
+                                settingsState.copy(
+                                    shapesType = ShapeType.Rounded()
+                                )
+                            } else {
+                                settingsState
+                            }
+                        ) {
+                            EnhancedToggleButton(
+                                enabled = enabled,
+                                onCheckedChange = {
+                                    onIndexChange(index)
+                                },
+                                border = BorderStroke(
+                                    width = settingsState.borderWidth,
+                                    color = MaterialTheme.colorScheme.outlineVariant(
+                                        onTopOf = if (selected) activeContainerColor
+                                        else inactiveButtonColor
                                     )
-                                } else {
-                                    settingsState
-                                }
+                                ),
+                                colors = ToggleButtonDefaults.toggleButtonColors(
+                                    containerColor = inactiveButtonColor,
+                                    contentColor = contentColorFor(inactiveButtonColor),
+                                    checkedContainerColor = activeContainerColor,
+                                    checkedContentColor = contentColorFor(activeContainerColor)
+                                ),
+                                checked = selected,
+                                shapes = when (index) {
+                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes(
+                                        shape = AutoCornersShape(
+                                            topStart = CornerFull,
+                                            bottomStart = CornerFull,
+                                            topEnd = CornerValueSmall,
+                                            bottomEnd = CornerValueSmall,
+                                        ),
+                                        pressedShape = ButtonDefaults.pressedShape,
+                                        checkedShape = AutoCircleShape()
+                                    )
+
+                                    itemCount - 1 -> ButtonGroupDefaults.connectedTrailingButtonShapes(
+                                        shape = AutoCornersShape(
+                                            topEnd = CornerFull,
+                                            bottomEnd = CornerFull,
+                                            topStart = CornerValueSmall,
+                                            bottomStart = CornerValueSmall,
+                                        ),
+                                        pressedShape = ButtonDefaults.pressedShape,
+                                        checkedShape = AutoCircleShape()
+                                    )
+
+                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes(
+                                        shape = ShapeDefaults.mini,
+                                        pressedShape = ButtonDefaults.pressedShape,
+                                        checkedShape = AutoCircleShape()
+                                    )
+                                },
+                                modifier = Modifier
+                                    .enlargeOnPress(
+                                        isScrollable = isScrollable,
+                                        interactionSource = interactionSource,
+                                        animationSpec = animationSpec,
+                                        rowScope = this
+                                    )
+                                    .zIndex(if (selected) 1f else 0f),
+                                interactionSource = interactionSource
                             ) {
-                                EnhancedToggleButton(
-                                    enabled = enabled,
-                                    onCheckedChange = {
-                                        onIndexChange(index)
-                                    },
-                                    border = BorderStroke(
-                                        width = settingsState.borderWidth,
-                                        color = MaterialTheme.colorScheme.outlineVariant(
-                                            onTopOf = if (selected) activeContainerColor
-                                            else inactiveButtonColor
-                                        )
-                                    ),
-                                    colors = ToggleButtonDefaults.toggleButtonColors(
-                                        containerColor = inactiveButtonColor,
-                                        contentColor = contentColorFor(inactiveButtonColor),
-                                        checkedContainerColor = activeContainerColor,
-                                        checkedContentColor = contentColorFor(activeContainerColor)
-                                    ),
-                                    checked = selected,
-                                    shapes = when (index) {
-                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes(
-                                            pressedShape = ButtonDefaults.pressedShape
-                                        )
-
-                                        itemCount - 1 -> ButtonGroupDefaults.connectedTrailingButtonShapes(
-                                            pressedShape = ButtonDefaults.pressedShape
-                                        )
-
-                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes(
-                                            pressedShape = ButtonDefaults.pressedShape,
-                                        )
-                                    },
-                                    elevation = elevation,
-                                    modifier = Modifier.then(
-                                        if (isScrollable) Modifier
-                                        else Modifier.weight(1f)
-                                    )
-                                ) {
-                                    if (!isScrollable) {
-                                        Row(
-                                            modifier = Modifier.marquee()
-                                        ) {
-                                            itemContent(index)
-                                        }
-                                    } else {
+                                if (!isScrollable) {
+                                    Row(
+                                        modifier = Modifier.marquee()
+                                    ) {
                                         itemContent(index)
                                     }
+                                } else {
+                                    itemContent(index)
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun Modifier.enlargeOnPress(
+    isScrollable: Boolean,
+    interactionSource: MutableInteractionSource,
+    animationSpec: AnimationSpec<Float>,
+    rowScope: RowScope,
+    factor: Float = 0.2f
+): Modifier {
+    val pressedAnimatable = remember { Animatable(0f) }
+
+    LaunchedEffect(interactionSource) {
+        val pressInteractions = mutableListOf<PressInteraction.Press>()
+
+        interactionSource.interactions
+            .map { interaction ->
+                when (interaction) {
+                    is PressInteraction.Press -> pressInteractions.add(interaction)
+                    is PressInteraction.Release -> pressInteractions.remove(interaction.press)
+                    is PressInteraction.Cancel -> pressInteractions.remove(interaction.press)
+                }
+                pressInteractions.isNotEmpty()
+            }
+            .distinctUntilChanged()
+            .collectLatest { pressed ->
+                if (pressed) {
+                    launch { pressedAnimatable.animateTo(1f, animationSpec) }
+                } else {
+                    delay(150)
+
+                    val initialTimeMillis = withFrameMillis { it }
+                    while (!(pressedAnimatable.value > 0.75f)) {
+                        val timeMillis = withFrameMillis { it }
+                        if (timeMillis - initialTimeMillis > 1_000L) break
+                    }
+                    pressedAnimatable.animateTo(0f, animationSpec)
+                }
+            }
+    }
+
+    return this then if (isScrollable) {
+        var buttonWidth by remember { mutableIntStateOf(0) }
+
+        Modifier
+            .onSizeChanged {
+                if (buttonWidth == 0) buttonWidth = it.width
+            }
+            .layout { measurable, constraints ->
+                val mod =
+                    (buttonWidth * pressedAnimatable.value * factor).roundToInt()
+                        .coerceAtLeast(0)
+
+                val placeable = measurable.measure(
+                    if (buttonWidth == 0) {
+                        constraints
+                    } else {
+                        constraints.copy(
+                            minWidth = buttonWidth + mod,
+                            maxWidth = buttonWidth + mod
+                        )
+                    }
+                )
+
+                layout(
+                    placeable.measuredWidth,
+                    placeable.measuredHeight
+                ) {
+                    placeable.place(0, 0)
+                }
+            }
+    } else {
+        with(rowScope) {
+            Modifier.weight(1f + pressedAnimatable.value * factor)
         }
     }
 }
@@ -407,3 +528,6 @@ private val DefaultContentPadding = PaddingValues(
     bottom = 6.dp,
     top = 8.dp
 )
+
+private val CornerFull: CornerSize = CornerSize(50)
+private val CornerValueSmall = CornerSize(8.0.dp)

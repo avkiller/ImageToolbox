@@ -30,10 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
-import androidx.compose.material.icons.outlined.AddCircleOutline
-import androidx.compose.material.icons.rounded.Palette
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -51,7 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.replaceAt
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AddCircle
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.File
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
 import com.t8rin.imagetoolbox.core.resources.icons.Swatch
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
 import com.t8rin.imagetoolbox.core.ui.utils.helper.toHex
@@ -129,7 +129,7 @@ internal fun EditPaletteControls(
         onValueChange = onPaletteFormatChange,
         entries = entries,
         title = stringResource(R.string.palette_format),
-        titleIcon = Icons.AutoMirrored.Rounded.InsertDriveFile,
+        titleIcon = Icons.Rounded.File,
         itemContentText = {
             it.name.uppercase().replace("_", " ")
         },
@@ -178,7 +178,7 @@ internal fun EditPaletteControls(
                     title = stringResource(R.string.add_color),
                     subtitle = stringResource(R.string.add_color_palette_sub),
                     startIcon = Icons.Rounded.Palette,
-                    endIcon = Icons.Outlined.AddCircleOutline,
+                    endIcon = Icons.Outlined.AddCircle,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp),

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
@@ -39,6 +38,7 @@ import com.t8rin.imagetoolbox.core.resources.shapes.ArrowShape
 import com.t8rin.imagetoolbox.core.resources.shapes.BookmarkShape
 import com.t8rin.imagetoolbox.core.resources.shapes.PentagonShape
 import com.t8rin.imagetoolbox.core.resources.shapes.SimpleHeartShape
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.settings.presentation.model.IconShape
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.blend
@@ -61,7 +61,7 @@ object IconShapeDefaults {
 
             return remember(colorScheme, localContainer, localContent, container, settingsState) {
                 derivedStateOf {
-                    val containerLuma = container.compositeOver(localContainer).luminance()
+                    val containerLuma = container.compositeOverSafe(localContainer).luminance()
 
                     val isLight = containerLuma > 0.2f
 
@@ -97,7 +97,7 @@ object IconShapeDefaults {
 
 @Composable
 fun IconShapeContainer(
-    enabled: Boolean,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     iconShape: IconShape? = LocalSettingsState.current.iconShape,
     contentColor: Color = LocalIconShapeContentColor.current

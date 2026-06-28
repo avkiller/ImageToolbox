@@ -20,7 +20,9 @@ package com.t8rin.imagetoolbox.feature.watermarking.presentation
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -33,12 +35,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.ImageReset
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.CompareButton
@@ -46,6 +49,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShowOriginalButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.SaveExifWidget
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
@@ -54,11 +58,13 @@ import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ResetDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedHorizontalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageContainer
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageCounter
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.detectSwipes
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.PickImageFromUrisSheet
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
@@ -77,17 +83,13 @@ import com.t8rin.imagetoolbox.feature.watermarking.presentation.screenLogic.Wate
 fun WatermarkingContent(
     component: WatermarkingComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     AutoContentBasedColors(
         model = component.selectedUri
     )
 
     val imagePicker = rememberImagePicker { uris: List<Uri> ->
         component.setUris(
-            uris = uris,
-            onFailure = essentials::showFailureToast
+            uris = uris
         )
     }
 
@@ -133,46 +135,70 @@ fun WatermarkingContent(
             )
         },
         actions = {
-            var editSheetData by remember {
-                mutableStateOf(listOf<Uri>())
-            }
-            ShareButton(
-                enabled = component.previewBitmap != null,
-                onShare = {
-                    component.shareBitmaps(showConfetti)
-                },
-                onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
-                },
-                onEdit = {
-                    component.cacheImages {
-                        editSheetData = it
-                    }
-                }
-            )
-            ProcessImagesPreferenceSheet(
-                uris = editSheetData,
-                visible = editSheetData.isNotEmpty(),
-                onDismiss = {
-                    editSheetData = emptyList()
-                },
-                onNavigate = component.onNavigate
-            )
-            EnhancedIconButton(
-                enabled = component.internalBitmap != null,
-                onClick = { showResetDialog = true }
+            val state = rememberScrollState()
+            Row(
+                modifier = Modifier
+                    .fadingEdges(state)
+                    .enhancedHorizontalScroll(state),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.ImageReset,
-                    contentDescription = stringResource(R.string.reset_image)
-                )
-            }
-            if (component.internalBitmap != null) {
-                ShowOriginalButton(
-                    onStateChange = {
-                        showOriginal = it
+                var editSheetData by remember {
+                    mutableStateOf(listOf<Uri>())
+                }
+                if (!isPortrait) {
+                    UndoRedoButtons(
+                        canUndo = component.canUndo,
+                        canRedo = component.canRedo,
+                        onUndo = component::undo,
+                        onRedo = component::redo,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                }
+                ShareButton(
+                    enabled = component.previewBitmap != null,
+                    onShare = component::shareBitmaps,
+                    onCopy = {
+                        component.cacheCurrentImage(Clipboard::copy)
+                    },
+                    onEdit = {
+                        component.cacheImages {
+                            editSheetData = it
+                        }
                     }
                 )
+                ProcessImagesPreferenceSheet(
+                    uris = editSheetData,
+                    visible = editSheetData.isNotEmpty(),
+                    onDismiss = {
+                        editSheetData = emptyList()
+                    },
+                    onNavigate = component.onNavigate
+                )
+                EnhancedIconButton(
+                    enabled = component.internalBitmap != null,
+                    onClick = { showResetDialog = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ImageReset,
+                        contentDescription = stringResource(R.string.reset_image)
+                    )
+                }
+                if (component.internalBitmap != null) {
+                    ShowOriginalButton(
+                        onStateChange = {
+                            showOriginal = it
+                        }
+                    )
+                }
+                if (isPortrait) {
+                    UndoRedoButtons(
+                        canUndo = component.canUndo,
+                        canRedo = component.canRedo,
+                        onUndo = component::undo,
+                        onRedo = component::redo,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                }
             }
         },
         forceImagePreviewToMax = showOriginal,
@@ -237,8 +263,7 @@ fun WatermarkingContent(
         buttons = {
             val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = { oneTimeSaveLocationUri ->
                 component.saveBitmaps(
-                    oneTimeSaveLocationUri = oneTimeSaveLocationUri,
-                    onResult = essentials::parseSaveResults
+                    oneTimeSaveLocationUri = oneTimeSaveLocationUri
                 )
             }
             var showFolderSelectionDialog by rememberSaveable {
@@ -298,15 +323,8 @@ fun WatermarkingContent(
         },
         uris = component.uris,
         selectedUri = component.selectedUri,
-        onUriPicked = { uri ->
-            component.updateSelectedUri(
-                uri = uri,
-                onFailure = essentials::showFailureToast
-            )
-        },
-        onUriRemoved = { uri ->
-            component.updateUrisSilently(removedUri = uri)
-        },
+        onUriPicked = component::updateSelectedUri,
+        onUriRemoved = component::updateUrisSilently,
         columns = if (isPortrait) 2 else 4,
     )
 

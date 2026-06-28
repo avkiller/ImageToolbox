@@ -36,9 +36,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Done
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,6 +47,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,11 +71,12 @@ import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCre
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheet
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.Done
 import com.t8rin.imagetoolbox.core.resources.icons.Eyedropper
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvideFilterPreview
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -89,6 +89,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
 import com.t8rin.imagetoolbox.core.ui.widget.saver.ColorSaver
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
 import com.t8rin.imagetoolbox.core.ui.widget.text.marquee
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.OpenColorPickerCard
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.components.PickColorFromImageSheet
 import kotlinx.coroutines.launch
@@ -106,7 +107,7 @@ fun FilterEditOption(
     onGetBitmap: (Bitmap) -> Unit,
     onRequestMappingFilters: (List<UiFilter<*>>) -> List<Transformation<Bitmap>>,
     filterList: List<UiFilter<*>>,
-    updateFilter: (Any, Int, (Throwable) -> Unit) -> Unit,
+    updateFilter: (Any, Int) -> Unit,
     removeAt: (Int) -> Unit,
     addFilter: (UiFilter<*>) -> Unit,
     updateOrder: (List<UiFilter<*>>) -> Unit
@@ -115,7 +116,6 @@ fun FilterEditOption(
 
     ProvideFilterPreview(stateBitmap)
 
-    val essentials = rememberLocalEssentials()
     bitmap?.let {
         val scaffoldState = rememberBottomSheetScaffoldState()
 
@@ -174,8 +174,7 @@ fun FilterEditOption(
                                     onFilterChange = { filterChange ->
                                         updateFilter(
                                             filterChange,
-                                            index,
-                                            essentials::showFailureToast
+                                            index
                                         )
                                     },
                                     onLongPress = {
@@ -190,7 +189,7 @@ fun FilterEditOption(
                                         showTemplateCreationSheet = true
                                         filterTemplateCreationSheetComponent.setInitialTemplateFilter(
                                             TemplateFilter(
-                                                name = essentials.getString(filter.title),
+                                                name = getString(filter.title),
                                                 filters = listOf(filter)
                                             )
                                         )
@@ -323,18 +322,20 @@ fun FilterEditOption(
             }
         }
 
+        val scope = rememberCoroutineScope()
+
         AddFiltersSheet(
             visible = showFilterSheet,
             onVisibleChange = { showFilterSheet = it },
             previewBitmap = stateBitmap,
             onFilterPicked = {
-                essentials.launch {
+                scope.launch {
                     scaffoldState.bottomSheetState.expand()
                 }
                 addFilter(it.newInstance())
             },
             onFilterPickedWithParams = {
-                essentials.launch {
+                scope.launch {
                     scaffoldState.bottomSheetState.expand()
                 }
                 addFilter(it)

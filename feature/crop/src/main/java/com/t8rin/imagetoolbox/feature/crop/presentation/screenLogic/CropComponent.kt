@@ -24,11 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
-import com.smarttoolfactory.cropper.model.AspectRatio
-import com.smarttoolfactory.cropper.model.OutlineType
-import com.smarttoolfactory.cropper.model.RectCropShape
-import com.smarttoolfactory.cropper.settings.CropDefaults
-import com.smarttoolfactory.cropper.settings.CropOutlineProperty
+import com.t8rin.cropper.model.AspectRatio
+import com.t8rin.cropper.model.OutlineType
+import com.t8rin.cropper.model.RectCropShape
+import com.t8rin.cropper.settings.CropDefaults
+import com.t8rin.cropper.settings.CropOutlineProperty
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageCompressor
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
@@ -39,9 +39,9 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.model.DomainAspectRatio
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
@@ -66,12 +66,7 @@ class CropComponent @AssistedInject internal constructor(
 
     init {
         debounce {
-            initialUri?.let {
-                setUri(
-                    uri = it,
-                    onFailure = {}
-                )
-            }
+            initialUri?.let(::setUri)
         }
     }
 
@@ -137,8 +132,7 @@ class CropComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmap(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (saveResult: SaveResult) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -157,7 +151,7 @@ class CropComponent @AssistedInject internal constructor(
 
                 _bitmap.value = decoded
 
-                onComplete(
+                parseSaveResult(
                     fileController.save(
                         saveTarget = ImageSaveTarget(
                             imageInfo = ImageInfo(
@@ -231,8 +225,7 @@ class CropComponent @AssistedInject internal constructor(
     }
 
     fun setUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit
+        uri: Uri
     ) {
         _uri.value = uri
         imageGetter.getImageAsync(
@@ -242,11 +235,11 @@ class CropComponent @AssistedInject internal constructor(
                 updateBitmap(it.image, true)
                 setImageFormat(it.imageInfo.imageFormat)
             },
-            onFailure = onFailure
+            onFailure = AppToastHost::showFailureToast
         )
     }
 
-    fun shareBitmap(onComplete: () -> Unit) {
+    fun shareBitmap() {
         savingJob = trackProgress {
             _isSaving.value = true
             bitmap?.let { localBitmap ->
@@ -260,7 +253,7 @@ class CropComponent @AssistedInject internal constructor(
                     image = localBitmap,
                     onComplete = {
                         _isSaving.value = false
-                        onComplete()
+                        AppToastHost.showConfetti()
                     }
                 )
             }

@@ -30,12 +30,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FileOpen
-import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.rounded.ContentPaste
-import androidx.compose.material.icons.rounded.CopyAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -58,32 +52,38 @@ import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.domain.utils.isBase64
 import com.t8rin.imagetoolbox.core.domain.utils.trimToBase64
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Base64
+import com.t8rin.imagetoolbox.core.resources.icons.ContentPaste
+import com.t8rin.imagetoolbox.core.resources.icons.CopyAll
+import com.t8rin.imagetoolbox.core.resources.icons.FileOpen
+import com.t8rin.imagetoolbox.core.resources.icons.Save
+import com.t8rin.imagetoolbox.core.resources.icons.Share
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRow
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.base64_tools.presentation.screenLogic.Base64ToolsComponent
 
 @Composable
 internal fun Base64ToolsTiles(component: Base64ToolsComponent) {
-    val essentials = rememberLocalEssentials()
-
     val pasteTile: @Composable RowScope.(shape: Shape) -> Unit = { shape ->
         Tile(
             onClick = {
-                essentials.getTextFromClipboard { raw ->
+                Clipboard.getText { raw ->
                     val text = raw.trimToBase64()
 
                     if (text.isBase64()) {
                         component.setBase64(text)
                     } else {
-                        essentials.showToast(
-                            message = essentials.getString(R.string.not_a_valid_base_64),
+                        AppToastHost.showToast(
+                            message = getString(R.string.not_a_valid_base_64),
                             icon = Icons.Rounded.Base64
                         )
                     }
@@ -100,17 +100,7 @@ internal fun Base64ToolsTiles(component: Base64ToolsComponent) {
         val pickLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
-            uri?.let {
-                component.setBase64FromUri(
-                    uri = uri,
-                    onFailure = {
-                        essentials.showToast(
-                            message = essentials.getString(R.string.not_a_valid_base_64),
-                            icon = Icons.Rounded.Base64
-                        )
-                    }
-                )
-            }
+            uri?.let(component::setBase64FromUri)
         }
 
         Tile(
@@ -169,36 +159,27 @@ internal fun Base64ToolsTiles(component: Base64ToolsComponent) {
                                 append(component.base64String)
                             }
                             if (component.base64String.isBase64()) {
-                                essentials.copyToClipboard(text)
+                                Clipboard.copy(text)
                             } else {
-                                essentials.showToast(
-                                    message = essentials.getString(R.string.copy_not_a_valid_base_64),
+                                AppToastHost.showToast(
+                                    message = getString(R.string.copy_not_a_valid_base_64),
                                     icon = Icons.Rounded.Base64
                                 )
                             }
                         },
-                        icon = Icons.Rounded.CopyAll,
+                        icon = Icons.Outlined.CopyAll,
                         textRes = R.string.copy_base_64
                     )
 
-                    val shareText = {
-                        component.shareText(essentials::showConfetti)
-                    }
-
                     Tile(
-                        onClick = shareText,
+                        onClick = component::shareText,
                         icon = Icons.Outlined.Share,
                         textRes = R.string.share_base_64
                     )
 
                     val saveLauncher = rememberFileCreator(
                         mimeType = MimeType.Txt,
-                        onSuccess = { uri ->
-                            component.saveContentToTxt(
-                                uri = uri,
-                                onResult = essentials::parseFileSaveResult
-                            )
-                        }
+                        onSuccess = component::saveContentToTxt
                     )
 
                     Tile(

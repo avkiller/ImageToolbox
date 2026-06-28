@@ -37,6 +37,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Preset
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
@@ -47,10 +48,13 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.ui.transformation.ImageInfoTransformation
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.feature.format_conversion.presentation.screenLogic.FormatConversionComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -69,17 +73,16 @@ class FormatConversionComponent @AssistedInject internal constructor(
     private val imageScaler: ImageScaler<Bitmap>,
     private val shareProvider: ImageShareProvider<Bitmap>,
     private val imageInfoTransformationFactory: ImageInfoTransformation.Factory,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
-            initialUris?.let {
-                updateUris(
-                    uris = it,
-                    onFailure = {}
-                )
-            }
+            initialUris?.let(::setUris)
         }
     }
 
@@ -116,10 +119,11 @@ class FormatConversionComponent @AssistedInject internal constructor(
         _isImageLoading.update { false }
     }
 
-    fun updateUris(
-        uris: List<Uri>?,
-        onFailure: (Throwable) -> Unit
+    fun setUris(
+        uris: List<Uri>?
     ) {
+        clearHistory()
+        registerChangesCleared()
         _uris.value = null
         _uris.value = uris
         _selectedUri.value = uris?.firstOrNull()
@@ -131,14 +135,13 @@ class FormatConversionComponent @AssistedInject internal constructor(
                 uri = uri.toString(),
                 originalSize = false,
                 onGetImage = ::setImageData,
-                onFailure = onFailure
+                onFailure = AppToastHost::showFailureToast
             )
         }
     }
 
     fun updateUrisSilently(
-        removedUri: Uri,
-        onFailure: (Throwable) -> Unit
+        removedUri: Uri
     ) {
         componentScope.launch {
             _uris.value = uris
@@ -146,11 +149,11 @@ class FormatConversionComponent @AssistedInject internal constructor(
                 val index = uris?.indexOf(removedUri) ?: -1
                 if (index == 0) {
                     uris?.getOrNull(1)?.let {
-                        updateSelectedUri(it, onFailure)
+                        updateSelectedUri(it)
                     }
                 } else {
                     uris?.getOrNull(index - 1)?.let {
-                        updateSelectedUri(it, onFailure)
+                        updateSelectedUri(it)
                     }
                 }
             }
@@ -163,10 +166,14 @@ class FormatConversionComponent @AssistedInject internal constructor(
         }
     }
 
-    private suspend fun checkBitmapAndUpdate() {
+    private suspend fun checkBitmapAndUpdate(
+        clearPreview: Boolean = true
+    ) {
         _bitmap.value?.let { bmp ->
             val preview = updatePreview(bmp)
-            _previewBitmap.value = null
+            if (clearPreview) {
+                _previewBitmap.value = null
+            }
             _shouldShowPreview.value = imagePreviewCreator.canShow(preview)
             if (shouldShowPreview) _previewBitmap.value = preview
         }
@@ -213,33 +220,52 @@ class FormatConversionComponent @AssistedInject internal constructor(
                 )
             }
             checkBitmapAndUpdate()
+            resetHistory()
+            registerChangesCleared()
             _isImageLoading.update { false }
         }
     }
 
     fun setQuality(quality: Quality) {
-        if (_imageInfo.value.quality != quality) {
-            _imageInfo.value = _imageInfo.value.copy(quality = quality)
+        val coercedQuality = quality.coerceIn(imageInfo.imageFormat)
+        if (_imageInfo.value.quality != coercedQuality) {
+            beginPendingHistoryTransaction()
+            _imageInfo.value = _imageInfo.value.copy(quality = coercedQuality)
             debouncedImageCalculation {
                 checkBitmapAndUpdate()
             }
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
     fun setImageFormat(imageFormat: ImageFormat) {
         if (_imageInfo.value.imageFormat != imageFormat) {
-            _imageInfo.value = _imageInfo.value.copy(imageFormat = imageFormat)
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
+            _imageInfo.value = _imageInfo.value.copy(
+                imageFormat = imageFormat,
+                quality = imageInfo.quality.coerceIn(imageFormat)
+            )
             debouncedImageCalculation {
                 checkBitmapAndUpdate()
             }
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
     fun setKeepExif(boolean: Boolean) {
+        if (_keepExif.value == boolean) return
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _keepExif.value = boolean
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     private var savingJob: Job? by smartJob {
@@ -247,8 +273,7 @@ class FormatConversionComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -295,14 +320,13 @@ class FormatConversionComponent @AssistedInject internal constructor(
                     total = uris.orEmpty().size
                 )
             }
-            onResult(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
 
     fun updateSelectedUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit = {}
+        uri: Uri
     ) {
         _selectedUri.value = uri
         componentScope.launch {
@@ -329,12 +353,12 @@ class FormatConversionComponent @AssistedInject internal constructor(
                 _isImageLoading.update { false }
             }.onFailure {
                 _isImageLoading.update { false }
-                onFailure(it)
+                AppToastHost.showFailureToast(it)
             }
         }
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         savingJob = trackProgress {
             _isSaving.value = true
             shareProvider.shareImages(
@@ -354,7 +378,7 @@ class FormatConversionComponent @AssistedInject internal constructor(
                 },
                 onProgressChange = {
                     if (it == -1) {
-                        onComplete()
+                        AppToastHost.showConfetti()
                         _isSaving.value = false
                         _done.value = 0
                     } else {
@@ -468,6 +492,53 @@ class FormatConversionComponent @AssistedInject internal constructor(
         )
     )
 
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        imageInfo = imageInfo.asHistoryImageInfo(),
+        keepExif = keepExif,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _imageInfo.update {
+            it.copy(
+                imageFormat = snapshot.imageInfo.imageFormat,
+                quality = snapshot.imageInfo.quality
+            )
+        }
+        _keepExif.value = snapshot.keepExif
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        debouncedImageCalculation {
+            bitmap?.let {
+                checkBitmapAndUpdate(clearPreview = false)
+            }
+        }
+    }
+
+    override fun hasSameUndoState(
+        first: HistorySnapshot,
+        second: HistorySnapshot
+    ): Boolean = first.normalized() == second.normalized()
+
+    private fun ImageInfo.asHistoryImageInfo(): ImageInfo = ImageInfo(
+        imageFormat = imageFormat,
+        quality = quality
+    )
+
+    private fun HistorySnapshot.normalized(): HistorySnapshot = copy(
+        imageInfo = imageInfo.asHistoryImageInfo()
+    )
+
+    data class HistorySnapshot(
+        val imageInfo: ImageInfo = ImageInfo(),
+        val keepExif: Boolean = false,
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
 
     @AssistedFactory
     fun interface Factory {

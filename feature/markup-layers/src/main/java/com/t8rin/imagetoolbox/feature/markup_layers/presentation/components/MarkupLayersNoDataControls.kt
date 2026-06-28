@@ -34,8 +34,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FormatPaint
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,8 +53,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.BackgroundColor
-import com.t8rin.imagetoolbox.core.resources.icons.ImageTooltip
+import com.t8rin.imagetoolbox.core.resources.icons.ImagesMode
+import com.t8rin.imagetoolbox.core.resources.icons.ImagesearchRoller
 import com.t8rin.imagetoolbox.core.resources.icons.Stacks
+import com.t8rin.imagetoolbox.core.resources.icons.Unarchive
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.restrict
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ColorRowSelector
@@ -75,7 +76,8 @@ import com.t8rin.imagetoolbox.feature.markup_layers.presentation.screenLogic.Mar
 @Composable
 internal fun MarkupLayersNoDataControls(
     component: MarkupLayersComponent,
-    onPickImage: () -> Unit
+    onPickImage: () -> Unit,
+    onOpenProject: () -> Unit
 ) {
     var showBackgroundDrawingSetup by rememberSaveable { mutableStateOf(false) }
 
@@ -106,7 +108,7 @@ internal fun MarkupLayersNoDataControls(
         item {
             PreferenceItem(
                 onClick = onPickImage,
-                startIcon = Icons.Outlined.ImageTooltip,
+                startIcon = Icons.Outlined.ImagesMode,
                 title = stringResource(R.string.layers_on_image),
                 subtitle = stringResource(R.string.layers_on_image_sub),
                 modifier = Modifier.fillMaxWidth()
@@ -115,9 +117,18 @@ internal fun MarkupLayersNoDataControls(
         item {
             PreferenceItem(
                 onClick = { showBackgroundDrawingSetup = true },
-                startIcon = Icons.Outlined.FormatPaint,
+                startIcon = Icons.Outlined.ImagesearchRoller,
                 title = stringResource(R.string.layers_on_background),
                 subtitle = stringResource(R.string.layers_on_background_sub),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        item {
+            PreferenceItem(
+                onClick = onOpenProject,
+                startIcon = Icons.Outlined.Unarchive,
+                title = stringResource(R.string.open_markup_project),
+                subtitle = stringResource(R.string.open_markup_project_sub),
                 modifier = Modifier.fillMaxWidth()
             )
         }

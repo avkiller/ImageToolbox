@@ -30,9 +30,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.icons.rounded.Close
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -52,6 +50,8 @@ import com.t8rin.imagetoolbox.core.data.coil.PdfImageRequest
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFrames
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.SelectAll
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.rememberPdfPages
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
@@ -78,7 +78,7 @@ fun SplitPdfToolContent(
 
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
@@ -173,8 +173,6 @@ fun SplitPdfToolContent(
         placeImagePreview = true,
         showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -191,9 +189,8 @@ fun SplitPdfToolContent(
                     component.updatePages(it)
                     trigger++
                 },
-                pagesCount = pagesCount
+                pageCount = pagesCount
             )
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

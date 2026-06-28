@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,10 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.RadioButtonChecked
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.RoundedCorner
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -44,8 +40,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonChecked
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonUnchecked
+import com.t8rin.imagetoolbox.core.resources.icons.RoundedCorner
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
@@ -129,14 +130,17 @@ fun ShapeTypeSettingItem(
                                 .border(
                                     width = 2.dp,
                                     color = LocalContentColor.current,
-                                    shape = AutoCornersShape(
-                                        size = when (type) {
-                                            is ShapeType.Smooth -> 8.dp
-                                            is ShapeType.Squircle -> 24.dp
-                                            else -> 6.dp
-                                        },
-                                        shapesType = type
-                                    )
+                                    shape = remember(type) {
+                                        AutoCornersShape(
+                                            size = when (type) {
+                                                is ShapeType.Smooth -> 8.dp
+                                                is ShapeType.Squircle -> 24.dp
+                                                is ShapeType.Notch -> 4.dp
+                                                else -> 6.dp
+                                            },
+                                            shapesType = type
+                                        )
+                                    }
                                 )
                         )
                     },
@@ -171,6 +175,9 @@ private fun ShapeType.title() = when (this) {
     is ShapeType.Rounded -> R.string.rounded
     is ShapeType.Smooth -> R.string.smooth
     is ShapeType.Squircle -> R.string.squircle
+    is ShapeType.Wavy -> R.string.wavy
+    is ShapeType.Scoop -> R.string.scoop
+    is ShapeType.Notch -> R.string.notch
 }
 
 private fun ShapeType.subtitle() = when (this) {
@@ -178,4 +185,7 @@ private fun ShapeType.subtitle() = when (this) {
     is ShapeType.Rounded -> R.string.rounded_shapes_sub
     is ShapeType.Smooth -> R.string.smooth_shapes_sub
     is ShapeType.Squircle -> R.string.squircle_shapes_sub
+    is ShapeType.Wavy -> R.string.wavy_shapes_sub
+    is ShapeType.Scoop -> R.string.scoop_shapes_sub
+    is ShapeType.Notch -> R.string.notch_shapes_sub
 }

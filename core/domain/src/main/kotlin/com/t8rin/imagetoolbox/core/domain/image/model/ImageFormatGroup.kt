@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ sealed class ImageFormatGroup(
         title = "PNG",
         formats = listOf(
             ImageFormat.Png.Lossless,
-            ImageFormat.Png.Lossy
+            ImageFormat.Png.Lossy,
+            ImageFormat.Png.OxiPNG,
+            ImageFormat.Png.ImageQuant
         )
     )
 
@@ -139,17 +141,6 @@ sealed class ImageFormatGroup(
                 Ico,
                 Gif
             )
-
-        val highLevelFormats by lazy {
-            listOf(
-                Avif,
-                Heic
-            )
-        }
-
-        fun fromFormat(
-            imageFormat: ImageFormat
-        ): ImageFormatGroup = entries.first { imageFormat in it.formats }
     }
 }
 

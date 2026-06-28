@@ -23,9 +23,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.interaction.FocusInteraction
 import androidx.compose.foundation.interaction.InteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.runtime.Composable
@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
@@ -43,13 +44,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
+import androidx.graphics.shapes.RoundedPolygon
+import androidx.graphics.shapes.rectangle
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.t8rin.imagetoolbox.core.domain.utils.autoCast
+import com.t8rin.imagetoolbox.core.domain.utils.throttleLatest
 import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.animation.lessSpringySpec
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 object ShapeDefaults {
@@ -73,6 +80,83 @@ object ShapeDefaults {
             topEnd = internalShape.topEnd.animate(),
             bottomStart = internalShape.bottomStart.animate(),
             bottomEnd = internalShape.bottomEnd.animate()
+        )
+    }
+
+    @Composable
+    fun byGridIndex(
+        index: Int,
+        size: Int,
+        crossAxisCount: Int,
+        forceDefault: Boolean = false,
+        vertical: Boolean = true
+    ): Shape {
+        if (
+            index == -1 ||
+            index !in 0 until size ||
+            size <= 1 ||
+            forceDefault ||
+            crossAxisCount <= 1
+        ) {
+            return byIndex(
+                index = index,
+                size = size,
+                forceDefault = forceDefault,
+                vertical = vertical
+            )
+        }
+
+        val mainAxisIndex = index / crossAxisCount
+        val crossAxisIndex = index % crossAxisCount
+
+        fun hasItem(
+            mainAxisIndex: Int,
+            crossAxisIndex: Int
+        ): Boolean {
+            if (crossAxisIndex !in 0 until crossAxisCount) return false
+
+            val itemIndex = mainAxisIndex * crossAxisCount + crossAxisIndex
+            return itemIndex in 0 until size
+        }
+
+        val hasTop: Boolean
+        val hasBottom: Boolean
+        val hasStart: Boolean
+        val hasEnd: Boolean
+
+        if (vertical) {
+            hasTop = hasItem(mainAxisIndex - 1, crossAxisIndex)
+            hasBottom = hasItem(mainAxisIndex + 1, crossAxisIndex)
+            hasStart = hasItem(mainAxisIndex, crossAxisIndex - 1)
+            hasEnd = hasItem(mainAxisIndex, crossAxisIndex + 1)
+        } else {
+            hasTop = hasItem(mainAxisIndex, crossAxisIndex - 1)
+            hasBottom = hasItem(mainAxisIndex, crossAxisIndex + 1)
+            hasStart = hasItem(mainAxisIndex - 1, crossAxisIndex)
+            hasEnd = hasItem(mainAxisIndex + 1, crossAxisIndex)
+        }
+
+        return AutoCornersShape(
+            topStart = if (!hasTop && !hasStart) {
+                default.topStart.animate()
+            } else {
+                center.topStart.animate()
+            },
+            topEnd = if (!hasTop && !hasEnd) {
+                default.topEnd.animate()
+            } else {
+                center.topEnd.animate()
+            },
+            bottomStart = if (!hasBottom && !hasStart) {
+                default.bottomStart.animate()
+            } else {
+                center.bottomStart.animate()
+            },
+            bottomEnd = if (!hasBottom && !hasEnd) {
+                default.bottomEnd.animate()
+            } else {
+                center.bottomEnd.animate()
+            }
         )
     }
 
@@ -193,6 +277,13 @@ object ShapeDefaults {
     val extremeLarge @Composable get() = AutoCornersShape(28.dp)
 
     val circle @Composable get() = AutoCircleShape()
+
+    val polygonSquare by lazy {
+        RoundedPolygon.rectangle(
+            width = 1f,
+            height = 1f
+        ).normalized()
+    }
 
     @Composable
     private inline fun CornerSize.animate(): Dp = animateDpAsState(
@@ -324,7 +415,7 @@ internal typealias ShapeAnimatable = Animatable<Float, AnimationVector1D>
 @Composable
 internal fun rememberAnimatedShape(
     currentShape: CornerBasedShape,
-    animationSpec: FiniteAnimationSpec<Float> = lessSpringySpec(),
+    animationSpec: FiniteAnimationSpec<Float> = remember { lessSpringySpec() },
 ): AnimatedShape {
     val density = LocalDensity.current
     val shapesType = LocalSettingsState.current.shapesType
@@ -363,7 +454,7 @@ internal fun rememberAnimatedShape(
 @Composable
 fun animateShape(
     targetValue: CornerBasedShape,
-    animationSpec: FiniteAnimationSpec<Float> = lessSpringySpec(),
+    animationSpec: FiniteAnimationSpec<Float> = remember { lessSpringySpec() },
 ): Shape = rememberAnimatedShape(
     currentShape = targetValue,
     animationSpec = animationSpec
@@ -374,24 +465,41 @@ fun shapeByInteraction(
     shape: Shape,
     pressedShape: Shape,
     interactionSource: InteractionSource?,
-    animationSpec: FiniteAnimationSpec<Float> = lessSpringySpec(),
+    animationSpec: FiniteAnimationSpec<Float> = remember { lessSpringySpec() },
     enabled: Boolean = true
 ): Shape {
     if (!enabled || interactionSource == null) return shape
 
-    val pressed by interactionSource.collectIsPressedAsState()
-    val focused by interactionSource.collectIsFocusedAsState()
+    val settingsState = LocalSettingsState.current
+    val throttle = settingsState.shapeByInteractionThrottle
 
-    val usePressedShape = pressed || focused
+    val active by produceState(false, interactionSource, throttle) {
+        val pressInteractions = mutableListOf<PressInteraction.Press>()
+        val focusInteractions = mutableListOf<FocusInteraction.Focus>()
 
-    val targetShape = if (usePressedShape) pressedShape else shape
+        interactionSource.interactions
+            .map { interaction ->
+                when (interaction) {
+                    is PressInteraction.Press -> pressInteractions.add(interaction)
+                    is PressInteraction.Release -> pressInteractions.remove(interaction.press)
+                    is PressInteraction.Cancel -> pressInteractions.remove(interaction.press)
+                    is FocusInteraction.Focus -> focusInteractions.add(interaction)
+                    is FocusInteraction.Unfocus -> focusInteractions.remove(interaction.focus)
+                }
 
-    if (targetShape is CornerBasedShape) {
-        return animateShape(
-            targetValue = targetShape,
-            animationSpec = animationSpec,
-        )
+                pressInteractions.isNotEmpty() || focusInteractions.isNotEmpty()
+            }
+            .distinctUntilChanged()
+            .throttleLatest(throttle)
+            .collectLatest { value = it }
     }
 
-    return targetShape
+    val targetShape = if (active) pressedShape else shape
+
+    return (targetShape as? CornerBasedShape)?.let {
+        animateShape(
+            targetValue = it,
+            animationSpec = animationSpec,
+        )
+    } ?: targetShape
 }

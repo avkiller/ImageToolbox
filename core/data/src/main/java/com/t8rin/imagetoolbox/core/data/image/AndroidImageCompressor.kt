@@ -43,8 +43,8 @@ import com.t8rin.imagetoolbox.core.utils.fileSize
 import com.t8rin.trickle.Trickle
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 import javax.inject.Inject
 
 internal class AndroidImageCompressor @Inject constructor(
@@ -66,9 +66,12 @@ internal class AndroidImageCompressor @Inject constructor(
         quality: Quality
     ): ByteArray = withContext(encodingDispatcher) {
         val transformedImage = image.toSoftware().let { software ->
-            if (imageFormat !in ImageFormat.alphaContainedEntries || quality.isNonAlpha()) {
+            val enableForAlpha = settingsState.enableBackgroundColorForAlphaFormats
+            val isNonAlpha = imageFormat !in ImageFormat.alphaContainedEntries
+
+            if (isNonAlpha || quality.isNonAlpha() || enableForAlpha) {
                 withContext(defaultDispatcher) {
-                    if (settingsState.backgroundForNoAlphaImageFormats.colorInt == Color.Black.toArgb()) {
+                    if (isNonAlpha && settingsState.backgroundForNoAlphaImageFormats.colorInt == Color.Black.toArgb()) {
                         software
                     } else {
                         Trickle.drawColorBehind(
@@ -99,15 +102,15 @@ internal class AndroidImageCompressor @Inject constructor(
         onImageReadyToCompressInterceptor: suspend (Bitmap) -> Bitmap,
         applyImageTransformations: Boolean
     ): ByteArray = withContext(encodingDispatcher) {
-        val currentImage: Bitmap
-        if (applyImageTransformations) {
+        val currentImage = if (applyImageTransformations) {
             val size = imageInfo.originalUri?.let {
                 imageGetter.getImage(
                     data = it,
                     originalSize = true
                 )?.run { width sizeTo height }
             }
-            currentImage = imageScaler
+            ensureActive()
+            imageScaler
                 .scaleImage(
                     image = imageTransformer.rotate(
                         image = image.apply { setHasAlpha(true) },
@@ -127,16 +130,22 @@ internal class AndroidImageCompressor @Inject constructor(
                 .let {
                     onImageReadyToCompressInterceptor(it)
                 }
-        } else currentImage = onImageReadyToCompressInterceptor(image)
+        } else onImageReadyToCompressInterceptor(image)
 
         val extension = imageInfo.originalUri?.let { imageGetter.getExtension(it) }
 
         val imageFormat =
             if (settingsState.filenameBehavior is FilenameBehavior.Overwrite && extension != null) {
-                ImageFormat[extension]
+                val target = ImageFormat[extension]
+
+                if (imageInfo.imageFormat.extension == target.extension) {
+                    imageInfo.imageFormat
+                } else {
+                    target
+                }
             } else imageInfo.imageFormat
 
-        yield()
+        ensureActive()
         compress(
             image = currentImage,
             imageFormat = imageFormat,

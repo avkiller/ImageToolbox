@@ -21,9 +21,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,12 +34,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.emoji.Emoji
+import com.t8rin.imagetoolbox.core.resources.icons.Block
+import com.t8rin.imagetoolbox.core.resources.icons.Casino
 import com.t8rin.imagetoolbox.core.resources.icons.Cool
 import com.t8rin.imagetoolbox.core.resources.shapes.CloverShape
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -51,6 +52,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.scaleOnTap
 import com.t8rin.imagetoolbox.core.ui.widget.other.EmojiItem
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRow
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.EmojiSelectionSheet
+import com.t8rin.imagetoolbox.core.utils.getString
 
 @Composable
 fun EmojiSettingItem(
@@ -61,7 +63,6 @@ fun EmojiSettingItem(
     shape: Shape = ShapeDefaults.top
 ) {
     val settingsState = LocalSettingsState.current
-    val essentials = rememberLocalEssentials()
     var showSecretDescriptionDialog by rememberSaveable { mutableStateOf("") }
     var showShoeDescriptionDialog by rememberSaveable { mutableStateOf("") }
     var showEmojiDialog by rememberSaveable { mutableStateOf(false) }
@@ -77,13 +78,14 @@ fun EmojiSettingItem(
         startIcon = Icons.Outlined.Cool,
         enabled = !settingsState.useRandomEmojis,
         onDisabledClick = {
-            essentials.showToast(
-                message = essentials.getString(R.string.emoji_selection_error),
+            AppToastHost.showToast(
+                message = getString(R.string.emoji_selection_error),
                 icon = Icons.Rounded.Casino
             )
         },
         endContent = {
             val emoji = LocalSettingsState.current.selectedEmoji
+            val settings = LocalSettingsState.current
             Box(
                 modifier = Modifier
                     .padding(end = 8.dp)
@@ -101,6 +103,10 @@ fun EmojiSettingItem(
             ) {
                 EmojiItem(
                     emoji = emoji?.toString(),
+                    animatedEmoji = emoji
+                        ?.takeIf { settings.useAnimatedEmojis }
+                        ?.let(Emoji::animatedIconFor)
+                        ?.toString(),
                     modifier = Modifier.then(
                         if (emoji != null) {
                             Modifier.scaleOnTap(
@@ -117,13 +123,12 @@ fun EmojiSettingItem(
                             )
                         } else Modifier
                     ),
-                    fontScale = 1f,
                     fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-                    onNoEmoji = { size ->
+                    onNoEmoji = {
                         Icon(
                             imageVector = Icons.Rounded.Block,
                             contentDescription = null,
-                            modifier = Modifier.size(size)
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 )
@@ -144,7 +149,6 @@ fun EmojiSettingItem(
         icon = {
             EmojiItem(
                 emoji = showShoeDescriptionDialog,
-                fontScale = 1f,
                 fontSize = MaterialTheme.typography.headlineLarge.fontSize,
             )
         },
@@ -172,7 +176,6 @@ fun EmojiSettingItem(
         icon = {
             EmojiItem(
                 emoji = showSecretDescriptionDialog,
-                fontScale = 1f,
                 fontSize = MaterialTheme.typography.headlineLarge.fontSize,
             )
         },

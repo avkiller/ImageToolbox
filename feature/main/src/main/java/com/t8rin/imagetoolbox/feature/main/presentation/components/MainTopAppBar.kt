@@ -39,10 +39,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PushPin
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.twotone.BugReport
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -69,17 +66,21 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.BuildConfig
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.BugReport
 import com.t8rin.imagetoolbox.core.resources.icons.MobileArrowUpRight
 import com.t8rin.imagetoolbox.core.resources.icons.PhotoPrints
+import com.t8rin.imagetoolbox.core.resources.icons.PushPin
+import com.t8rin.imagetoolbox.core.resources.icons.Settings
 import com.t8rin.imagetoolbox.core.settings.presentation.model.isFirstLaunch
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.AppVersionPreReleaseFlavored
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.canPinShortcuts
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.createScreenShortcut
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorSelection
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
@@ -146,7 +147,7 @@ private fun PinShortcutButton() {
     if (context.canPinShortcuts()) {
         val settingsState = LocalSettingsState.current
 
-        val essentials = rememberLocalEssentials()
+        val scope = rememberCoroutineScope()
 
         var showShortcutAddingSheet by rememberSaveable {
             mutableStateOf(false)
@@ -216,10 +217,13 @@ private fun PinShortcutButton() {
                     EnhancedButton(
                         onClick = {
                             selectedScreen?.let { screen ->
-                                essentials.createScreenShortcut(
-                                    screen = screen,
-                                    tint = shortcutColor
-                                )
+                                scope.launch {
+                                    context.createScreenShortcut(
+                                        screen = screen,
+                                        tint = shortcutColor,
+                                        onFailure = AppToastHost::showFailureToast
+                                    )
+                                }
                             }
                         }
                     ) {

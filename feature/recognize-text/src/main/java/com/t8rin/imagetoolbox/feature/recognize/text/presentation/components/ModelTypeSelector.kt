@@ -17,14 +17,11 @@
 
 package com.t8rin.imagetoolbox.feature.recognize.text.presentation.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Segment
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,8 +32,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.icons.Segment
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
@@ -61,7 +61,7 @@ fun ModelTypeSelector(
             showSelectionSheet = true
         },
         shape = ShapeDefaults.extraLarge,
-        startIcon = Icons.AutoMirrored.Outlined.Segment,
+        startIcon = Icons.Rounded.Segment,
         endIcon = Icons.Rounded.MiniEdit
     )
 
@@ -83,7 +83,7 @@ fun ModelTypeSelector(
         title = {
             TitleItem(
                 text = stringResource(id = R.string.segmentation_mode),
-                icon = Icons.AutoMirrored.Outlined.Segment
+                icon = Icons.Rounded.Segment
             )
         }
     ) {

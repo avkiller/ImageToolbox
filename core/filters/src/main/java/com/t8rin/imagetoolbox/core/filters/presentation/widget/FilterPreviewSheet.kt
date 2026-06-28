@@ -35,9 +35,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,9 +50,13 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Done
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBottomSheetDefaults
@@ -83,6 +84,7 @@ internal fun FilterPreviewSheet(
     previewBitmap: Bitmap?
 ) {
     val previewSheetData = component.previewData
+    val shaderPresets by component.shaderPresets.collectAsStateWithLifecycle()
     var imageState by rememberImageState()
     LaunchedEffect(previewSheetData) {
         if (previewBitmap != null && previewSheetData != null) {
@@ -243,6 +245,8 @@ internal fun FilterPreviewSheet(
                                             } else component.removeFilterAtIndex(index)
                                         },
                                         onCreateTemplate = null,
+                                        shaderPresets = shaderPresets,
+                                        onImportShaderPreset = component::importShaderPreset,
                                         onFilterChange = { value ->
                                             component.updateFilter(value, index)
                                         }

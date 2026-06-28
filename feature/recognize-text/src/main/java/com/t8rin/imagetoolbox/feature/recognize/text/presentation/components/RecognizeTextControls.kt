@@ -18,13 +18,12 @@
 package com.t8rin.imagetoolbox.feature.recognize.text.presentation.components
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -32,7 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.CameraAlt
 import com.t8rin.imagetoolbox.core.resources.icons.CropSmall
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.theme.onMixedContainer
@@ -42,11 +43,12 @@ import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.localImagePickerMode
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ImageTransformBar
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.other.LinkPreviewList
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionEngine
 import com.t8rin.imagetoolbox.feature.recognize.text.presentation.screenLogic.RecognizeTextComponent
 
 @Composable
@@ -58,21 +60,11 @@ internal fun RecognizeTextControls(
     val isExtraction = type is Screen.RecognizeText.Type.Extraction
     val imagePickerMode = localImagePickerMode(Picker.Single)
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti = { essentials.showConfetti() }
-
-    val startRecognition = {
-        component.startRecognition(
-            onFailure = essentials::showFailureToast
-        )
-    }
-
     val editedText = component.editedText
 
     val captureImageLauncher = rememberImagePicker(ImagePickerMode.CameraCapture) { list ->
         component.updateType(
-            type = Screen.RecognizeText.Type.Extraction(list.firstOrNull()),
-            onImageSet = startRecognition
+            type = Screen.RecognizeText.Type.Extraction(list.firstOrNull())
         )
     }
 
@@ -80,12 +72,7 @@ internal fun RecognizeTextControls(
 
     val exportLanguagesPicker = rememberFileCreator(
         mimeType = MimeType.Zip,
-        onSuccess = { uri ->
-            component.exportLanguagesTo(
-                uri = uri,
-                onResult = essentials::parseFileSaveResult
-            )
-        }
+        onSuccess = component::exportLanguagesTo
     )
 
     val importLanguagesPicker = rememberFilePicker(
@@ -93,15 +80,7 @@ internal fun RecognizeTextControls(
         onSuccess = { uri: Uri ->
             component.importLanguagesFrom(
                 uri = uri,
-                onSuccess = {
-                    showConfetti()
-                    essentials.showToast(
-                        message = essentials.getString(R.string.languages_imported),
-                        icon = Icons.Outlined.Language
-                    )
-                    startRecognition()
-                },
-                onFailure = essentials::showFailureToast
+                onFailure = AppToastHost::showFailureToast
             )
         }
     )
@@ -151,25 +130,55 @@ internal fun RecognizeTextControls(
         onSharpnessClick = component::toggleSharpnessFilter
     )
     Spacer(modifier = Modifier.height(16.dp))
-    RecognizeLanguageSelector(
-        currentRecognitionType = component.recognitionType,
-        value = component.selectedLanguages,
-        availableLanguages = component.languages,
-        onValueChange = { codeList, recognitionType ->
-            component.onLanguagesSelected(codeList)
-            component.setRecognitionType(recognitionType)
-            startRecognition()
-        },
-        onDeleteLanguage = { language, types ->
-            component.deleteLanguage(
-                language = language,
-                types = types,
-                onSuccess = startRecognition
-            )
-        },
-        onImportLanguages = onImportLanguages,
-        onExportLanguages = onExportLanguages
+    RecognitionEngineSelector(
+        value = component.recognitionEngine,
+        onValueChange = component::setRecognitionEngine
     )
+    AnimatedVisibility(
+        visible = component.recognitionEngine == RecognitionEngine.PaddleOCRv5,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            PaddleOCRModelSelector(
+                value = component.paddleOCRModel,
+                updateKey = component.paddleOCRModelsUpdateKey,
+                isDownloaded = component::isPaddleOCRModelDownloaded,
+                onValueChange = component::setPaddleOCRModel,
+                onDeleteModel = component::deletePaddleOCRModel
+            )
+        }
+    }
+    AnimatedVisibility(
+        visible = component.recognitionEngine == RecognitionEngine.Tesseract,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+            RecognizeLanguageSelector(
+                currentRecognitionType = component.recognitionType,
+                value = component.selectedLanguages,
+                availableLanguages = component.languages,
+                onValueChange = { codeList, recognitionType ->
+                    component.onLanguagesSelected(codeList)
+                    component.setRecognitionType(recognitionType)
+                    component.startRecognition()
+                },
+                onDeleteLanguage = { language, types ->
+                    component.deleteLanguage(
+                        language = language,
+                        types = types
+                    )
+                },
+                onImportLanguages = onImportLanguages,
+                onExportLanguages = onExportLanguages
+            )
+        }
+    }
     if (isExtraction) {
         LinkPreviewList(
             text = editedText ?: "",
@@ -191,36 +200,33 @@ internal fun RecognizeTextControls(
         )
     }
     Spacer(modifier = Modifier.height(8.dp))
-    RecognitionTypeSelector(
-        value = component.recognitionType,
-        onValueChange = { recognitionType ->
-            component.setRecognitionType(recognitionType)
-            startRecognition()
-        }
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    ModelTypeSelector(
-        value = component.segmentationMode,
-        onValueChange = {
-            component.setSegmentationMode(it)
-            startRecognition()
-        }
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    OcrEngineModeSelector(
-        value = component.ocrEngineMode,
-        onValueChange = {
-            component.setOcrEngineMode(it)
-            startRecognition()
-        }
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    TessParamsSelector(
-        value = component.params,
-        onValueChange = {
-            component.updateParams(it)
-            startRecognition()
-        },
+    AnimatedVisibility(
+        visible = component.recognitionEngine == RecognitionEngine.Tesseract,
         modifier = Modifier.fillMaxWidth()
-    )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            RecognitionTypeSelector(
+                value = component.recognitionType,
+                onValueChange = component::setRecognitionType
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            ModelTypeSelector(
+                value = component.segmentationMode,
+                onValueChange = component::setSegmentationMode
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OcrEngineModeSelector(
+                value = component.ocrEngineMode,
+                onValueChange = component::setOcrEngineMode
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TessParamsSelector(
+                value = component.params,
+                onValueChange = component::updateParams,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 }

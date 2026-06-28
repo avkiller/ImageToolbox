@@ -17,7 +17,7 @@
 
 package com.t8rin.imagetoolbox.feature.svg_maker.presentation
 
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,15 +27,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.ImageReset
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
@@ -57,11 +59,6 @@ import com.t8rin.imagetoolbox.feature.svg_maker.presentation.screenLogic.SvgMake
 fun SvgMakerContent(
     component: SvgMakerComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
-    val onFailure: (Throwable) -> Unit = essentials::showFailureToast
-
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
 
     val onBack = {
@@ -97,13 +94,17 @@ fun SvgMakerContent(
         },
         onGoBack = onBack,
         actions = {
+            if (!isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
             ShareButton(
-                onShare = {
-                    component.performSharing(
-                        onFailure = onFailure,
-                        onComplete = showConfetti
-                    )
-                },
+                onShare = component::performSharing,
                 enabled = !component.isSaving && component.uris.isNotEmpty()
             )
             EnhancedIconButton(
@@ -115,10 +116,19 @@ fun SvgMakerContent(
                     contentDescription = stringResource(R.string.reset_image)
                 )
             }
+            if (isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
         },
         imagePreview = {
             UrisPreview(
-                modifier = Modifier.urisPreview(),
+                modifier = Modifier.urisPreview(isPortrait = isPortrait),
                 uris = component.uris,
                 isPortrait = true,
                 onRemoveUri = component::removeUri,
@@ -135,11 +145,10 @@ fun SvgMakerContent(
                 onValueChange = component::updateParams
             )
         },
-        buttons = {
+        buttons = { actions ->
             val save: (oneTimeSaveLocationUri: String?) -> Unit = {
                 component.save(
-                    oneTimeSaveLocationUri = it,
-                    onResult = essentials::parseSaveResults
+                    oneTimeSaveLocationUri = it
                 )
             }
             var showFolderSelectionDialog by rememberSaveable {
@@ -159,7 +168,7 @@ fun SvgMakerContent(
                     showFolderSelectionDialog = true
                 },
                 actions = {
-                    if (isPortrait) it()
+                    if (isPortrait) actions()
                 },
                 onSecondaryButtonLongClick = {
                     showOneTimeImagePickingDialog = true

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -53,13 +50,18 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.t8rin.imagetoolbox.core.filters.domain.model.shader.ShaderPreset
 import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.AddFilterButton
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterItem
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheet
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.DragHandle
 import com.t8rin.imagetoolbox.core.resources.icons.EditAlt
+import com.t8rin.imagetoolbox.core.resources.icons.RemoveCircle
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
@@ -92,6 +94,16 @@ fun MaskItem(
     var showMaskRemoveDialog by rememberSaveable { mutableStateOf(false) }
     var showAddFilterSheet by rememberSaveable { mutableStateOf(false) }
     var showEditMaskSheet by rememberSaveable { mutableStateOf(false) }
+    val shaderPresets by addMaskSheetComponent
+        ?.addFiltersSheetComponent
+        ?.shaderPresets
+        ?.collectAsStateWithLifecycle()
+        ?: remember { mutableStateOf(emptyList()) }
+    val importShaderPreset: (suspend (Uri) -> ShaderPreset?)? = addMaskSheetComponent
+        ?.addFiltersSheetComponent
+        ?.let { component ->
+            { uri: Uri -> component.importShaderPreset(uri) }
+        }
     val settingsState = LocalSettingsState.current
     Box {
         Row(
@@ -157,7 +169,7 @@ fun MaskItem(
                             onClick = { showMaskRemoveDialog = true }
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.RemoveCircleOutline,
+                                imageVector = Icons.Outlined.RemoveCircle,
                                 contentDescription = stringResource(R.string.remove)
                             )
                         }
@@ -241,6 +253,8 @@ fun MaskItem(
                                         backgroundColor = MaterialTheme.colorScheme.surface,
                                         filter = uiFilter,
                                         showDragHandle = false,
+                                        shaderPresets = shaderPresets,
+                                        onImportShaderPreset = importShaderPreset,
                                         onRemove = {
                                             onMaskChange(
                                                 mask.copy(filters = mask.filters - filter)

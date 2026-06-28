@@ -21,9 +21,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Cancel
-import androidx.compose.material.icons.rounded.Shuffle
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +32,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Cancel
+import com.t8rin.imagetoolbox.core.resources.icons.Shuffle
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
@@ -48,7 +48,7 @@ fun ProtectPdfToolContent(
 ) {
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
@@ -56,13 +56,7 @@ fun ProtectPdfToolContent(
         canShowScreenData = component.uri != null,
         title = stringResource(R.string.protect_pdf),
         canSave = component.password.isNotEmpty(),
-        actions = {},
-        imagePreview = {},
-        placeImagePreview = false,
-        showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -113,8 +107,6 @@ fun ProtectPdfToolContent(
                     Text(stringResource(R.string.password))
                 }
             )
-
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

@@ -18,11 +18,12 @@
 package com.t8rin.imagetoolbox.feature.single_edit.presentation
 
 import android.net.Uri
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.History
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,16 +31,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.image.model.Preset
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.History
 import com.t8rin.imagetoolbox.core.resources.icons.ImageReset
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.CompareButton
@@ -49,6 +53,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ImageExtraTransformBar
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ImageTransformBar
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ResizeImageField
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.controls.resize_group.ResizeTypeSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.PresetSelector
@@ -60,9 +65,11 @@ import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ResetDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedHorizontalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageContainer
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageNotPickedWidget
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.EditExifSheet
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
@@ -82,9 +89,6 @@ import com.t8rin.imagetoolbox.feature.single_edit.presentation.screenLogic.Singl
 fun SingleEditContent(
     component: SingleEditComponent,
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     AutoContentBasedColors(component.bitmap)
 
     var showResetDialog by rememberSaveable { mutableStateOf(false) }
@@ -103,8 +107,7 @@ fun SingleEditContent(
 
     val saveBitmap: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmap(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResult
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -171,54 +174,78 @@ fun SingleEditContent(
             )
         },
         actions = {
-            var editSheetData by remember {
-                mutableStateOf(listOf<Uri>())
-            }
-            ShareButton(
-                enabled = component.bitmap != null,
-                onShare = {
-                    component.shareBitmap(showConfetti)
-                },
-                onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
-                },
-                onEdit = {
-                    component.cacheCurrentImage { uri ->
-                        editSheetData = listOf(uri)
-                    }
-                }
-            )
-            ProcessImagesPreferenceSheet(
-                uris = editSheetData,
-                visible = editSheetData.isNotEmpty(),
-                onDismiss = { editSheetData = emptyList() },
-                onNavigate = component.onNavigate
-            )
-
-            EnhancedIconButton(
-                enabled = component.bitmap != null,
-                onClick = { showResetDialog = true }
+            val state = rememberScrollState()
+            Row(
+                modifier = Modifier
+                    .fadingEdges(state)
+                    .enhancedHorizontalScroll(state),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.ImageReset,
-                    contentDescription = stringResource(R.string.reset_image)
-                )
-            }
-            if (component.bitmap != null) {
-                ShowOriginalButton(
-                    canShow = component.canShow(),
-                    onStateChange = {
-                        showOriginal = it
+                var editSheetData by remember {
+                    mutableStateOf(listOf<Uri>())
+                }
+                if (!isPortrait) {
+                    UndoRedoButtons(
+                        canUndo = component.canUndo,
+                        canRedo = component.canRedo,
+                        onUndo = component::undo,
+                        onRedo = component::redo,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                }
+                ShareButton(
+                    enabled = component.bitmap != null,
+                    onShare = component::shareBitmap,
+                    onCopy = {
+                        component.cacheCurrentImage(Clipboard::copy)
+                    },
+                    onEdit = {
+                        component.cacheCurrentImage { uri ->
+                            editSheetData = listOf(uri)
+                        }
                     }
                 )
-            } else {
+                ProcessImagesPreferenceSheet(
+                    uris = editSheetData,
+                    visible = editSheetData.isNotEmpty(),
+                    onDismiss = { editSheetData = emptyList() },
+                    onNavigate = component.onNavigate
+                )
+
                 EnhancedIconButton(
-                    enabled = false,
-                    onClick = {}
+                    enabled = component.bitmap != null,
+                    onClick = { showResetDialog = true }
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.History,
-                        contentDescription = stringResource(R.string.original)
+                        imageVector = Icons.Rounded.ImageReset,
+                        contentDescription = stringResource(R.string.reset_image)
+                    )
+                }
+                if (component.bitmap != null) {
+                    ShowOriginalButton(
+                        canShow = component.canShow(),
+                        onStateChange = {
+                            showOriginal = it
+                        }
+                    )
+                } else {
+                    EnhancedIconButton(
+                        enabled = false,
+                        onClick = {}
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = stringResource(R.string.original)
+                        )
+                    }
+                }
+                if (isPortrait) {
+                    UndoRedoButtons(
+                        canUndo = component.canUndo,
+                        canRedo = component.canRedo,
+                        onUndo = component::undo,
+                        onRedo = component::redo,
+                        modifier = Modifier.padding(2.dp)
                     )
                 }
             }
@@ -257,7 +284,9 @@ fun SingleEditContent(
                 value = component.presetSelected,
                 includeTelegramOption = true,
                 includeAspectRatioOption = true,
-                onValueChange = component::setPreset
+                onValueChange = component::updateProfile,
+                imageInfo = imageInfo,
+                imageExportProfilesHolder = component
             )
             Spacer(Modifier.size(8.dp))
             ResizeImageField(
@@ -423,6 +452,8 @@ fun SingleEditContent(
         lastPaths = component.drawLastPaths,
         undonePaths = component.drawUndonePaths,
         addPath = component::addPathToDrawList,
+        spotHealCache = component.drawSpotHealCache,
+        onCacheSpotHealPathResult = component::cacheDrawSpotHealPathResult,
         drawMode = component.drawMode,
         onUpdateDrawMode = component::updateDrawMode,
         drawPathMode = component.drawPathMode,

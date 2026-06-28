@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import coil3.transform.Transformation
 import com.arkivanov.decompose.ComponentContext
+import com.t8rin.imagetoolbox.core.domain.TEMPLATE_EXT
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageCompressor
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
@@ -37,24 +38,35 @@ import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResources
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResourcesStore
+import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
 import com.t8rin.imagetoolbox.core.filters.domain.FilterParamsInteractor
 import com.t8rin.imagetoolbox.core.filters.domain.FilterProvider
+import com.t8rin.imagetoolbox.core.filters.domain.ShaderPresetRepository
 import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.filters.domain.model.TemplateFilter
+import com.t8rin.imagetoolbox.core.filters.domain.model.shader.ShaderParseException
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
+import com.t8rin.imagetoolbox.core.filters.presentation.utils.localizedMessage
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.QrCodeScanner
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.toCoil
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class AddFiltersSheetComponent @AssistedInject internal constructor(
     @Assisted componentContext: ComponentContext,
@@ -64,8 +76,10 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
     private val fileController: FileController,
     private val imageCompressor: ImageCompressor<Bitmap>,
     private val favoriteInteractor: FilterParamsInteractor,
+    private val shaderPresetRepository: ShaderPresetRepository,
     private val imageGetter: ImageGetter<Bitmap>,
     private val remoteResourcesStore: RemoteResourcesStore,
+    private val resourceManager: ResourceManager,
     dispatchersHolder: DispatchersHolder
 ) : BaseComponent(dispatchersHolder, componentContext) {
 
@@ -189,8 +203,7 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
     }
 
     fun shareImage(
-        bitmap: Bitmap,
-        onComplete: () -> Unit
+        bitmap: Bitmap
     ) {
         componentScope.launch {
             shareProvider.shareImage(
@@ -200,14 +213,13 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
                     imageFormat = ImageFormat.Png.Lossless
                 ),
                 image = bitmap,
-                onComplete = onComplete
+                onComplete = AppToastHost::showConfetti
             )
         }
     }
 
     fun saveImage(
-        bitmap: Bitmap,
-        onComplete: (result: SaveResult) -> Unit,
+        bitmap: Bitmap
     ) {
         componentScope.launch {
             val imageInfo = ImageInfo(
@@ -215,7 +227,7 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
                 height = bitmap.height,
                 imageFormat = ImageFormat.Png.Lossless
             )
-            onComplete(
+            parseSaveResult(
                 fileController.save(
                     saveTarget = ImageSaveTarget(
                         imageInfo = imageInfo,
@@ -235,33 +247,31 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
 
     fun saveContentTo(
         content: String,
-        fileUri: Uri,
-        onResult: (SaveResult) -> Unit
+        fileUri: Uri
     ) {
         componentScope.launch {
             fileController.writeBytes(
                 uri = fileUri.toString(),
                 block = { it.writeBytes(content.toByteArray()) }
-            ).also(onResult).onSuccess(::registerSave)
+            ).also(::parseFileSaveResult).onSuccess(::registerSave)
         }
     }
 
     fun shareContent(
         content: String,
-        filename: String,
-        onComplete: () -> Unit
+        filename: String
     ) {
         componentScope.launch {
             shareProvider.shareData(
                 writeData = { it.writeBytes(content.toByteArray()) },
                 filename = filename,
-                onComplete = onComplete
+                onComplete = AppToastHost::showConfetti
             )
         }
     }
 
     fun createTemplateFilename(templateFilter: TemplateFilter): String {
-        return "template(${templateFilter.name})${timestamp()}.imtbx_template"
+        return "template(${templateFilter.name})${timestamp()}.${TEMPLATE_EXT}"
     }
 
     fun reorderFavoriteFilters(value: List<UiFilter<*>>) {
@@ -270,11 +280,44 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
         }
     }
 
-    val favoritesFlow: Flow<List<Filter<*>>>
-        get() = favoriteInteractor.getFavoriteFilters()
+    val favoritesFlow: StateFlow<List<UiFilter<*>>> = favoriteInteractor.getFavoriteFilters()
+        .map { list ->
+            list.map {
+                it.toUiFilter()
+            }
+        }.stateIn(
+            scope = componentScope,
+            started = SharingStarted.Lazily,
+            initialValue = emptyList()
+        )
 
-    val templatesFlow: Flow<List<TemplateFilter>>
-        get() = favoriteInteractor.getTemplateFilters()
+    val shaderPresets = shaderPresetRepository.getPresets()
+        .stateIn(
+            scope = componentScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    suspend fun importShaderPreset(uri: Uri) = runCatching {
+        fileController.readBytes(uri.toString()).decodeToString()
+    }.mapCatching {
+        shaderPresetRepository.importPreset(it).getOrThrow()
+    }.onFailure { throwable ->
+        if (throwable is ShaderParseException) {
+            AppToastHost.showFailureToast(throwable.localizedMessage())
+        } else {
+            AppToastHost.showFailureToast(throwable)
+        }
+    }.getOrNull()
+
+    val templatesFlow: StateFlow<List<TemplateFilter>> = favoriteInteractor.getTemplateFilters()
+        .map { list ->
+            list.sortedBy { it.name }
+        }.stateIn(
+            scope = componentScope,
+            started = SharingStarted.Lazily,
+            initialValue = emptyList()
+        )
 
     fun toggleFavorite(filter: UiFilter<*>) {
         componentScope.launch {
@@ -292,35 +335,55 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
         templateFilter: TemplateFilter
     ): String = favoriteInteractor.convertTemplateFilterToString(templateFilter)
 
-    fun addTemplateFilterFromString(
-        string: String,
-        onSuccess: suspend (filterName: String, filtersCount: Int) -> Unit,
-        onFailure: suspend () -> Unit
-    ) {
+    fun addTemplateFilterFromString(string: String) {
         componentScope.launch {
             favoriteInteractor.addTemplateFilterFromString(
                 string = string,
-                onSuccess = onSuccess,
-                onFailure = onFailure
+                onSuccess = { filterName, filtersCount ->
+                    AppToastHost.showToast(
+                        message = resourceManager.getString(
+                            R.string.added_filter_template,
+                            filterName,
+                            filtersCount
+                        ),
+                        icon = Icons.Outlined.AutoFixHigh
+                    )
+                },
+                onFailure = {
+                    AppToastHost.showToast(
+                        message = resourceManager.getString(R.string.scanned_qr_code_isnt_filter_template),
+                        icon = Icons.Rounded.QrCodeScanner
+                    )
+                }
             )
         }
     }
 
-    fun addTemplateFilterFromUri(
-        uri: String,
-        onSuccess: suspend (filterName: String, filtersCount: Int) -> Unit,
-        onFailure: suspend () -> Unit
-    ) {
+    fun addTemplateFilterFromUri(uri: String) {
         componentScope.launch {
             favoriteInteractor.addTemplateFilterFromUri(
                 uri = uri,
-                onSuccess = onSuccess,
-                onFailure = onFailure
+                onSuccess = { filterName, filtersCount ->
+                    AppToastHost.showToast(
+                        message = resourceManager.getString(
+                            R.string.added_filter_template,
+                            filterName,
+                            filtersCount
+                        ),
+                        icon = Icons.Outlined.AutoFixHigh
+                    )
+                },
+                onFailure = {
+                    AppToastHost.showToast(
+                        message = resourceManager.getString(R.string.opened_file_have_no_filter_template),
+                        icon = Icons.Outlined.AutoFixHigh
+                    )
+                }
             )
         }
     }
 
-    fun cacheNeutralLut(onComplete: (Uri) -> Unit) {
+    fun cacheNeutralLut() {
         componentScope.launch {
             imageGetter.getImage(R.drawable.lookup)?.let {
                 shareProvider.cacheImage(
@@ -331,13 +394,13 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
                         imageFormat = ImageFormat.Png.Lossless
                     )
                 )?.let { uri ->
-                    onComplete(uri.toUri())
+                    Clipboard.copy(uri.toUri())
                 }
             }
         }
     }
 
-    fun shareNeutralLut(onComplete: () -> Unit) {
+    fun shareNeutralLut() {
         componentScope.launch {
             imageGetter.getImage(R.drawable.lookup)?.let {
                 shareProvider.shareImage(
@@ -347,15 +410,14 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
                         height = 512,
                         imageFormat = ImageFormat.Png.Lossless
                     ),
-                    onComplete = onComplete
+                    onComplete = AppToastHost::showConfetti
                 )
             }
         }
     }
 
     fun saveNeutralLut(
-        oneTimeSaveLocationUri: String? = null,
-        onComplete: (result: SaveResult) -> Unit,
+        oneTimeSaveLocationUri: String? = null
     ) {
         componentScope.launch {
             imageGetter.getImage(R.drawable.lookup)?.let { bitmap ->
@@ -364,7 +426,7 @@ class AddFiltersSheetComponent @AssistedInject internal constructor(
                     height = 512,
                     imageFormat = ImageFormat.Png.Lossless
                 )
-                onComplete(
+                parseSaveResult(
                     fileController.save(
                         saveTarget = ImageSaveTarget(
                             imageInfo = imageInfo,

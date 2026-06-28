@@ -38,10 +38,12 @@ import com.t8rin.imagetoolbox.core.domain.saving.model.SaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.onSuccess
 import com.t8rin.imagetoolbox.core.domain.saving.updateProgress
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.svg_maker.domain.SvgManager
 import com.t8rin.imagetoolbox.feature.svg_maker.domain.SvgParams
+import com.t8rin.imagetoolbox.feature.svg_maker.presentation.screenLogic.SvgMakerComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -56,7 +58,10 @@ class SvgMakerComponent @AssistedInject internal constructor(
     private val fileController: FileController,
     private val filenameCreator: FilenameCreator,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
@@ -84,8 +89,7 @@ class SvgMakerComponent @AssistedInject internal constructor(
     }
 
     fun save(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             val results = mutableListOf<SaveResult>()
@@ -118,14 +122,11 @@ class SvgMakerComponent @AssistedInject internal constructor(
             }
 
             _isSaving.value = false
-            onResult(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
         }
     }
 
-    fun performSharing(
-        onFailure: (Throwable) -> Unit,
-        onComplete: () -> Unit
-    ) {
+    fun performSharing() {
         savingJob = trackProgress {
             _done.update { 0 }
             _left.update { uris.size }
@@ -136,7 +137,7 @@ class SvgMakerComponent @AssistedInject internal constructor(
             svgManager.convertToSvg(
                 imageUris = uris.map { it.toString() },
                 params = params,
-                onFailure = onFailure
+                onFailure = AppToastHost::showFailureToast
             ) { uri, jxlBytes ->
                 results.add(
                     shareProvider.cacheByteArray(
@@ -154,7 +155,7 @@ class SvgMakerComponent @AssistedInject internal constructor(
             shareProvider.shareUris(results.filterNotNull())
 
             _isSaving.value = false
-            onComplete()
+            AppToastHost.showConfetti()
         }
     }
 
@@ -192,23 +193,51 @@ class SvgMakerComponent @AssistedInject internal constructor(
     }
 
     fun setUris(newUris: List<Uri>) {
+        clearHistory()
+        registerChangesCleared()
         _uris.update { newUris.distinct() }
+        if (_uris.value.isNotEmpty()) {
+            resetHistory()
+        }
     }
 
     fun removeUri(uri: Uri) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _uris.update { it - uri }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun addUris(list: List<Uri>) {
-        setUris(uris + list)
-        registerChanges()
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
+        _uris.update { (it + list).distinct() }
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun updateParams(newParams: SvgParams) {
-        _params.update { newParams }
-        registerChanges()
+        if (_params.value != newParams) {
+            beginPendingHistoryTransaction()
+            _params.update { newParams }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        uris = uris,
+        params = params
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _uris.update { snapshot.uris }
+        _params.update { snapshot.params }
+    }
+
+    data class HistorySnapshot(
+        val uris: List<Uri> = emptyList(),
+        val params: SvgParams = SvgParams.Default
+    )
 
     @AssistedFactory
     fun interface Factory {

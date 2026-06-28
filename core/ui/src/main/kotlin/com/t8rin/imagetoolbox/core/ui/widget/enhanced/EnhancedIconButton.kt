@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.enhanced
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -40,11 +39,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.theme.DisabledAlpha
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.theme.onMixedContainer
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCircleShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.materialShadow
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 import kotlinx.coroutines.delay
@@ -59,7 +61,7 @@ fun EnhancedIconButton(
     containerColor: Color = Color.Transparent,
     contentColor: Color = contentColor(containerColor),
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant(onTopOf = containerColor),
-    shape: Shape = IconButtonDefaults.smallRoundShape,
+    shape: Shape = AutoCircleShape(),
     pressedShape: Shape = IconButtonDefaults.smallPressedShape,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     forceMinimumInteractiveComponentSize: Boolean = true,
@@ -128,8 +130,13 @@ fun EnhancedIconButton(
                 ),
             shape = animatedShape,
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = contentColor,
-                containerColor = containerColor
+                contentColor = animateColorAsState(
+                    if (enabled) contentColor
+                    else contentColor.copy(alpha = DisabledAlpha)
+                ).value,
+                containerColor = animateColorAsState(
+                    if (enabled) containerColor else Color.Transparent
+                ).value
             ),
             enabled = enabled,
             border = BorderStroke(

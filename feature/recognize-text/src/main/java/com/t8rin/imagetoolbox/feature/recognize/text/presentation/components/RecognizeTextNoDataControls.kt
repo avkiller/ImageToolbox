@@ -34,8 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FileOpen
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,12 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FileOpen
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.localImagePickerMode
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
@@ -64,34 +63,29 @@ import com.t8rin.imagetoolbox.feature.recognize.text.presentation.screenLogic.Re
 internal fun RecognizeTextNoDataControls(component: RecognizeTextComponent) {
     val isPortrait by isPortraitOrientationAsState()
 
-    val essentials = rememberLocalEssentials()
-
-    val startRecognition = {
-        component.startRecognition(
-            onFailure = essentials::showFailureToast
-        )
-    }
-
     val imagePickerMode = localImagePickerMode(Picker.Single)
 
     val imagePicker = rememberImagePicker(imagePickerMode) { list ->
         component.updateType(
-            type = Screen.RecognizeText.Type.Extraction(list.firstOrNull()),
-            onImageSet = startRecognition
+            type = Screen.RecognizeText.Type.Extraction(list.firstOrNull())
         )
     }
 
     val writeToFilePicker = rememberImagePicker { uris: List<Uri> ->
         component.updateType(
-            type = Screen.RecognizeText.Type.WriteToFile(uris),
-            onImageSet = startRecognition
+            type = Screen.RecognizeText.Type.WriteToFile(uris)
         )
     }
 
     val writeToMetadataPicker = rememberImagePicker { uris: List<Uri> ->
         component.updateType(
-            type = Screen.RecognizeText.Type.WriteToMetadata(uris),
-            onImageSet = startRecognition
+            type = Screen.RecognizeText.Type.WriteToMetadata(uris)
+        )
+    }
+
+    val writeToSearchablePdfPicker = rememberImagePicker { uris: List<Uri> ->
+        component.updateType(
+            type = Screen.RecognizeText.Type.WriteToSearchablePdf(uris)
         )
     }
 
@@ -116,8 +110,7 @@ internal fun RecognizeTextNoDataControls(component: RecognizeTextComponent) {
             onClick = {
                 if (component.selectionSheetData.isNotEmpty()) {
                     component.updateType(
-                        type = Screen.RecognizeText.Type.WriteToFile(component.selectionSheetData),
-                        onImageSet = startRecognition
+                        type = Screen.RecognizeText.Type.WriteToFile(component.selectionSheetData)
                     )
                     component.hideSelectionTypeSheet()
                 } else {
@@ -135,12 +128,29 @@ internal fun RecognizeTextNoDataControls(component: RecognizeTextComponent) {
             onClick = {
                 if (component.selectionSheetData.isNotEmpty()) {
                     component.updateType(
-                        type = Screen.RecognizeText.Type.WriteToMetadata(component.selectionSheetData),
-                        onImageSet = startRecognition
+                        type = Screen.RecognizeText.Type.WriteToMetadata(component.selectionSheetData)
                     )
                     component.hideSelectionTypeSheet()
                 } else {
                     writeToMetadataPicker.pickImage()
+                }
+            }
+        )
+    }
+    val preference4 = @Composable {
+        PreferenceItem(
+            title = stringResource(types[3].title),
+            subtitle = stringResource(types[3].subtitle),
+            startIcon = types[3].icon,
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                if (component.selectionSheetData.isNotEmpty()) {
+                    component.updateType(
+                        type = Screen.RecognizeText.Type.WriteToSearchablePdf(component.selectionSheetData)
+                    )
+                    component.hideSelectionTypeSheet()
+                } else {
+                    writeToSearchablePdfPicker.pickImage()
                 }
             }
         )
@@ -153,23 +163,28 @@ internal fun RecognizeTextNoDataControls(component: RecognizeTextComponent) {
             preference2()
             Spacer(modifier = Modifier.height(8.dp))
             preference3()
+            Spacer(modifier = Modifier.height(8.dp))
+            preference4()
         }
     } else {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(
+                WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+                    .asPaddingValues()
+            )
         ) {
-            Row(
-                modifier = Modifier.padding(
-                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
-                        .asPaddingValues()
-                )
-            ) {
+            Row {
                 preference1.withModifier(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.width(8.dp))
                 preference2.withModifier(modifier = Modifier.weight(1f))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            preference3.withModifier(modifier = Modifier.fillMaxWidth(0.5f))
+            Row {
+                preference3.withModifier(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
+                preference4.withModifier(modifier = Modifier.weight(1f))
+            }
         }
     }
 
@@ -202,6 +217,9 @@ internal fun RecognizeTextNoDataControls(component: RecognizeTextComponent) {
                 }
                 item {
                     preference3()
+                }
+                item {
+                    preference4()
                 }
             }
         },

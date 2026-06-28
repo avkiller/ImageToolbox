@@ -27,9 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,9 +44,11 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.t8rin.imagetoolbox.core.domain.APP_LINK
+import com.t8rin.imagetoolbox.core.domain.APP_GITHUB_LINK
 import com.t8rin.imagetoolbox.core.resources.BuildConfig
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
 import com.t8rin.imagetoolbox.core.resources.icons.Github
 import com.t8rin.imagetoolbox.core.resources.icons.GooglePlay
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
@@ -131,7 +131,7 @@ internal fun SearchableBottomBar(
                                 modifier = Modifier.padding(start = 4.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                    imageVector = Icons.Rounded.ArrowBack,
                                     contentDescription = stringResource(R.string.exit),
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
@@ -175,7 +175,7 @@ internal fun SearchableBottomBar(
                                 linkHandler.openUri("https://play.google.com/store/apps/details?id=${context.packageName}")
                             }
                         } else {
-                            linkHandler.openUri(APP_LINK)
+                            linkHandler.openUri(APP_GITHUB_LINK)
                         }
                     },
                     modifier = Modifier.requiredSize(size = 56.dp),

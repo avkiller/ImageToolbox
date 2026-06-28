@@ -20,7 +20,6 @@ package com.t8rin.imagetoolbox.core.filters.domain.model
 import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.FileModel
 import com.t8rin.imagetoolbox.core.domain.model.ImageModel
-import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.model.VisibilityOwner
 import com.t8rin.imagetoolbox.core.domain.utils.Quad
 import com.t8rin.imagetoolbox.core.filters.domain.model.enums.BlurEdgeMode
@@ -37,18 +36,23 @@ import com.t8rin.imagetoolbox.core.filters.domain.model.params.BloomParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.ChannelMixParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.ClaheParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.CropOrPerspectiveParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.DropShadowParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.EnhancedZoomBlurParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.GlitchParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.KaleidoscopeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.LinearGaussianParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.LinearTiltShiftParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.NtscParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.PinchParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.RadialTiltShiftParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.RubberStampParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.SeamCarvingParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.ShaderParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.SideFadeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.SmearParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.SparkleParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.ToneCurvesParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.TornEdgeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.VoronoiCrystallizeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.WaterParams
 
@@ -170,7 +174,7 @@ interface Filter<Value : Any> : VisibilityOwner {
     interface Deutaromaly : SimpleFilter
     interface Tritonomaly : SimpleFilter
     interface Protanopia : SimpleFilter
-    interface Deutaronotopia : SimpleFilter
+    interface Deuteranopia : SimpleFilter
     interface Tritanopia : SimpleFilter
     interface Achromatopsia : SimpleFilter
     interface Achromatomaly : SimpleFilter
@@ -269,6 +273,7 @@ interface Filter<Value : Any> : VisibilityOwner {
     interface SoftEleganceVariant : FloatFilter
     interface PaletteTransferVariant : TripleFilter<Float, PaletteTransferSpace, Image>
     interface CubeLut : FileFilter
+    interface Shader : Filter<ShaderParams>
     interface BleachBypass : FloatFilter
     interface Candlelight : FloatFilter
     interface DropBlues : FloatFilter
@@ -348,7 +353,7 @@ interface Filter<Value : Any> : VisibilityOwner {
     interface Turbo : SimpleFilter
     interface DeepGreen : SimpleFilter
     interface LensCorrection : FileFilter
-    interface SeamCarving : Filter<IntegerSize>
+    interface SeamCarving : Filter<SeamCarvingParams>
     interface ErrorLevelAnalysis : FloatFilter
     interface LuminanceGradient : SimpleFilter
     interface AverageDistance : SimpleFilter
@@ -369,6 +374,11 @@ interface Filter<Value : Any> : VisibilityOwner {
     interface CrtCurvature : TripleFloatFilter
     interface PixelMelt : PairFloatFilter
     interface Bloom : Filter<BloomParams>
+    interface Distortion : FloatFilter
+    interface VHSNtsc : Filter<NtscParams>
+    interface ExpandImage : QuadFloatFilter
+    interface DropShadow : Filter<DropShadowParams>
+    interface TornEdge : Filter<TornEdgeParams>
 }
 
 interface SimpleFilter : Filter<Unit>

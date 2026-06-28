@@ -51,6 +51,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
@@ -62,6 +65,8 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 @Composable
 internal fun MainNavigationRail(
     selectedIndex: Int,
+    showFavorite: Boolean = false,
+    showFavoriteAsLast: Boolean = false,
     onValueChange: (Int) -> Unit
 ) {
     val settingsState = LocalSettingsState.current
@@ -102,14 +107,24 @@ internal fun MainNavigationRail(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.height(8.dp))
+                if (showFavorite && !showFavoriteAsLast) {
+                    FavoriteNavigationRailItem(
+                        selected = selectedIndex == 0,
+                        favoriteIndex = 0,
+                        onValueChange = onValueChange
+                    )
+                }
+
                 Screen.typedEntries.forEachIndexed { index, group ->
-                    val selected = index == selectedIndex
+                    val navigationIndex =
+                        if (showFavorite && !showFavoriteAsLast) index + 1 else index
+                    val selected = navigationIndex == selectedIndex
                     val haptics = LocalHapticFeedback.current
                     EnhancedNavigationRailItem(
                         modifier = Modifier.width(100.dp),
                         selected = selected,
                         onClick = {
-                            onValueChange(index)
+                            onValueChange(navigationIndex)
                             haptics.longPress()
                         },
                         icon = {
@@ -130,6 +145,14 @@ internal fun MainNavigationRail(
                         }
                     )
                 }
+                if (showFavorite && showFavoriteAsLast) {
+                    val favoriteIndex = Screen.typedEntries.size
+                    FavoriteNavigationRailItem(
+                        selected = favoriteIndex == selectedIndex,
+                        favoriteIndex = favoriteIndex,
+                        onValueChange = onValueChange
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
             }
         }
@@ -145,4 +168,41 @@ internal fun MainNavigationRail(
                 )
         )
     }
+}
+
+@Composable
+private fun FavoriteNavigationRailItem(
+    selected: Boolean,
+    favoriteIndex: Int,
+    onValueChange: (Int) -> Unit
+) {
+    val haptics = LocalHapticFeedback.current
+    EnhancedNavigationRailItem(
+        modifier = Modifier.width(100.dp),
+        selected = selected,
+        onClick = {
+            onValueChange(favoriteIndex)
+            haptics.longPress()
+        },
+        icon = {
+            AnimatedContent(
+                targetState = selected,
+                transitionSpec = {
+                    fadeIn() togetherWith fadeOut()
+                }
+            ) { selected ->
+                Icon(
+                    imageVector = if (selected) {
+                        Icons.Rounded.Bookmark
+                    } else {
+                        Icons.Outlined.Bookmark
+                    },
+                    contentDescription = stringResource(R.string.favorite)
+                )
+            }
+        },
+        label = {
+            Text(stringResource(R.string.favorite))
+        }
+    )
 }

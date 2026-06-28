@@ -45,6 +45,7 @@ import com.t8rin.imagetoolbox.core.domain.saving.updateProgress
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.gif_tools.domain.GifConverter
@@ -111,8 +112,6 @@ class GifToolsComponent @AssistedInject internal constructor(
     private val _webpQuality: MutableState<Quality.Base> = mutableStateOf(Quality.Base())
     val webpQuality by _webpQuality
 
-    private var gifData: ByteArray? = null
-
     fun setType(type: Screen.GifTools.Type) {
         when (type) {
             is Screen.GifTools.Type.GifToImage -> {
@@ -176,7 +175,6 @@ class GifToolsComponent @AssistedInject internal constructor(
         collectionJob = null
         _type.update { null }
         _convertedImageUris.update { emptyList() }
-        gifData = null
         savingJob?.cancel()
         savingJob = null
         updateParams(GifParams.Default)
@@ -196,27 +194,45 @@ class GifToolsComponent @AssistedInject internal constructor(
         _isSaving.update { false }
     }
 
-    fun saveGifTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
-    ) {
+    fun createTargetFilename(): String = "GIF_${timestamp()}.gif"
+
+    fun saveGifTo(uri: Uri) {
         savingJob = trackProgress {
             _isSaving.value = true
-            gifData?.let { byteArray ->
-                fileController.writeBytes(
-                    uri = uri.toString(),
-                    block = { it.writeBytes(byteArray) }
-                ).also(onResult).onSuccess(::registerSave)
+            _done.value = 0
+            val imageUris = (type as? Screen.GifTools.Type.ImageToGif)
+                ?.imageUris
+                ?.map(Uri::toString)
+                ?: run {
+                    _isSaving.value = false
+                    return@trackProgress
+                }
+            _left.value = imageUris.size
+            gifConverter.createGifFromImageUris(
+                imageUris = imageUris,
+                params = params,
+                onProgress = {
+                    _done.update { it + 1 }
+                    updateProgress(
+                        done = done,
+                        total = left
+                    )
+                },
+                onFailure = {
+                    parseSaveResults(listOf(SaveResult.Error.Exception(it)))
+                }
+            )?.let { gifUri ->
+                fileController.transferBytes(
+                    fromUri = gifUri,
+                    toUri = uri.toString()
+                ).also(::parseFileSaveResult).onSuccess(::registerSave)
             }
             _isSaving.value = false
-            gifData = null
         }
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onGifSaveResult: (filename: String) -> Unit,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -235,7 +251,7 @@ class GifToolsComponent @AssistedInject internal constructor(
                                 if (it == 0) {
                                     _isSaving.value = false
                                     savingJob?.cancel()
-                                    onResult(
+                                    parseSaveResults(
                                         listOf(SaveResult.Error.MissingPermissions)
                                     )
                                 }
@@ -246,7 +262,7 @@ class GifToolsComponent @AssistedInject internal constructor(
                                 )
                             }
                         ).onCompletion {
-                            onResult(results.onSuccess(::registerSave))
+                            parseSaveResults(results.onSuccess(::registerSave))
                         }.collect { uri ->
                             imageGetter.getImage(
                                 data = uri,
@@ -289,27 +305,7 @@ class GifToolsComponent @AssistedInject internal constructor(
                     }
                 }
 
-                is Screen.GifTools.Type.ImageToGif -> {
-                    _left.value = type.imageUris?.size ?: -1
-                    gifData = type.imageUris?.map { it.toString() }?.let { list ->
-                        gifConverter.createGifFromImageUris(
-                            imageUris = list,
-                            params = params,
-                            onProgress = {
-                                _done.update { it + 1 }
-                                updateProgress(
-                                    done = done,
-                                    total = left
-                                )
-                            },
-                            onFailure = {
-                                onResult(listOf(SaveResult.Error.Exception(it)))
-                            }
-                        )?.also {
-                            onGifSaveResult("GIF_${timestamp()}.gif")
-                        }
-                    }
-                }
+                is Screen.GifTools.Type.ImageToGif -> Unit
 
                 is Screen.GifTools.Type.GifToJxl -> {
                     val results = mutableListOf<SaveResult>()
@@ -336,7 +332,7 @@ class GifToolsComponent @AssistedInject internal constructor(
                         )
                     }
 
-                    onResult(results.onSuccess(::registerSave))
+                    parseSaveResults(results.onSuccess(::registerSave))
                 }
 
                 is Screen.GifTools.Type.GifToWebp -> {
@@ -364,7 +360,7 @@ class GifToolsComponent @AssistedInject internal constructor(
                         )
                     }
 
-                    onResult(results.onSuccess(::registerSave))
+                    parseSaveResults(results.onSuccess(::registerSave))
                 }
 
                 null -> Unit
@@ -480,7 +476,7 @@ class GifToolsComponent @AssistedInject internal constructor(
         registerChanges()
     }
 
-    fun performSharing(onComplete: () -> Unit) {
+    fun performSharing() {
         savingJob = trackProgress {
             _isSaving.value = true
             _left.value = 1
@@ -494,7 +490,7 @@ class GifToolsComponent @AssistedInject internal constructor(
                         index in positions
                     }
                     shareProvider.shareUris(uris)
-                    onComplete()
+                    AppToastHost.showConfetti()
                 }
 
                 is Screen.GifTools.Type.ImageToGif -> {
@@ -510,12 +506,12 @@ class GifToolsComponent @AssistedInject internal constructor(
                                     total = left
                                 )
                             },
-                            onFailure = { }
-                        )?.also { byteArray ->
-                            shareProvider.shareByteArray(
-                                byteArray = byteArray,
-                                filename = "GIF_${timestamp()}.gif",
-                                onComplete = onComplete
+                            onFailure = AppToastHost::showFailureToast
+                        )?.also { uri ->
+                            shareProvider.shareUri(
+                                uri = uri,
+                                type = ImageFormat.Gif.mimeType,
+                                onComplete = AppToastHost::showConfetti
                             )
                         }
                     }

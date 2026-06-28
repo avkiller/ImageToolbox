@@ -18,11 +18,16 @@
 package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common
 
 import android.net.Uri
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FileOpen
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,15 +36,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FileOpen
 import com.t8rin.imagetoolbox.core.resources.icons.Pdf
-import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.FilePicker
+import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.ResultLauncher
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -56,30 +66,34 @@ import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
 @Composable
 internal fun BasePdfToolContent(
     component: BasePdfToolComponent,
-    pdfPicker: FilePicker,
+    contentPicker: ResultLauncher,
     isPickedAlready: Boolean,
     canShowScreenData: Boolean,
     title: String,
-    actions: @Composable RowScope.() -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
     topAppBarPersistentActions: @Composable RowScope.() -> Unit = {},
-    imagePreview: @Composable () -> Unit,
-    placeImagePreview: Boolean = true,
-    showImagePreviewAsStickyHeader: Boolean = true,
+    imagePreview: @Composable () -> Unit = {},
+    placeImagePreview: Boolean = false,
+    showImagePreviewAsStickyHeader: Boolean = false,
     controls: (@Composable ColumnScope.(LazyListState) -> Unit)?,
     canSave: Boolean = true,
-    onFilledPassword: () -> Unit = {}
+    canShare: Boolean = canSave,
+    onFilledPassword: () -> Unit = {},
+    forceImagePreviewToMax: Boolean = false,
+    placeControlsSeparately: Boolean = false,
+    addHorizontalCutoutPaddingIfNoPreview: Boolean = placeImagePreview && showImagePreviewAsStickyHeader,
+    secondaryButtonIcon: ImageVector = Icons.Rounded.FileOpen,
+    secondaryButtonText: String = stringResource(R.string.pick_file),
+    noDataText: String = stringResource(R.string.pick_file_to_start),
+    onPrimaryButtonClick: (() -> Unit)? = null,
+    onPrimaryButtonLongClick: (() -> Unit)? = null,
+    drawBottomShadow: Boolean = true,
+    shareDialogTitle: String = "PDF",
+    shareDialogIcon: ImageVector = Icons.Outlined.Pdf
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val saveLauncher = rememberFileCreator(
         mimeType = component.mimeType,
-        onSuccess = { uri ->
-            component.saveTo(
-                uri = uri,
-                onResult = essentials::parseFileSaveResult
-            )
-        }
+        onSuccess = component::saveTo
     )
 
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
@@ -92,7 +106,7 @@ internal fun BasePdfToolContent(
     }
 
     AutoFilePicker(
-        onAutoPick = pdfPicker::pickFile,
+        onAutoPick = contentPicker::launch,
         isPickedAlready = isPickedAlready
     )
 
@@ -107,6 +121,7 @@ internal fun BasePdfToolContent(
     AdaptiveLayoutScreen(
         shouldDisableBackHandler = !component.haveChanges,
         placeImagePreview = placeImagePreview,
+        addHorizontalCutoutPaddingIfNoPreview = addHorizontalCutoutPaddingIfNoPreview,
         showImagePreviewAsStickyHeader = showImagePreviewAsStickyHeader,
         title = {
             TopAppBarTitle(
@@ -116,6 +131,8 @@ internal fun BasePdfToolContent(
                 size = null
             )
         },
+        forceImagePreviewToMax = forceImagePreviewToMax,
+        placeControlsSeparately = placeControlsSeparately,
         onGoBack = onBack,
         actions = {
             var editSheetData by remember {
@@ -123,11 +140,11 @@ internal fun BasePdfToolContent(
             }
 
             ShareButton(
-                enabled = canSave,
+                enabled = canShare,
                 onShare = {
                     component.performSharing(
-                        onSuccess = showConfetti,
-                        onFailure = essentials::showFailureToast
+                        onSuccess = AppToastHost::showConfetti,
+                        onFailure = AppToastHost::showFailureToast
                     )
                 },
                 onEdit = {
@@ -135,11 +152,11 @@ internal fun BasePdfToolContent(
                         onSuccess = {
                             editSheetData = it
                         },
-                        onFailure = essentials::showFailureToast
+                        onFailure = AppToastHost::showFailureToast
                     )
                 },
-                dialogTitle = "PDF",
-                dialogIcon = Icons.Outlined.Pdf
+                dialogTitle = shareDialogTitle,
+                dialogIcon = shareDialogIcon
             )
 
             ProcessImagesPreferenceSheet(
@@ -162,27 +179,46 @@ internal fun BasePdfToolContent(
             }
         },
         imagePreview = imagePreview,
-        controls = controls,
+        controls = controls?.let {
+            {
+                Column(
+                    modifier = if (!placeImagePreview && !isPortrait) {
+                        Modifier.windowInsetsPadding(
+                            WindowInsets.displayCutout.only(WindowInsetsSides.Start)
+                        )
+                    } else {
+                        Modifier
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    controls(this, it)
+                }
+            }
+        },
         buttons = { actions ->
             BottomButtonsBlock(
                 isNoData = !canShowScreenData,
                 isPrimaryButtonVisible = canSave,
-                secondaryButtonIcon = Icons.Rounded.FileOpen,
-                secondaryButtonText = stringResource(R.string.pick_file),
-                onSecondaryButtonClick = pdfPicker::pickFile,
-                onPrimaryButtonClick = {
+                secondaryButtonIcon = secondaryButtonIcon,
+                secondaryButtonText = secondaryButtonText,
+                onSecondaryButtonClick = contentPicker::launch,
+                onPrimaryButtonClick = onPrimaryButtonClick ?: {
                     saveLauncher.make(component.createTargetFilename())
                 },
+                onPrimaryButtonLongClick = onPrimaryButtonLongClick,
                 actions = {
                     if (isPortrait) actions()
-                }
+                },
+                enableHorizontalStroke = drawBottomShadow
             )
         },
         noDataControls = {
             FileNotPickedWidget(
-                onPickFile = pdfPicker::pickFile
+                text = noDataText,
+                onPickFile = contentPicker::launch
             )
         },
+        portraitTopPadding = 20.dp,
         canShowScreenData = canShowScreenData
     )
 

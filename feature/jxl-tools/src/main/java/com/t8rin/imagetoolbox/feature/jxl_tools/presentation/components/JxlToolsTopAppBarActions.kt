@@ -30,9 +30,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.icons.rounded.Close
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,8 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.SelectAll
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -60,22 +59,12 @@ import com.t8rin.imagetoolbox.feature.jxl_tools.presentation.screenLogic.JxlTool
 internal fun RowScope.JxlToolsTopAppBarActions(
     component: JxlToolsComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
-    val onFailure: (Throwable) -> Unit = essentials::showFailureToast
-
     val isJxlToImage = component.type is Screen.JxlTools.Type.JxlToImage
     if (component.type == null) TopAppBarEmoji()
     else if (!isJxlToImage) {
         ShareButton(
             enabled = !component.isLoading && component.type != null,
-            onShare = {
-                component.performSharing(
-                    onFailure = onFailure,
-                    onComplete = showConfetti
-                )
-            }
+            onShare = component::performSharing
         )
     }
     val pagesSize by remember(component.imageFrames, component.convertedImageUris) {

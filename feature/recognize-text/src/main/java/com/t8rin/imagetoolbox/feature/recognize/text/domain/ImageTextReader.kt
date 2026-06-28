@@ -18,12 +18,15 @@
 package com.t8rin.imagetoolbox.feature.recognize.text.domain
 
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
+import kotlinx.coroutines.flow.Flow
 
 interface ImageTextReader {
 
     suspend fun getTextFromImage(
         type: RecognitionType,
         languageCode: String,
+        recognitionEngine: RecognitionEngine,
+        paddleOCRModel: PaddleOCRModel,
         segmentationMode: SegmentationMode,
         ocrEngineMode: OcrEngineMode,
         parameters: TessParams,
@@ -53,6 +56,18 @@ interface ImageTextReader {
     suspend fun deleteLanguage(
         language: OCRLanguage,
         types: List<RecognitionType>
+    )
+
+    fun isPaddleOCRModelDownloaded(
+        model: PaddleOCRModel
+    ): Boolean
+
+    fun downloadPaddleOCRModel(
+        model: PaddleOCRModel
+    ): Flow<DownloadProgress>
+
+    fun deletePaddleOCRModel(
+        model: PaddleOCRModel
     )
 
     suspend fun exportLanguagesToZip(): String?

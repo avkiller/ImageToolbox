@@ -27,17 +27,23 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.saving.model.onSuccess
 import com.t8rin.imagetoolbox.core.domain.saving.updateProgress
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
+import com.t8rin.imagetoolbox.core.ui.utils.state.savable
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.image_splitting.domain.ImageSplitter
+import com.t8rin.imagetoolbox.image_splitting.domain.SavableSplitParams
 import com.t8rin.imagetoolbox.image_splitting.domain.SplitParams
+import com.t8rin.imagetoolbox.image_splitting.presentation.screenLogic.ImageSplitterComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -51,12 +57,26 @@ class ImageSplitterComponent @AssistedInject internal constructor(
     private val fileController: FileController,
     private val imageSplitter: ImageSplitter,
     private val shareProvider: ShareProvider,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
+    private var savableParams by fileController.savable(
+        scope = componentScope,
+        initial = SavableSplitParams()
+    )
 
     init {
         debounce {
             initialUri?.let(::updateUri)
+            _params.update {
+                it.copy(
+                    rowsCount = savableParams.rowsCount,
+                    columnsCount = savableParams.columnsCount
+                )
+            }
         }
     }
 
@@ -90,16 +110,27 @@ class ImageSplitterComponent @AssistedInject internal constructor(
     }
 
     fun updateUri(uri: Uri?) {
+        clearHistory()
+        registerChangesCleared()
         _uri.value = null
         _uri.value = uri
+        if (uri != null) {
+            resetHistory()
+        }
         updateUris()
     }
 
     fun updateParams(params: SplitParams) {
         if (params != this.params) {
+            savableParams = SavableSplitParams(
+                rowsCount = params.rowsCount,
+                columnsCount = params.columnsCount
+            )
+            beginPendingHistoryTransaction()
             _params.update { params }
             registerChanges()
             updateUris()
+            schedulePendingHistoryCommit()
         }
     }
 
@@ -108,8 +139,7 @@ class ImageSplitterComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -140,20 +170,20 @@ class ImageSplitterComponent @AssistedInject internal constructor(
                     total = uris.size
                 )
             }
-            onComplete(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
 
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         savingJob = trackProgress {
             _isSaving.value = true
             _done.value = 0
             shareProvider.shareUris(
                 uris = uris.map { it.toString() }
             )
-            onComplete()
+            AppToastHost.showConfetti()
             _isSaving.value = false
         }
     }
@@ -175,6 +205,31 @@ class ImageSplitterComponent @AssistedInject internal constructor(
             _isSaving.value = false
         }
     }
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        uri = uri,
+        params = params,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _uri.update { snapshot.uri }
+        _params.update { snapshot.params }
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        updateUris()
+    }
+
+    data class HistorySnapshot(
+        val uri: Uri? = null,
+        val params: SplitParams = SplitParams.Default,
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
 
     @AssistedFactory
     fun interface Factory {

@@ -33,8 +33,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Texture
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,15 +45,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.filters.domain.model.TemplateFilter
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.SeamCarvingParams
 import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.AddFilterButton
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterItem
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheet
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Texture
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.controls.SaveExifWidget
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
@@ -67,19 +68,22 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemOverload
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.filters.presentation.screenLogic.FiltersComponent
 
 @Composable
 internal fun FiltersContentControls(
     component: FiltersComponent
 ) {
-    val essentials = rememberLocalEssentials()
-
     val filterType = component.filterType
 
     var showTemplateCreationSheet by rememberSaveable(filterType) {
         mutableStateOf(false)
     }
+    var seamMaskFilterIndex by rememberSaveable(filterType) {
+        mutableStateOf<Int?>(null)
+    }
+    val shaderPresets by component.addFiltersSheetComponent.shaderPresets.collectAsStateWithLifecycle()
 
     val histogramItem = @Composable {
         PreferenceItemOverload(
@@ -140,12 +144,13 @@ internal fun FiltersContentControls(
                                         onFilterChange = { newValue ->
                                             component.updateFilter(
                                                 value = newValue,
-                                                index = index,
-                                                onFailure = essentials::showFailureToast
+                                                index = index
                                             )
                                         },
                                         onLongPress = component::showReorderSheet,
                                         showDragHandle = false,
+                                        shaderPresets = shaderPresets,
+                                        onImportShaderPreset = component.addFiltersSheetComponent::importShaderPreset,
                                         onRemove = {
                                             component.removeFilterAtIndex(index)
                                         },
@@ -153,10 +158,32 @@ internal fun FiltersContentControls(
                                             showTemplateCreationSheet = true
                                             component.filterTemplateCreationSheetComponent.setInitialTemplateFilter(
                                                 TemplateFilter(
-                                                    name = essentials.getString(filter.title),
+                                                    name = getString(filter.title),
                                                     filters = listOf(filter)
                                                 )
                                             )
+                                        },
+                                        additionalContent = (filter.value as? SeamCarvingParams)?.let { params ->
+                                            {
+                                                SeamCarvingMaskItem(
+                                                    maskUri = params.maskFile.uri,
+                                                    useMaskAsRemoval = params.useMaskAsRemoval,
+                                                    onUseMaskAsRemovalChange = { useMaskAsRemoval ->
+                                                        component.updateFilter(
+                                                            value = params.copy(
+                                                                useMaskAsRemoval = useMaskAsRemoval
+                                                            ),
+                                                            index = index
+                                                        )
+                                                    },
+                                                    onAddMask = {
+                                                        seamMaskFilterIndex = index
+                                                    },
+                                                    onRemoveMask = {
+                                                        component.removeSeamCarvingMask(index)
+                                                    }
+                                                )
+                                            }
                                         }
                                     )
                                 }
@@ -167,7 +194,7 @@ internal fun FiltersContentControls(
                                         showTemplateCreationSheet = true
                                         component.filterTemplateCreationSheetComponent.setInitialTemplateFilter(
                                             TemplateFilter(
-                                                name = essentials.getString(
+                                                name = getString(
                                                     filterList.firstOrNull()?.title
                                                         ?: R.string.template_filter
                                                 ),
@@ -245,8 +272,7 @@ internal fun FiltersContentControls(
                                         onMaskChange = { filterMask ->
                                             component.updateMask(
                                                 value = filterMask,
-                                                index = index,
-                                                showError = essentials::showFailureToast
+                                                index = index
                                             )
                                         },
                                         onLongPress = component::showReorderSheet,
@@ -259,7 +285,7 @@ internal fun FiltersContentControls(
                                             showTemplateCreationSheet = true
                                             component.filterTemplateCreationSheetComponent.setInitialTemplateFilter(
                                                 TemplateFilter(
-                                                    name = essentials.getString(
+                                                    name = getString(
                                                         mask.filters.firstOrNull()
                                                             ?.toUiFilter()?.title
                                                             ?: R.string.template_filter
@@ -280,7 +306,7 @@ internal fun FiltersContentControls(
                                     )
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.Texture,
+                                        imageVector = Icons.Outlined.Texture,
                                         contentDescription = stringResource(R.string.add_mask)
                                     )
                                     Spacer(Modifier.width(8.dp))
@@ -297,7 +323,7 @@ internal fun FiltersContentControls(
                             )
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Texture,
+                                imageVector = Icons.Outlined.Texture,
                                 contentDescription = stringResource(R.string.add_mask)
                             )
                             Spacer(Modifier.width(8.dp))
@@ -331,6 +357,27 @@ internal fun FiltersContentControls(
         }
 
         else -> Unit
+    }
+
+    seamMaskFilterIndex?.let { index ->
+        val params = component.basicFilterState.filters
+            .getOrNull(index)
+            ?.value as? SeamCarvingParams
+
+        if (params?.maskFile?.uri?.isEmpty() == true) {
+            SeamCarvingMaskSheet(
+                visible = true,
+                bitmap = component.bitmap,
+                onDismiss = { seamMaskFilterIndex = null },
+                onSave = { paths ->
+                    component.updateSeamCarvingMask(
+                        filterIndex = index,
+                        paths = paths,
+                        onComplete = {}
+                    )
+                }
+            )
+        }
     }
 
     FilterTemplateCreationSheet(

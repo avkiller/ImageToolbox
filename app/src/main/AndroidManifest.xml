@@ -18,9 +18,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-sdk
-        android:minSdkVersion="23"
-        tools:overrideLibrary="com.github.awxkee.avifcodercoil, com.github.awxkee.avifcoder, com.google.mlkit.vision.segmentation.subject, androidx.pdf,androidx.pdf.viewer.fragment, androidx.pdf.document.service" />
+    <uses-sdk tools:overrideLibrary="
+        com.google.mlkit.vision.segmentation.subject,
+        androidx.pdf,
+        androidx.pdf.viewer.fragment,
+        androidx.pdf.document.service" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -110,7 +112,11 @@
                 <data android:mimeType="image/*" />
                 <data android:pathSuffix=".jxl" />
                 <data android:pathSuffix=".qoi" />
+                <data android:pathSuffix=".itp" />
+                <data android:mimeType="application/vnd.shana.informed.formtemplate" />
+                <data android:mimeType="application/x-imagetoolbox-project" />
                 <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/zip" />
                 <data android:mimeType="application/pdf" />
                 <data android:mimeType="*/pdf" />
 
@@ -144,9 +150,13 @@
                 <data
                     android:mimeType="image/*"
                     tools:ignore="AppLinkUrlError" />
+                <data android:mimeType="application/vnd.shana.informed.formtemplate" />
+                <data android:mimeType="application/x-imagetoolbox-project" />
                 <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/zip" />
                 <data android:pathSuffix=".jxl" />
                 <data android:pathSuffix=".qoi" />
+                <data android:pathSuffix=".itp" />
                 <data android:mimeType="application/pdf" />
                 <data android:mimeType="*/pdf" />
             </intent-filter>
@@ -158,9 +168,13 @@
                 <data
                     android:mimeType="image/*"
                     tools:ignore="AppLinkUrlError" />
+                <data android:mimeType="application/vnd.shana.informed.formtemplate" />
+                <data android:mimeType="application/x-imagetoolbox-project" />
                 <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/zip" />
                 <data android:pathSuffix=".jxl" />
                 <data android:pathSuffix=".qoi" />
+                <data android:pathSuffix=".itp" />
                 <data android:mimeType="application/pdf" />
                 <data android:mimeType="*/pdf" />
             </intent-filter>
@@ -172,9 +186,13 @@
                 <data
                     android:mimeType="image/*"
                     tools:ignore="AppLinkUrlError" />
+                <data android:mimeType="application/vnd.shana.informed.formtemplate" />
+                <data android:mimeType="application/x-imagetoolbox-project" />
                 <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/zip" />
                 <data android:pathSuffix=".jxl" />
                 <data android:pathSuffix=".qoi" />
+                <data android:pathSuffix=".itp" />
                 <data android:mimeType="application/pdf" />
                 <data android:mimeType="*/pdf" />
             </intent-filter>

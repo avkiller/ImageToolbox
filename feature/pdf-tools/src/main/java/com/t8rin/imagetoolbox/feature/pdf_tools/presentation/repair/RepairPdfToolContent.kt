@@ -37,20 +37,14 @@ fun RepairPdfToolContent(
 ) {
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
         isPickedAlready = component.initialUri != null,
         canShowScreenData = component.uri != null,
         title = stringResource(R.string.repair_pdf),
-        actions = {},
-        imagePreview = {},
-        placeImagePreview = false,
-        showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -64,8 +58,6 @@ fun RepairPdfToolContent(
             InfoContainer(
                 text = stringResource(R.string.repair_info)
             )
-
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

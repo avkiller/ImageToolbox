@@ -26,8 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,22 +42,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Tune
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvideFilterPreview
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.CompareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShowOriginalButton
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBadge
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedHorizontalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageContainer
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.detectSwipes
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.scaleOnTap
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
@@ -76,9 +81,6 @@ import com.t8rin.imagetoolbox.feature.filters.presentation.screenLogic.FiltersCo
 fun FiltersContent(
     component: FiltersComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     AutoContentBasedColors(component.previewBitmap)
 
     val imagePicker = rememberImagePicker(onSuccess = component::setBasicFilter)
@@ -99,60 +101,75 @@ fun FiltersContent(
     var showOriginal by remember { mutableStateOf(false) }
 
     val actions: @Composable RowScope.() -> Unit = {
-        Spacer(modifier = Modifier.width(8.dp))
-        if (component.bitmap != null) {
-            var editSheetData by remember {
-                mutableStateOf(listOf<Uri>())
-            }
-            ShareButton(
-                enabled = component.canSave,
-                onShare = {
-                    component.performSharing(showConfetti)
-                },
-                onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
-                },
-                onEdit = {
-                    component.cacheImages {
-                        editSheetData = it
+        val state = rememberScrollState()
+        Row(
+            modifier = Modifier
+                .fadingEdges(state)
+                .enhancedHorizontalScroll(state),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.width(8.dp))
+            if (component.bitmap != null) {
+                var editSheetData by remember {
+                    mutableStateOf(listOf<Uri>())
+                }
+                ShareButton(
+                    enabled = component.canSave,
+                    onShare = component::performSharing,
+                    onCopy = {
+                        component.cacheCurrentImage(Clipboard::copy)
+                    },
+                    onEdit = {
+                        component.cacheImages {
+                            editSheetData = it
+                        }
                     }
-                }
-            )
-            ProcessImagesPreferenceSheet(
-                uris = editSheetData,
-                visible = editSheetData.isNotEmpty(),
-                onDismiss = {
-                    editSheetData = emptyList()
-                },
-                onNavigate = component.onNavigate
-            )
-            ShowOriginalButton(
-                canShow = component.canShow(),
-                onStateChange = {
-                    showOriginal = it
-                }
-            )
-        }
-        var showCompareSheet by rememberSaveable { mutableStateOf(false) }
-        CompareButton(
-            onClick = { showCompareSheet = true },
-            visible = component.previewBitmap != null
-        )
-        CompareSheet(
-            data = component.bitmap to component.previewBitmap,
-            visible = showCompareSheet,
-            onDismiss = {
-                showCompareSheet = false
+                )
+                ProcessImagesPreferenceSheet(
+                    uris = editSheetData,
+                    visible = editSheetData.isNotEmpty(),
+                    onDismiss = {
+                        editSheetData = emptyList()
+                    },
+                    onNavigate = component.onNavigate
+                )
+                ShowOriginalButton(
+                    canShow = component.canShow(),
+                    onStateChange = {
+                        showOriginal = it
+                    }
+                )
             }
-        )
+            var showCompareSheet by rememberSaveable { mutableStateOf(false) }
+            CompareButton(
+                onClick = { showCompareSheet = true },
+                visible = component.previewBitmap != null
+            )
+            CompareSheet(
+                data = component.bitmap to component.previewBitmap,
+                visible = showCompareSheet,
+                onDismiss = {
+                    showCompareSheet = false
+                }
+            )
 
-        if (component.bitmap != null && (component.basicFilterState.filters.size >= 2 || component.maskingFilterState.masks.size >= 2)) {
-            EnhancedIconButton(
-                onClick = component::showReorderSheet
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Tune,
-                    contentDescription = stringResource(R.string.properties)
+            if (component.bitmap != null && (component.basicFilterState.filters.size >= 2 || component.maskingFilterState.masks.size >= 2)) {
+                EnhancedIconButton(
+                    onClick = component::showReorderSheet
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Tune,
+                        contentDescription = stringResource(R.string.properties)
+                    )
+                }
+            }
+            if (isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
                 )
             }
         }
@@ -211,7 +228,7 @@ fun FiltersContent(
                                 .padding(horizontal = 2.dp)
                                 .padding(bottom = 12.dp)
                                 .scaleOnTap {
-                                    showConfetti()
+                                    AppToastHost.showConfetti()
                                 }
                         )
                     }

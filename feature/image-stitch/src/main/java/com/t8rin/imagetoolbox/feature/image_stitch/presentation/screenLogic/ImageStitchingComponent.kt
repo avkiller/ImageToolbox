@@ -32,14 +32,16 @@ import com.t8rin.imagetoolbox.core.domain.image.model.BlendingMode
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.saving.updateProgress
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.domain.utils.update
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.savable
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
@@ -50,6 +52,7 @@ import com.t8rin.imagetoolbox.feature.image_stitch.domain.StitchFadeSide
 import com.t8rin.imagetoolbox.feature.image_stitch.domain.StitchMode
 import com.t8rin.imagetoolbox.feature.image_stitch.domain.toParams
 import com.t8rin.imagetoolbox.feature.image_stitch.domain.toSavable
+import com.t8rin.imagetoolbox.feature.image_stitch.presentation.screenLogic.ImageStitchingComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -65,8 +68,12 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     private val imageCompressor: ImageCompressor<Bitmap>,
     private val imageCombiner: ImageCombiner<Bitmap>,
     private val shareProvider: ImageShareProvider<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     private val _imageSize: MutableState<IntegerSize> = mutableStateOf(IntegerSize(0, 0))
     val imageSize by _imageSize
@@ -102,13 +109,39 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     }
 
     fun setImageFormat(imageFormat: ImageFormat) {
-        _imageInfo.update { it.copy(imageFormat = imageFormat) }
-        calculatePreview(true)
+        if (_imageInfo.value.imageFormat != imageFormat) {
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
+            _imageInfo.update { it.copy(imageFormat = imageFormat) }
+            registerChanges()
+            calculatePreview(true)
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun updateUris(uris: List<Uri>?) {
         if (uris != _uris.value) {
+            clearHistory()
+            registerChangesCleared()
             _uris.value = uris
+            if (!uris.isNullOrEmpty()) {
+                resetHistory()
+            }
+            calculatePreview(true)
+        }
+    }
+
+    fun reorderUris(uris: List<Uri>?) {
+        if (uris != _uris.value) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
+            _uris.value = uris
+            commitHistoryFrom(beforeSnapshot)
             calculatePreview(true)
         }
     }
@@ -150,8 +183,7 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (result: SaveResult) -> Unit,
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -171,7 +203,7 @@ class ImageStitchingComponent @AssistedInject internal constructor(
                     quality = imageInfo.quality,
                     imageFormat = imageInfo.imageFormat
                 )
-                onComplete(
+                parseSaveResult(
                     fileController.save(
                         saveTarget = ImageSaveTarget(
                             imageInfo = imageInfo,
@@ -192,7 +224,7 @@ class ImageStitchingComponent @AssistedInject internal constructor(
         }
     }
 
-    fun shareBitmap(onComplete: () -> Unit) {
+    fun shareBitmap() {
         savingJob = trackProgress {
             _isSaving.value = true
             _done.value = 0
@@ -217,7 +249,7 @@ class ImageStitchingComponent @AssistedInject internal constructor(
                 shareProvider.shareImage(
                     image = image,
                     imageInfo = imageInfo,
-                    onComplete = onComplete
+                    onComplete = AppToastHost::showConfetti
                 )
             }
             _isSaving.value = false
@@ -225,8 +257,13 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     }
 
     fun setQuality(quality: Quality) {
-        _imageInfo.update { it.copy(quality = quality) }
-        calculatePreview(true)
+        if (_imageInfo.value.quality != quality) {
+            beginPendingHistoryTransaction()
+            _imageInfo.update { it.copy(quality = quality) }
+            registerChanges()
+            calculatePreview(true)
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun cancelSaving() {
@@ -236,8 +273,7 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     }
 
     fun updateImageScale(newScale: Float) {
-        _combiningParams.update { it.copy(outputScale = newScale) }
-        registerChanges()
+        updateCombiningParams(combiningParams.copy(outputScale = newScale))
     }
 
     fun setStitchMode(value: StitchMode) {
@@ -264,7 +300,24 @@ class ImageStitchingComponent @AssistedInject internal constructor(
 
     fun updateImageSpacing(spacing: Int) {
         updateCombiningParams(
-            combiningParams.copy(spacing = spacing)
+            combiningParams.copy(
+                horizontalSpacing = spacing,
+                verticalSpacing = spacing
+            )
+        )
+        calculatePreview()
+    }
+
+    fun updateHorizontalImageSpacing(spacing: Int) {
+        updateCombiningParams(
+            combiningParams.copy(horizontalSpacing = spacing)
+        )
+        calculatePreview()
+    }
+
+    fun updateVerticalImageSpacing(spacing: Int) {
+        updateCombiningParams(
+            combiningParams.copy(verticalSpacing = spacing)
         )
         calculatePreview()
     }
@@ -284,15 +337,20 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     }
 
     fun addUrisToEnd(uris: List<Uri>) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _uris.update { list ->
             list?.plus(
                 uris.filter { it !in list }
             )
         }
+        commitHistoryFrom(beforeSnapshot)
         calculatePreview(true)
     }
 
     fun removeImageAt(index: Int) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _uris.update { list ->
             list?.toMutableList()?.apply {
                 removeAt(index)
@@ -300,6 +358,7 @@ class ImageStitchingComponent @AssistedInject internal constructor(
                 if (it == null) _previewBitmap.value = null
             }
         }
+        commitHistoryFrom(beforeSnapshot)
         calculatePreview(true)
     }
 
@@ -347,10 +406,62 @@ class ImageStitchingComponent @AssistedInject internal constructor(
     }
 
     private fun updateCombiningParams(params: CombiningParams) {
-        _combiningParams.update { params.toSavable() }
+        if (combiningParams != params) {
+            beginPendingHistoryTransaction()
+            _combiningParams.update { params.toSavable() }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun getFormatForFilenameSelection(): ImageFormat = imageInfo.imageFormat
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        uris = uris,
+        imageInfo = imageInfo.asHistoryImageInfo(),
+        combiningParams = combiningParams,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _uris.update { snapshot.uris }
+        _imageInfo.update { current ->
+            current.copy(
+                imageFormat = snapshot.imageInfo.imageFormat,
+                quality = snapshot.imageInfo.quality
+            )
+        }
+        _combiningParams.update { snapshot.combiningParams.toSavable() }
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        calculatePreview(true)
+    }
+
+    override fun hasSameUndoState(
+        first: HistorySnapshot,
+        second: HistorySnapshot
+    ): Boolean = first.normalized() == second.normalized()
+
+    private fun ImageInfo.asHistoryImageInfo(): ImageInfo = ImageInfo(
+        imageFormat = imageFormat,
+        quality = quality
+    )
+
+    private fun HistorySnapshot.normalized(): HistorySnapshot = copy(
+        imageInfo = imageInfo.asHistoryImageInfo()
+    )
+
+    data class HistorySnapshot(
+        val uris: List<Uri>? = null,
+        val imageInfo: ImageInfo = ImageInfo(),
+        val combiningParams: CombiningParams = CombiningParams(),
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
 
     @AssistedFactory
     fun interface Factory {

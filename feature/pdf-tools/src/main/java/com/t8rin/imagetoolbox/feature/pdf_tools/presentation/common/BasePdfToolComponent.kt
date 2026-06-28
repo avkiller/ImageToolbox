@@ -34,9 +34,9 @@ import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCheckResult
-import com.t8rin.logger.makeLog
 import kotlinx.coroutines.Job
 
 abstract class BasePdfToolComponent(
@@ -55,7 +55,7 @@ abstract class BasePdfToolComponent(
 
     protected var isRtl = false
 
-    open val extraDataType: ExtraDataType = ExtraDataType.Pdf
+    open val extraDataType: ExtraDataType? = ExtraDataType.Pdf
     open val mimeType: MimeType.Single = MimeType.Pdf
 
     init {
@@ -120,10 +120,7 @@ abstract class BasePdfToolComponent(
 
     protected open fun getKey(): Pair<String, Uri?>? = null
 
-    abstract fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
-    )
+    abstract fun saveTo(uri: Uri)
 
     abstract fun performSharing(
         onSuccess: () -> Unit,
@@ -136,18 +133,17 @@ abstract class BasePdfToolComponent(
     )
 
     protected fun doSaving(
-        action: suspend KeepAliveService.() -> SaveResult,
-        onResult: (SaveResult) -> Unit
+        action: suspend KeepAliveService.() -> SaveResult
     ) {
         savingJob = trackProgress {
             runSuspendCatching {
                 _isSaving.value = true
-                onResult(action())
+                parseFileSaveResult(action())
             }.onFailure {
                 if (it is SecurityException) {
                     _showPasswordRequestDialog.update { true }
                 } else {
-                    onResult(SaveResult.Error.Exception(it))
+                    parseFileSaveResult(SaveResult.Error.Exception(it))
                 }
             }
             _isSaving.value = false

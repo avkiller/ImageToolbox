@@ -35,10 +35,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.MenuOpen
-import androidx.compose.material.icons.rounded.FileDownloadOff
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -64,16 +60,17 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.idapgroup.snowfall.snowfall
-import com.idapgroup.snowfall.types.FlakeType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.MenuOpen
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalWindowSizeClass
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.withModifier
@@ -81,6 +78,8 @@ import com.t8rin.imagetoolbox.feature.main.presentation.components.MainContentIm
 import com.t8rin.imagetoolbox.feature.main.presentation.components.MainDrawerContent
 import com.t8rin.imagetoolbox.feature.main.presentation.screenLogic.MainComponent
 import com.t8rin.imagetoolbox.feature.settings.presentation.SettingsContent
+import com.t8rin.snowfall.snowfall
+import com.t8rin.snowfall.types.FlakeType
 import kotlinx.coroutines.delay
 
 @Composable
@@ -95,6 +94,8 @@ fun MainContent(
     val sideSheetState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val isSheetSlideable = (isGrid && !settingsState.showSettingsInLandscape) || !isGrid
     val layoutDirection = LocalLayoutDirection.current
+
+    val lastUsedTools by component.lastUsedTools.collectAsStateWithLifecycle()
 
     var sheetExpanded by rememberSaveable { mutableStateOf(false) }
 
@@ -116,7 +117,7 @@ fun MainContent(
                                 if (searching) {
                                     EnhancedIconButton(onClick = onCloseSearch) {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                            imageVector = Icons.Rounded.ArrowBack,
                                             contentDescription = stringResource(R.string.exit)
                                         )
                                     }
@@ -127,7 +128,7 @@ fun MainContent(
                                         }
                                     ) {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Rounded.MenuOpen,
+                                            imageVector = Icons.Rounded.MenuOpen,
                                             contentDescription = "Expand",
                                             modifier = Modifier.rotate(
                                                 animateFloatAsState(if (!sheetExpanded) 0f else 180f).value
@@ -147,7 +148,6 @@ fun MainContent(
 
     val content = remember {
         movableContentOf {
-            val essentials = rememberLocalEssentials()
             MainContentImpl(
                 layoutDirection = layoutDirection,
                 isSheetSlideable = isSheetSlideable,
@@ -160,18 +160,13 @@ fun MainContent(
                 onGetClipList = component::parseClipList,
                 onTryGetUpdate = {
                     component.tryGetUpdate(
-                        isNewRequest = true,
-                        onNoUpdates = {
-                            essentials.showToast(
-                                icon = Icons.Rounded.FileDownloadOff,
-                                message = essentials.getString(R.string.no_updates)
-                            )
-                        }
+                        isNewRequest = true
                     )
                 },
                 isUpdateAvailable = isUpdateAvailable,
                 onNavigate = component.onNavigate,
-                onToggleFavorite = component::toggleFavoriteScreen
+                onToggleFavorite = component::toggleFavoriteScreen,
+                lastUsedTools = lastUsedTools
             )
         }
     }

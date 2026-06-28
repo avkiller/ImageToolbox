@@ -24,10 +24,10 @@ import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 
 internal fun Project.configureCompose(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
+    commonExtension: CommonExtension
 ) {
     commonExtension.apply {
-        buildFeatures {
+        buildFeatures.apply {
             compose = true
         }
 
@@ -35,8 +35,8 @@ internal fun Project.configureCompose(
             implementation(libs.androidx.material3)
             implementation(libs.window.sizeclass)
             implementation(libs.androidx.material)
-            implementation(libs.icons.extended)
             implementation(libs.compose.preview)
+            debugImplementation(libs.compose.tooling)
         }
     }
 

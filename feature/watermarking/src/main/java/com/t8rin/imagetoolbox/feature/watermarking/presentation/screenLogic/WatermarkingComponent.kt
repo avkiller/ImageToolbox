@@ -36,6 +36,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.ResizeType
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
@@ -45,12 +46,17 @@ import com.t8rin.imagetoolbox.core.domain.transformation.GenericTransformation
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.core.utils.filename
 import com.t8rin.imagetoolbox.feature.watermarking.domain.HiddenWatermark
 import com.t8rin.imagetoolbox.feature.watermarking.domain.WatermarkApplier
 import com.t8rin.imagetoolbox.feature.watermarking.domain.WatermarkParams
+import com.t8rin.imagetoolbox.feature.watermarking.domain.WatermarkingType
+import com.t8rin.imagetoolbox.feature.watermarking.presentation.screenLogic.WatermarkingComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -68,17 +74,16 @@ class WatermarkingComponent @AssistedInject internal constructor(
     private val imageGetter: ImageGetter<Bitmap>,
     private val imageScaler: ImageScaler<Bitmap>,
     private val watermarkApplier: WatermarkApplier<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
-            initialUris?.let {
-                setUris(
-                    uris = it,
-                    onFailure = {}
-                )
-            }
+            initialUris?.let(::setUris)
         }
     }
 
@@ -149,8 +154,7 @@ class WatermarkingComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _left.value = -1
@@ -196,7 +200,7 @@ class WatermarkingComponent @AssistedInject internal constructor(
                     total = left
                 )
             }
-            onResult(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
@@ -209,19 +213,54 @@ class WatermarkingComponent @AssistedInject internal constructor(
             watermarkApplier.applyWatermark(
                 image = image,
                 originalSize = originalSize,
-                params = watermarkParams
+                params = watermarkParams.resolveFilenamePlaceholder(data)
             )
         }
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    private fun WatermarkParams.resolveFilenamePlaceholder(data: Any): WatermarkParams {
+        val text = when (val type = watermarkingType) {
+            is WatermarkingType.Text -> type.text
+            is WatermarkingType.Stamp.Text -> type.text
+            else -> return this
+        }
+        if (FILENAME_PLACEHOLDER !in text) return this
+
+        val sourceUri = when (data) {
+            is Uri -> data
+            is String -> data.toUri()
+            else -> selectedUri
+        }
+        val filename = sourceUri.filename()
+            ?.substringBeforeLast('.')
+            ?.takeIf(String::isNotEmpty)
+            ?: return this
+
+        return when (val type = watermarkingType) {
+            is WatermarkingType.Text -> copy(
+                watermarkingType = type.copy(
+                    text = type.text.replace(FILENAME_PLACEHOLDER, filename)
+                )
+            )
+
+            is WatermarkingType.Stamp.Text -> copy(
+                watermarkingType = type.copy(
+                    text = type.text.replace(FILENAME_PLACEHOLDER, filename)
+                )
+            )
+
+            else -> this
+        }
+    }
+
+    fun shareBitmaps() {
         _left.value = -1
         savingJob = trackProgress {
             _isSaving.value = true
             _done.value = 0
             _left.value = uris.size
             shareProvider.shareImages(
-                uris.map { it.toString() },
+                uris = uris.map { it.toString() },
                 imageLoader = { uri ->
                     getWatermarkedBitmap(
                         data = uri,
@@ -237,7 +276,7 @@ class WatermarkingComponent @AssistedInject internal constructor(
                 },
                 onProgressChange = {
                     if (it == -1) {
-                        onComplete()
+                        AppToastHost.showConfetti()
                         _isSaving.value = false
                         _done.value = 0
                     } else {
@@ -262,24 +301,41 @@ class WatermarkingComponent @AssistedInject internal constructor(
     }
 
     fun setQuality(quality: Quality) {
-        _quality.update { quality }
-        registerChanges()
+        if (_quality.value != quality) {
+            beginPendingHistoryTransaction()
+            _quality.update { quality }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun setImageFormat(imageFormat: ImageFormat) {
-        _imageFormat.update { imageFormat }
-        registerChanges()
+        if (_imageFormat.value != imageFormat) {
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
+            _imageFormat.update { imageFormat }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun updateWatermarkParams(watermarkParams: WatermarkParams) {
-        _watermarkParams.update { watermarkParams }
-        registerChanges()
-        checkBitmapAndUpdate()
+        if (_watermarkParams.value != watermarkParams) {
+            beginPendingHistoryTransaction()
+            _watermarkParams.update { watermarkParams }
+            registerChanges()
+            checkBitmapAndUpdate()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun updateSelectedUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit = {}
+        uri: Uri
     ) {
         componentScope.launch {
             _selectedUri.value = uri
@@ -290,11 +346,11 @@ class WatermarkingComponent @AssistedInject internal constructor(
                 onGetImage = { imageData ->
                     updateBitmap(imageData.image)
                     _isImageLoading.value = false
-                    setImageFormat(imageData.imageInfo.imageFormat)
+                    _imageFormat.update { imageData.imageInfo.imageFormat }
                 },
                 onFailure = {
                     _isImageLoading.value = false
-                    onFailure(it)
+                    AppToastHost.showFailureToast(it)
                 }
             )
         }
@@ -320,15 +376,22 @@ class WatermarkingComponent @AssistedInject internal constructor(
 
     fun setUris(
         uris: List<Uri>,
-        onFailure: (Throwable) -> Unit = {}
     ) {
+        clearHistory()
+        registerChangesCleared()
         _uris.update { uris }
-        uris.firstOrNull()?.let { updateSelectedUri(it, onFailure) }
+        uris.firstOrNull()?.let(::updateSelectedUri)
+        if (uris.isNotEmpty()) {
+            resetHistory()
+        }
     }
 
     fun toggleKeepExif(value: Boolean) {
+        if (_keepExif.value == value) return
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _keepExif.update { value }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun getWatermarkTransformation(): Transformation {
@@ -431,6 +494,37 @@ class WatermarkingComponent @AssistedInject internal constructor(
         if (uris.size == 1) imageFormat
         else null
 
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        watermarkParams = watermarkParams,
+        imageFormat = imageFormat,
+        quality = quality,
+        keepExif = keepExif,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _watermarkParams.update { snapshot.watermarkParams }
+        _imageFormat.update { snapshot.imageFormat }
+        _quality.update { snapshot.quality }
+        _keepExif.update { snapshot.keepExif }
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        checkBitmapAndUpdate()
+    }
+
+    data class HistorySnapshot(
+        val watermarkParams: WatermarkParams = WatermarkParams.Default,
+        val imageFormat: ImageFormat = ImageFormat.Default,
+        val quality: Quality = Quality.Base(),
+        val keepExif: Boolean = false,
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
+
 
     @AssistedFactory
     fun interface Factory {
@@ -440,5 +534,9 @@ class WatermarkingComponent @AssistedInject internal constructor(
             onGoBack: () -> Unit,
             onNavigate: (Screen) -> Unit,
         ): WatermarkingComponent
+    }
+
+    private companion object {
+        const val FILENAME_PLACEHOLDER = "{filename}"
     }
 }

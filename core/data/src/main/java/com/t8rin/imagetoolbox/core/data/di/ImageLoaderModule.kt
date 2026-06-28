@@ -33,7 +33,6 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.allowHardware
 import coil3.request.maxBitmapSize
 import coil3.size.Size
-import coil3.svg.SvgDecoder
 import coil3.util.Logger
 import com.awxkee.jxlcoder.coil.AnimatedJxlDecoder
 import com.gemalto.jp2.coil.Jpeg2000Decoder
@@ -42,7 +41,9 @@ import com.t8rin.awebp.coil.AnimatedWebPDecoder
 import com.t8rin.djvu_coder.coil.DjvuDecoder
 import com.t8rin.imagetoolbox.core.data.coil.Base64Fetcher
 import com.t8rin.imagetoolbox.core.data.coil.CoilLogger
+import com.t8rin.imagetoolbox.core.data.coil.NefDecoder
 import com.t8rin.imagetoolbox.core.data.coil.PdfDecoder
+import com.t8rin.imagetoolbox.core.data.coil.SvgDecoderCompat
 import com.t8rin.imagetoolbox.core.data.coil.TiffDecoder
 import com.t8rin.imagetoolbox.core.data.coil.TimeMeasureInterceptor
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
@@ -57,12 +58,14 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import oupson.apng.coil.AnimatedPngDecoder
 import java.io.File
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 internal object ImageLoaderModule {
 
     @Provides
+    @Singleton
     fun provideImageLoader(
         @ApplicationContext context: Context,
         logger: Logger?,
@@ -92,9 +95,11 @@ internal object ImageLoaderModule {
         .also(SingletonImageLoader::setUnsafe)
 
     @Provides
+    @Singleton
     fun provideCoilLogger(): Logger = CoilLogger()
 
     @Provides
+    @Singleton
     fun provideComponentRegistry(
         client: HttpClient
     ): ComponentRegistry = ComponentRegistry.Builder()
@@ -111,12 +116,11 @@ internal object ImageLoaderModule {
                 add(GifDecoder.Factory())
                 add(AnimatedWebPDecoder.Factory())
             }
-            add(SvgDecoder.Factory())
-            if (Build.VERSION.SDK_INT >= 24) {
-                add(HeifDecoder.Factory())
-            }
+            add(SvgDecoderCompat.Factory())
+            add(HeifDecoder.Factory())
             add(AnimatedJxlDecoder.Factory())
             add(Jpeg2000Decoder.Factory())
+            add(NefDecoder.Factory())
             add(TiffDecoder.Factory())
             add(QoiDecoder.Factory())
             add(PsdDecoder.Factory())

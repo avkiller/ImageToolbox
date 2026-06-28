@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
 import com.t8rin.imagetoolbox.core.resources.icons.Neurology
@@ -52,9 +51,10 @@ internal fun NeuralModelSelector(
     onDeleteModel: (NeuralModel) -> Unit,
     downloadedModels: List<NeuralModel>,
     notDownloadedModels: List<NeuralModel>,
-    onImportModel: (Uri, (SaveResult) -> Unit) -> Unit,
+    onImportModel: (Uri) -> Unit,
     downloadProgresses: Map<String, DownloadProgress>,
-    occupiedStorageSize: Long
+    occupiedStorageSize: Long,
+    onCancelDownload: (NeuralModel) -> Unit
 ) {
     var showSelectionSheet by rememberSaveable {
         mutableStateOf(false)
@@ -109,7 +109,8 @@ internal fun NeuralModelSelector(
         notDownloadedModels = notDownloadedModels,
         onImportModel = onImportModel,
         downloadProgresses = downloadProgresses,
-        occupiedStorageSize = occupiedStorageSize
+        occupiedStorageSize = occupiedStorageSize,
+        onCancelDownload = onCancelDownload
     )
 }
 
@@ -126,8 +127,9 @@ private fun Preview() = ImageToolboxThemeForPreview(
         onDeleteModel = {},
         downloadedModels = emptyList(),
         notDownloadedModels = emptyList(),
-        onImportModel = { _, _ -> },
+        onImportModel = { _ -> },
         downloadProgresses = emptyMap(),
-        occupiedStorageSize = 0
+        occupiedStorageSize = 0,
+        onCancelDownload = {}
     )
 }

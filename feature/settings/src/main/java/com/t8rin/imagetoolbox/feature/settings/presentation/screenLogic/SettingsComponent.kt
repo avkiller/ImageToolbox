@@ -41,9 +41,9 @@ import com.t8rin.imagetoolbox.core.domain.model.SystemBarsVisibility
 import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.FilenameCreator
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.toggle
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
+import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.settings.domain.model.ColorHarmonizer
@@ -73,11 +73,12 @@ import java.util.Locale
 
 class SettingsComponent @AssistedInject internal constructor(
     @Assisted componentContext: ComponentContext,
-    @Assisted private val onTryGetUpdate: (Boolean, () -> Unit) -> Unit,
+    @Assisted private val onTryGetUpdate: (Boolean) -> Unit,
     @Assisted val onNavigate: (Screen) -> Unit,
     @Assisted val isUpdateAvailable: Value<Boolean>,
     @Assisted val onGoBack: (() -> Unit)?,
-    @Assisted initialSearchQuery: String,
+    @Assisted("search") initialSearchQuery: String,
+    @Assisted("setting") val targetSetting: Setting?,
     private val imageGetter: ImageGetter<Bitmap>,
     private val fileController: FileController,
     private val settingsManager: SettingsManager,
@@ -99,6 +100,9 @@ class SettingsComponent @AssistedInject internal constructor(
 
     private val _isFilteringSettings = mutableStateOf(false)
     val isFilteringSettings by _isFilteringSettings
+
+    private val _isSendingLogs = mutableStateOf(false)
+    val isSendingLogs by _isSendingLogs
 
     private var filterJob by smartJob()
     private fun filterSettings() {
@@ -160,10 +164,7 @@ class SettingsComponent @AssistedInject internal constructor(
         filterSettings()
     }
 
-    fun tryGetUpdate(
-        isNewRequest: Boolean = false,
-        onNoUpdates: () -> Unit = {}
-    ) = onTryGetUpdate(isNewRequest, onNoUpdates)
+    fun tryGetUpdate(isNewRequest: Boolean = false) = onTryGetUpdate(isNewRequest)
 
     init {
         settingsScope {
@@ -177,7 +178,7 @@ class SettingsComponent @AssistedInject internal constructor(
         }
     }
 
-    fun getReadableCacheSize(): String = humanFileSize(fileController.getCacheSize(), 2)
+    fun getReadableCacheSize(): String = humanFileSize(fileController.getCacheSize())
 
     fun clearCache(onComplete: (String) -> Unit = {}) = fileController.clearCache {
         onComplete(getReadableCacheSize())
@@ -204,7 +205,7 @@ class SettingsComponent @AssistedInject internal constructor(
     fun setColorTuple(colorTuple: ColorTuple) = settingsScope {
         setColorTuple(
             colorTuple.run {
-                "${primary.toArgb()}*${secondary?.toArgb()}*${tertiary?.toArgb()}*${surface?.toArgb()}"
+                "${primary.toArgb()}*${secondary?.toArgb()}*${tertiary?.toArgb()}*${surface?.toArgb()}*${neutralVariant?.toArgb()}*${error?.toArgb()}"
             }
         )
     }
@@ -224,7 +225,7 @@ class SettingsComponent @AssistedInject internal constructor(
     fun setSaveFolderUri(uri: Uri?) = settingsScope { setSaveFolderUri(uri?.toString()) }
 
     private fun List<ColorTuple>.asString(): String = joinToString(separator = "*") {
-        "${it.primary.toArgb()}/${it.secondary?.toArgb()}/${it.tertiary?.toArgb()}/${it.surface?.toArgb()}"
+        "${it.primary.toArgb()}/${it.secondary?.toArgb()}/${it.tertiary?.toArgb()}/${it.surface?.toArgb()}/${it.neutralVariant?.toArgb()}/${it.error?.toArgb()}"
     }
 
     fun setColorTuples(colorTuples: List<ColorTuple>) =
@@ -239,26 +240,27 @@ class SettingsComponent @AssistedInject internal constructor(
 
     fun toggleGroupOptionsByType() = settingsScope { toggleGroupOptionsByTypes() }
 
+    fun toggleFavoriteToolsInGroupedMode() =
+        settingsScope { toggleShowFavoriteToolsInGroupedMode() }
+
+    fun toggleFavoriteAsLast() = settingsScope { toggleShowFavoriteAsLast() }
+
     fun toggleRandomizeFilename() = settingsScope { toggleRandomizeFilename() }
 
     fun createBackup(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit,
+        uri: Uri
     ) = settingsScope {
         fileController.writeBytes(
             uri = uri.toString(),
             block = { it.writeBytes(createBackupFile()) }
-        ).also(onResult)
+        ).also(::parseFileSaveResult)
     }
 
-    fun exportFonts(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit,
-    ) = settingsScope {
+    fun exportFonts(uri: Uri) = settingsScope {
         fileController.transferBytes(
             fromUri = createCustomFontsExport().toString(),
             toUri = uri.toString()
-        ).also(onResult)
+        ).also(::parseFileSaveResult)
     }
 
     fun restoreBackupFrom(
@@ -304,7 +306,9 @@ class SettingsComponent @AssistedInject internal constructor(
                 primary = Color(0xFF6D216D),
                 secondary = Color(0xFF240A95),
                 tertiary = Color(0xFFFFFFA0),
-                surface = Color(0xFF1D2D3D)
+                surface = Color(0xFF1D2D3D),
+                neutralVariant = Color(0xFF2F3F4F),
+                error = Color(0xFFFFB4AB)
             )
             val colorTupleS = listOf(colorTuple).asString()
             setColorTuple(colorTuple)
@@ -364,12 +368,16 @@ class SettingsComponent @AssistedInject internal constructor(
 
     fun toggleOverwriteFiles() = settingsScope { toggleOverwriteFiles() }
 
+    fun toggleSaveToOriginalFolder() = settingsScope { toggleSaveToOriginalFolder() }
+
     fun setDefaultImageScaleMode(imageScaleMode: ImageScaleMode) =
         settingsScope { setDefaultImageScaleMode(imageScaleMode) }
 
     fun setSwitchType(type: SwitchType) = settingsScope { setSwitchType(type) }
 
     fun toggleMagnifierEnabled() = settingsScope { toggleMagnifierEnabled() }
+
+    fun toggleDrawBitmapBorder() = settingsScope { toggleDrawBitmapBorder() }
 
     fun toggleExifWidgetInitialState() = settingsScope { toggleExifWidgetInitialState() }
 
@@ -388,6 +396,8 @@ class SettingsComponent @AssistedInject internal constructor(
     fun toggleUseEmojiAsPrimaryColor() = settingsScope { toggleUseEmojiAsPrimaryColor() }
 
     fun toggleUseRandomEmojis() = settingsScope { toggleUseRandomEmojis() }
+
+    fun toggleUseAnimatedEmojis() = settingsScope { toggleUseAnimatedEmojis() }
 
     fun setIconShape(iconShape: Int) = settingsScope { setIconShape(iconShape) }
 
@@ -472,11 +482,15 @@ class SettingsComponent @AssistedInject internal constructor(
 
     fun toggleEnableToolExitConfirmation() = settingsScope { toggleEnableToolExitConfirmation() }
 
-    fun shareLogs(onComplete: () -> Unit) = settingsScope {
-        shareProvider.shareUri(
-            uri = settingsManager.createLogsExport(),
-            onComplete = onComplete
-        )
+    fun shareLogs() = settingsScope {
+        _isSendingLogs.update { true }
+        runSuspendCatching {
+            shareProvider.shareUri(
+                uri = settingsManager.createLogsExport(),
+                onComplete = {}
+            )
+        }
+        _isSendingLogs.update { false }
     }
 
     fun toggleAddPresetInfoToFilename() = settingsScope { toggleAddPresetInfoToFilename() }
@@ -500,9 +514,14 @@ class SettingsComponent @AssistedInject internal constructor(
 
     fun setShapesType(shapeType: ShapeType) = settingsScope { setShapesType(shapeType) }
 
+    fun setShapeByInteractionThrottle(delay: Long) =
+        settingsScope { setShapeByInteractionThrottle(delay) }
+
     fun setFilenamePattern(value: String) = settingsScope { setFilenamePattern(value) }
 
     fun setFlingType(type: FlingType) = settingsScope { setFlingType(type) }
+
+    fun setMotionDurationScale(scale: Float) = settingsScope { setMotionDurationScale(scale) }
 
     fun setHiddenForShareScreens(screen: Screen) = settingsScope {
         val screens =
@@ -512,6 +531,17 @@ class SettingsComponent @AssistedInject internal constructor(
         setHiddenForShareScreens(screens)
     }
 
+    fun toggleKeepDateTime() =
+        settingsScope { toggleKeepDateTime() }
+
+    fun toggleAlwaysClearExif() =
+        settingsScope { toggleAlwaysClearExif() }
+
+    fun toggleEnableBackgroundColorForAlphaFormats() =
+        settingsScope { toggleEnableBackgroundColorForAlphaFormats() }
+
+    fun toggleShowToolsHistory() =
+        settingsScope { toggleShowToolsHistory() }
 
     private inline fun settingsScope(
         crossinline action: suspend SettingsManager.() -> Unit
@@ -522,14 +552,15 @@ class SettingsComponent @AssistedInject internal constructor(
     }
 
     @AssistedFactory
-    fun interface Factory {
+    interface Factory {
         operator fun invoke(
             componentContext: ComponentContext,
-            onTryGetUpdate: (Boolean, () -> Unit) -> Unit,
+            onTryGetUpdate: (Boolean) -> Unit,
             onNavigate: (Screen) -> Unit,
             isUpdateAvailable: Value<Boolean>,
             onGoBack: (() -> Unit)?,
-            initialSearchQuery: String
+            @Assisted("search") initialSearchQuery: String,
+            @Assisted("setting") targetSetting: Setting? = null
         ): SettingsComponent
     }
 }

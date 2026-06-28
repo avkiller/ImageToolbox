@@ -219,7 +219,7 @@ private fun EnhancedModalSheetImpl(
                 containerColor = containerColor,
                 contentColor = contentColor,
                 shape = shape,
-                sheetState = androidx.compose.material3.rememberModalBottomSheetState(
+                sheetState = @Suppress("DEPRECATION") androidx.compose.material3.rememberModalBottomSheetState(
                     skipPartiallyExpanded = skipHalfExpanded
                 ),
                 dragHandle = { Column(content = dragHandle) },
@@ -406,7 +406,7 @@ object EnhancedBottomSheetDefaults {
         get() = MaterialTheme.colorScheme.scrim.copy(0.32f)
 
     val animationSpec: AnimationSpec<Float> = tween(
-        durationMillis = 600,
+        durationMillis = 400,
         easing = FancyTransitionEasing
     )
 

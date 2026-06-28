@@ -43,12 +43,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.outlined.ImageSearch
-import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -56,7 +50,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -74,15 +67,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFrames
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.AddPhotoAlt
-import com.t8rin.imagetoolbox.core.resources.icons.FolderOpened
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.FolderOpen
 import com.t8rin.imagetoolbox.core.resources.icons.ImageEdit
+import com.t8rin.imagetoolbox.core.resources.icons.ImageSearch
+import com.t8rin.imagetoolbox.core.resources.icons.SelectAll
+import com.t8rin.imagetoolbox.core.resources.icons.Share
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFolderPicker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.controls.SortButton
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitBackHandler
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
@@ -122,9 +121,6 @@ fun ImagePreviewContent(
 
     val settingsState = LocalSettingsState.current
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val imagePicker = rememberImagePicker(onSuccess = component::updateUris)
 
     val isLoadingImages = component.isImageLoading
@@ -152,10 +148,6 @@ fun ImagePreviewContent(
 
     var gridInvalidations by remember {
         mutableIntStateOf(0)
-    }
-
-    LaunchedEffect(component.uris) {
-        gridInvalidations++
     }
 
     Surface(
@@ -199,7 +191,7 @@ fun ImagePreviewContent(
                                             .padding(horizontal = 2.dp)
                                             .padding(bottom = 12.dp)
                                             .scaleOnTap {
-                                                showConfetti()
+                                                AppToastHost.showConfetti()
                                             }
                                     )
                                 }
@@ -210,7 +202,7 @@ fun ImagePreviewContent(
                                 onClick = component.onGoBack
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                    imageVector = Icons.Rounded.ArrowBack,
                                     contentDescription = stringResource(R.string.exit)
                                 )
                             }
@@ -320,15 +312,15 @@ fun ImagePreviewContent(
                                     onAddImages = component::updateUris,
                                     onShareImage = {
                                         component.shareImages(
-                                            uriList = listOf(element = it),
-                                            onComplete = showConfetti
+                                            uriList = listOf(element = it)
                                         )
                                     },
                                     onRemove = component::removeUri,
                                     initialShowImagePreviewDialog = initialShowImagePreviewDialog,
                                     onNavigate = component.onNavigate,
                                     imageFrames = component.imageFrames,
-                                    onFrameSelectionChange = component::updateImageFrames
+                                    onFrameSelectionChange = component::updateImageFrames,
+                                    isSelectable = true
                                 )
                             }
                         }
@@ -406,8 +398,7 @@ fun ImagePreviewContent(
                         EnhancedFloatingActionButton(
                             onClick = {
                                 component.shareImages(
-                                    uriList = null,
-                                    onComplete = showConfetti
+                                    uriList = null
                                 )
                             },
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -428,7 +419,7 @@ fun ImagePreviewContent(
                             type = EnhancedFloatingActionButtonType.SecondaryHorizontal,
                             content = {
                                 Icon(
-                                    imageVector = Icons.Rounded.FolderOpened,
+                                    imageVector = Icons.Rounded.FolderOpen,
                                     contentDescription = stringResource(R.string.folder)
                                 )
                             }

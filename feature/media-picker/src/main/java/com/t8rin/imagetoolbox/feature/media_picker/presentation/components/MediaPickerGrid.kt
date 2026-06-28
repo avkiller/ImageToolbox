@@ -45,10 +45,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.utils.safeCast
-import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.settings.domain.model.FlingType
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.longPress
@@ -70,10 +68,7 @@ internal fun MediaPickerGrid(
     isManagePermissionAllowed: Boolean
 ) {
     val scope = rememberCoroutineScope()
-    val stringToday = stringResource(id = R.string.header_today)
-    val stringYesterday = stringResource(id = R.string.header_yesterday)
     val gridState = rememberLazyGridState()
-    val isCheckVisible = rememberSaveable { mutableStateOf(allowMultiple) }
     val hapticFeedback = LocalHapticFeedback.current
 
     LaunchedEffect(state.media) {
@@ -206,15 +201,10 @@ internal fun MediaPickerGrid(
                         }
                     }
                     MediaStickyHeader(
-                        date = remember(item.text) {
-                            item.text
-                                .replace("Today", stringToday)
-                                .replace("Yesterday", stringYesterday)
-                        },
-                        isCheckVisible = isCheckVisible,
+                        date = item.text,
                         isChecked = isChecked.value,
-                        onChecked = {
-                            if (allowMultiple) {
+                        onChecked = if (allowMultiple) {
+                            {
                                 hapticFeedback.longPress()
                                 scope.launch {
                                     isChecked.value = !isChecked.value
@@ -227,7 +217,7 @@ internal fun MediaPickerGrid(
                                     } else selectedMedia.removeAll(item.data)
                                 }
                             }
-                        }
+                        } else null
                     )
                 }
 

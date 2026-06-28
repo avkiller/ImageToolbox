@@ -35,10 +35,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Redo
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -48,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,15 +57,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormatGroup
 import com.t8rin.imagetoolbox.core.domain.model.pt
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.Redo
+import com.t8rin.imagetoolbox.core.resources.icons.Tune
+import com.t8rin.imagetoolbox.core.resources.icons.Undo
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveBottomScaffoldLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.PanModeButton
@@ -113,8 +114,7 @@ fun EraseBackgroundContent(
 ) {
     val settingsState = LocalSettingsState.current
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
+    val scope = rememberCoroutineScope()
 
     AutoContentBasedColors(component.bitmap)
 
@@ -122,10 +122,7 @@ fun EraseBackgroundContent(
 
 
     val imagePicker = rememberImagePicker { uri: Uri ->
-        component.setUri(
-            uri = uri,
-            onFailure = essentials::showFailureToast
-        )
+        component.setUri(uri)
     }
 
     val pickImage = imagePicker::pickImage
@@ -142,8 +139,7 @@ fun EraseBackgroundContent(
 
     val saveBitmap: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmap(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResult
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -185,7 +181,7 @@ fun EraseBackgroundContent(
             enabled = component.lastPaths.isNotEmpty() || component.paths.isNotEmpty()
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Undo,
+                imageVector = Icons.Rounded.Undo,
                 contentDescription = "Undo"
             )
         }
@@ -198,7 +194,7 @@ fun EraseBackgroundContent(
             enabled = component.undonePaths.isNotEmpty()
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Redo,
+                imageVector = Icons.Rounded.Redo,
                 contentDescription = "Redo"
             )
         }
@@ -230,7 +226,7 @@ fun EraseBackgroundContent(
                 if (isPortrait) {
                     EnhancedIconButton(
                         onClick = {
-                            essentials.launch {
+                            scope.launch {
                                 if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                                     scaffoldState.bottomSheetState.partialExpand()
                                 } else {
@@ -250,11 +246,9 @@ fun EraseBackgroundContent(
                 }
                 ShareButton(
                     enabled = component.bitmap != null,
-                    onShare = {
-                        component.shareBitmap(showConfetti)
-                    },
+                    onShare = component::shareBitmap,
                     onCopy = {
-                        component.cacheCurrentImage(essentials::copyToClipboard)
+                        component.cacheCurrentImage(Clipboard::copy)
                     },
                     onEdit = {
                         component.cacheCurrentImage { uri ->
@@ -350,12 +344,10 @@ fun EraseBackgroundContent(
                 AutoEraseBackgroundCard(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { modelType ->
-                        essentials.launch {
+                        scope.launch {
                             scaffoldState.bottomSheetState.partialExpand()
                             component.autoEraseBackground(
-                                modelType = modelType,
-                                onSuccess = showConfetti,
-                                onFailure = essentials::showFailureToast
+                                modelType = modelType
                             )
                         }
                     },
@@ -446,7 +438,8 @@ fun EraseBackgroundContent(
                 },
                 actions = {
                     if (isPortrait) it()
-                }
+                },
+                drawBothStrokes = true
             )
             OneTimeSaveLocationSelectionDialog(
                 visible = showFolderSelectionDialog,

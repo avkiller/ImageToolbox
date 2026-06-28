@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,37 +18,37 @@
 package com.t8rin.imagetoolbox.feature.scan_qr_code.presentation.components
 
 import android.content.Intent
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.StickyNote2
-import androidx.compose.material.icons.automirrored.rounded.ShortText
-import androidx.compose.material.icons.outlined.Badge
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.Flag
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material.icons.outlined.RecordVoiceOver
-import androidx.compose.material.icons.outlined.Start
-import androidx.compose.material.icons.outlined.Topic
-import androidx.compose.material.icons.rounded.AlternateEmail
-import androidx.compose.material.icons.rounded.Numbers
-import androidx.compose.material.icons.rounded.Password
-import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.TextFields
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.t8rin.imagetoolbox.core.domain.model.QrType
 import com.t8rin.imagetoolbox.core.domain.model.QrType.Wifi.EncryptionType
 import com.t8rin.imagetoolbox.core.domain.utils.trimTrailingZero
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AlternateEmail
+import com.t8rin.imagetoolbox.core.resources.icons.Badge
+import com.t8rin.imagetoolbox.core.resources.icons.Business
+import com.t8rin.imagetoolbox.core.resources.icons.Description
+import com.t8rin.imagetoolbox.core.resources.icons.Event
+import com.t8rin.imagetoolbox.core.resources.icons.Flag
+import com.t8rin.imagetoolbox.core.resources.icons.HashTag
+import com.t8rin.imagetoolbox.core.resources.icons.Home
+import com.t8rin.imagetoolbox.core.resources.icons.Info
 import com.t8rin.imagetoolbox.core.resources.icons.Latitude
+import com.t8rin.imagetoolbox.core.resources.icons.Link
 import com.t8rin.imagetoolbox.core.resources.icons.Longitude
+import com.t8rin.imagetoolbox.core.resources.icons.NoteSticky
+import com.t8rin.imagetoolbox.core.resources.icons.Password
+import com.t8rin.imagetoolbox.core.resources.icons.Person
+import com.t8rin.imagetoolbox.core.resources.icons.Phone
+import com.t8rin.imagetoolbox.core.resources.icons.Place
+import com.t8rin.imagetoolbox.core.resources.icons.Public
+import com.t8rin.imagetoolbox.core.resources.icons.RecordVoiceOver
+import com.t8rin.imagetoolbox.core.resources.icons.Security
+import com.t8rin.imagetoolbox.core.resources.icons.ShortText
+import com.t8rin.imagetoolbox.core.resources.icons.Start
+import com.t8rin.imagetoolbox.core.resources.icons.TextFields
+import com.t8rin.imagetoolbox.core.resources.icons.Topic
 import com.t8rin.imagetoolbox.core.utils.getString
 import java.text.DateFormat
 
@@ -120,7 +120,7 @@ private fun calendarQrInfo(
 
     entry(
         InfoEntry(
-            icon = Icons.Outlined.Start,
+            icon = Icons.Rounded.Start,
             text = start.ifBlank { getString(R.string.not_specified) },
             canCopy = start.isNotBlank()
         )
@@ -171,7 +171,7 @@ private fun contactQrInfo(
     }
     entry(
         InfoEntry(
-            icon = Icons.Outlined.Business,
+            icon = Icons.Rounded.Business,
             text = qrType.organization.ifBlank { getString(R.string.not_specified) },
             canCopy = qrType.organization.isNotBlank()
         )
@@ -201,7 +201,7 @@ private fun contactQrInfo(
     )
     entry(
         InfoEntry(
-            icon = Icons.Outlined.Link,
+            icon = Icons.Rounded.Link,
             text = qrType.urls.joinToString("\n")
                 .ifBlank { getString(R.string.not_specified) },
             canCopy = qrType.urls.isNotEmpty()
@@ -223,7 +223,7 @@ private fun smsQrInfo(
 ): QrInfo = qrInfoBuilder(qrType) {
     entry(
         InfoEntry(
-            icon = Icons.AutoMirrored.Outlined.StickyNote2,
+            icon = Icons.Outlined.NoteSticky,
             text = qrType.message.ifBlank { getString(R.string.not_specified) },
             canCopy = qrType.message.isNotBlank()
         )
@@ -243,7 +243,7 @@ private fun phoneQrInfo(
 ): QrInfo = qrInfoBuilder(qrType) {
     entry(
         InfoEntry(
-            icon = Icons.Rounded.Numbers,
+            icon = Icons.Rounded.HashTag,
             text = qrType.number.ifBlank { getString(R.string.not_specified) },
             canCopy = qrType.number.isNotBlank()
         )
@@ -296,7 +296,7 @@ private fun emailQrInfo(
 
     entry(
         InfoEntry(
-            icon = Icons.AutoMirrored.Rounded.ShortText,
+            icon = Icons.Rounded.ShortText,
             text = qrType.body.ifBlank { getString(R.string.not_specified) },
             canCopy = qrType.body.isNotBlank()
         )

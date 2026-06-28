@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 
 package com.t8rin.imagetoolbox.feature.gradient_maker.presentation.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
@@ -36,10 +36,12 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.asComposePaint
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
-import com.t8rin.imagetoolbox.core.resources.icons.EditAlt
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.MiniEditLarge
 import com.t8rin.imagetoolbox.core.ui.theme.inverseByLuma
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorPickerSheet
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -53,7 +55,8 @@ import kotlin.math.sqrt
 @Composable
 internal fun MeshGradientEditor(
     state: UiMeshGradientState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    colorPickerBitmap: Bitmap? = null
 ) {
     val selectedPoint = rememberSaveable(
         stateSaver = PairOffsetColorSaver
@@ -89,7 +92,7 @@ internal fun MeshGradientEditor(
                 if (tappedPoint == null) dragOffset.value = null
             }
     ) {
-        val painter = rememberVectorPainter(Icons.Rounded.EditAlt)
+        val painter = rememberVectorPainter(Icons.Outlined.MiniEditLarge)
 
         Canvas(
             modifier = Modifier
@@ -146,7 +149,7 @@ internal fun MeshGradientEditor(
                     drawCircle(
                         radius = if (isSelected) 32f else 27f,
                         center = scaledOffset,
-                        paint = Paint().asFrameworkPaint().apply {
+                        paint = Paint().nativePaint.apply {
                             setShadowLayer(
                                 if (isSelected) 36f else 31f,
                                 0f,
@@ -192,9 +195,16 @@ internal fun MeshGradientEditor(
             onColorSelected = { newColor ->
                 selectedPoint.value?.let { (offset) ->
                     state.updatePointColor(offset, newColor)
+                    selectedPoint.value = offset to newColor
                 }
             },
-            allowAlpha = true
+            allowAlpha = true,
+            additionalContent = { onColorChange ->
+                GradientMakerColorPickerAdditionalContent(
+                    bitmap = colorPickerBitmap,
+                    onColorChange = onColorChange
+                )
+            }
         )
     }
 }

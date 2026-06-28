@@ -32,16 +32,20 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.image.model.ResizeType
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.noise_generation.domain.NoiseGenerator
 import com.t8rin.imagetoolbox.noise_generation.domain.model.NoiseParams
+import com.t8rin.imagetoolbox.noise_generation.presentation.screenLogic.NoiseGenerationComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -56,12 +60,12 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
     private val fileController: FileController,
     private val shareProvider: ImageShareProvider<Bitmap>,
     private val imageCompressor: ImageCompressor<Bitmap>,
-    private val imageScaler: ImageScaler<Bitmap>
-) : BaseComponent(dispatchersHolder, componentContext) {
-
-    init {
-        updatePreview()
-    }
+    private val imageScaler: ImageScaler<Bitmap>,
+    private val settingsManager: SettingsManager,
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     private val _previewBitmap: MutableState<Bitmap?> = mutableStateOf(null)
     val previewBitmap: Bitmap? by _previewBitmap
@@ -81,13 +85,17 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
     private val _isSaving: MutableState<Boolean> = mutableStateOf(false)
     val isSaving by _isSaving
 
+    init {
+        resetHistory()
+        updatePreview()
+    }
+
     private var savingJob: Job? by smartJob {
         _isSaving.update { false }
     }
 
     fun saveNoise(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (result: SaveResult) -> Unit,
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.update { true }
@@ -96,7 +104,7 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
                 height = noiseSize.height,
                 noiseParams = noiseParams,
                 onFailure = {
-                    onComplete(SaveResult.Error.Exception(it))
+                    parseSaveResult(SaveResult.Error.Exception(it))
                 }
             )?.let { bitmap ->
                 val imageInfo = ImageInfo(
@@ -105,7 +113,7 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
                     quality = quality,
                     imageFormat = imageFormat
                 )
-                onComplete(
+                parseSaveResult(
                     fileController.save(
                         saveTarget = ImageSaveTarget(
                             imageInfo = imageInfo,
@@ -152,12 +160,12 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
         }
     }
 
-    fun shareNoise(onComplete: () -> Unit) {
+    fun shareNoise() {
         cacheCurrentNoise { uri ->
             componentScope.launch {
                 shareProvider.shareUri(
                     uri = uri.toString(),
-                    onComplete = onComplete
+                    onComplete = AppToastHost::showConfetti
                 )
             }
         }
@@ -170,32 +178,65 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
     }
 
     fun setImageFormat(imageFormat: ImageFormat) {
-        _imageFormat.update { imageFormat }
+        if (_imageFormat.value != imageFormat) {
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
+            _imageFormat.update { imageFormat }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun setQuality(quality: Quality) {
-        _quality.update { quality }
+        if (_quality.value != quality) {
+            beginPendingHistoryTransaction()
+            _quality.update { quality }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun updateParams(params: NoiseParams) {
-        _noiseParams.update(
-            onValueChanged = ::updatePreview,
-            transform = { params }
-        )
+        if (_noiseParams.value != params) {
+            beginPendingHistoryTransaction()
+            _noiseParams.update(
+                onValueChanged = ::updatePreview,
+                transform = { params }
+            )
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun setNoiseWidth(width: Int) {
-        _noiseSize.update(
-            onValueChanged = ::updatePreview,
-            transform = { it.copy(width = width.coerceAtMost(8192)) }
-        )
+        val coercedWidth = width.coerceAtMost(8192)
+        if (_noiseSize.value.width != coercedWidth) {
+            beginPendingHistoryTransaction()
+            _noiseSize.update(
+                onValueChanged = ::updatePreview,
+                transform = { it.copy(width = coercedWidth) }
+            )
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun setNoiseHeight(height: Int) {
-        _noiseSize.update(
-            onValueChanged = ::updatePreview,
-            transform = { it.copy(height = height.coerceAtMost(8192)) }
-        )
+        val coercedHeight = height.coerceAtMost(8192)
+        if (_noiseSize.value.height != coercedHeight) {
+            beginPendingHistoryTransaction()
+            _noiseSize.update(
+                onValueChanged = ::updatePreview,
+                transform = { it.copy(height = coercedHeight) }
+            )
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     private fun updatePreview() {
@@ -223,6 +264,37 @@ class NoiseGenerationComponent @AssistedInject internal constructor(
     }
 
     fun getFormatForFilenameSelection(): ImageFormat = imageFormat
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        noiseParams = noiseParams,
+        noiseSize = noiseSize,
+        imageFormat = imageFormat,
+        quality = quality,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _noiseParams.update { snapshot.noiseParams }
+        _noiseSize.update { snapshot.noiseSize }
+        _imageFormat.update { snapshot.imageFormat }
+        _quality.update { snapshot.quality }
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        updatePreview()
+    }
+
+    data class HistorySnapshot(
+        val noiseParams: NoiseParams = NoiseParams.Default,
+        val noiseSize: IntegerSize = IntegerSize(1000, 1000),
+        val imageFormat: ImageFormat = ImageFormat.Default,
+        val quality: Quality = Quality.Base(100),
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
 
 
     @AssistedFactory

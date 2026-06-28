@@ -28,14 +28,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
-import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.Cloud
-import androidx.compose.material.icons.rounded.HighQuality
-import androidx.compose.material.icons.rounded.Scanner
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,14 +47,22 @@ import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
 import com.t8rin.imagetoolbox.core.domain.utils.roundTo
 import com.t8rin.imagetoolbox.core.domain.utils.trimTrailingZero
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.Bolt
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
+import com.t8rin.imagetoolbox.core.resources.icons.Cloud
+import com.t8rin.imagetoolbox.core.resources.icons.DirectionsWalk
 import com.t8rin.imagetoolbox.core.resources.icons.Eraser
 import com.t8rin.imagetoolbox.core.resources.icons.Eyedropper
+import com.t8rin.imagetoolbox.core.resources.icons.File
 import com.t8rin.imagetoolbox.core.resources.icons.Jpg
 import com.t8rin.imagetoolbox.core.resources.icons.Manga
 import com.t8rin.imagetoolbox.core.resources.icons.NoiseAlt
+import com.t8rin.imagetoolbox.core.resources.icons.QualityHigh
 import com.t8rin.imagetoolbox.core.resources.icons.Rabbit
+import com.t8rin.imagetoolbox.core.resources.icons.Scanner
 import com.t8rin.imagetoolbox.core.resources.icons.Snail
 import com.t8rin.imagetoolbox.core.resources.icons.Tortoise
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
@@ -98,14 +98,14 @@ fun NeuralModel.Type.icon(): ImageVector = when (this) {
     NeuralModel.Type.ENHANCE -> Icons.Rounded.AutoFixHigh
     NeuralModel.Type.ANIME -> Icons.Rounded.Manga
     NeuralModel.Type.SCANS -> Icons.Rounded.Scanner
-    NeuralModel.Type.UPSCALE -> Icons.Rounded.HighQuality
+    NeuralModel.Type.UPSCALE -> Icons.Rounded.QualityHigh
     NeuralModel.Type.REMOVE_BG -> Icons.Rounded.Eraser
 }
 
 fun NeuralModel.Speed.icon(): ImageVector = when (this) {
     is NeuralModel.Speed.VeryFast -> Icons.Rounded.Bolt
     is NeuralModel.Speed.Fast -> Icons.Rounded.Rabbit
-    is NeuralModel.Speed.Normal -> Icons.AutoMirrored.Rounded.DirectionsWalk
+    is NeuralModel.Speed.Normal -> Icons.Rounded.DirectionsWalk
     is NeuralModel.Speed.Slow -> Icons.Rounded.Tortoise
     is NeuralModel.Speed.VerySlow -> Icons.Rounded.Snail
 }
@@ -374,7 +374,7 @@ fun NeuralModelSizeBadge(
         ) {
             Icon(
                 imageVector = if (modelFile.exists()) {
-                    Icons.AutoMirrored.Rounded.InsertDriveFile
+                    Icons.Rounded.File
                 } else {
                     Icons.Rounded.Cloud
                 },

@@ -18,7 +18,6 @@
 package com.t8rin.imagetoolbox.core.ui.widget.color_picker
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,11 +29,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material.icons.rounded.ContentPaste
-import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -60,16 +54,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.colordetector.util.ColorUtil.colorToHex
-import com.smarttoolfactory.colordetector.util.ColorUtil.colorToHexAlpha
-import com.smarttoolfactory.colordetector.util.HexUtil
-import com.smarttoolfactory.colorpicker.util.HexVisualTransformation
-import com.smarttoolfactory.colorpicker.util.hexRegexSingleChar
-import com.smarttoolfactory.colorpicker.util.hexWithAlphaRegex
+import com.t8rin.colors.util.ColorUtil.hex
+import com.t8rin.colors.util.HexUtil
+import com.t8rin.colors.util.HexVisualTransformation
+import com.t8rin.colors.util.hexRegexSingleChar
+import com.t8rin.colors.util.hexWithAlphaRegex
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ContentCopy
+import com.t8rin.imagetoolbox.core.resources.icons.ContentPaste
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
+import com.t8rin.imagetoolbox.core.resources.icons.Shuffle
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.pasteColorFromClipboard
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -96,10 +95,9 @@ fun ColorInfo(
 ) {
     val context = LocalContext.current
     val colorPasteError = rememberSaveable { mutableStateOf<String?>(null) }
-    val essentials = rememberLocalEssentials()
     val onCopyCustomColor = {
-        essentials.copyToClipboard(
-            text = getFormattedColor(color),
+        Clipboard.copy(
+            text = color.hex(),
             message = R.string.color_copied
         )
     }
@@ -202,7 +200,7 @@ fun ColorInfo(
                     } else {
                         Row(modifier = Modifier.weight(1f)) {
                             AutoSizeText(
-                                text = getFormattedColor(color),
+                                text = color.hex(),
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
                                 modifier = Modifier
@@ -233,7 +231,7 @@ fun ColorInfo(
                         }
                     }
                 }
-                var value by remember(expanded) { mutableStateOf(getFormattedColor(color)) }
+                var value by remember(expanded) { mutableStateOf(color.hex()) }
                 EnhancedAlertDialog(
                     visible = expanded,
                     onDismissRequest = { expanded = false },
@@ -326,13 +324,4 @@ fun ColorInfo(
             }
         }
     }
-}
-
-/** Receive the clipboard data. */
-private fun getFormattedColor(color: Color): String {
-    return if (color.alpha == 1f) {
-        colorToHex(color)
-    } else {
-        colorToHexAlpha(color)
-    }.uppercase()
 }

@@ -18,6 +18,7 @@
 package com.t8rin.imagetoolbox.core.ui.widget
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -36,8 +37,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Icon
@@ -47,22 +46,32 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.animation.fancySlideTransition
+import com.t8rin.imagetoolbox.core.ui.utils.helper.PredictiveBackObserver
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
 import com.t8rin.imagetoolbox.core.ui.utils.provider.ProvideContainerDefaults
@@ -72,9 +81,11 @@ import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBar
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBarType
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedVerticalScroll
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.clearFocusOnTap
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.onSwipeDown
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -105,7 +116,12 @@ fun AdaptiveBottomScaffoldLayoutScreen(
     else TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
+        bottomSheetState = rememberBottomSheetState(
+            initialValue = SheetValue.PartiallyExpanded,
+            enabledValues = setOf(
+                SheetValue.PartiallyExpanded,
+                SheetValue.Expanded
+            ),
             confirmValueChange = {
                 when (it) {
                     SheetValue.Hidden -> false
@@ -146,7 +162,7 @@ fun AdaptiveBottomScaffoldLayoutScreen(
                                 onClick = onGoBack
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                    imageVector = Icons.Rounded.ArrowBack,
                                     contentDescription = stringResource(R.string.exit)
                                 )
                             }
@@ -245,6 +261,14 @@ fun AdaptiveBottomScaffoldLayoutScreen(
         }
     }
 
+    val isExpanded by remember {
+        derivedStateOf {
+            scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded ||
+                    scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded
+        }
+    }
+    val scope = rememberCoroutineScope()
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = modifier.clearFocusOnTap(autoClearFocus)
@@ -265,6 +289,32 @@ fun AdaptiveBottomScaffoldLayoutScreen(
                     scaffoldState.bottomSheetState.currentValue == SheetValue.PartiallyExpanded
                             && !scaffoldState.bottomSheetState.isAnimationRunning
 
+                var predictiveBackProgress by remember {
+                    mutableFloatStateOf(0f)
+                }
+                val animatedPredictiveBackProgress by animateFloatAsState(predictiveBackProgress)
+
+                val clean = {
+                    predictiveBackProgress = 0f
+                }
+
+                PredictiveBackObserver(
+                    onProgress = { progress ->
+                        predictiveBackProgress = progress / 6f
+                    },
+                    onClean = { isCompleted ->
+                        if (isCompleted) {
+                            scope.launch {
+                                delay(150)
+                                clean()
+                            }
+                            scaffoldState.bottomSheetState.partialExpand()
+                        }
+                        clean()
+                    },
+                    enabled = isExpanded
+                )
+
                 BottomSheetScaffold(
                     modifier = Modifier.fillMaxSize(),
                     scaffoldState = scaffoldState,
@@ -272,11 +322,28 @@ fun AdaptiveBottomScaffoldLayoutScreen(
                         .calculateBottomPadding(),
                     sheetDragHandle = null,
                     sheetShape = RectangleShape,
+                    containerColor = Color.Transparent,
+                    sheetContainerColor = Color.Transparent,
+                    sheetShadowElevation = 0.dp,
                     sheetSwipeEnabled = sheetSwipeEnabled,
                     sheetContent = {
+                        val animatedShape = AutoCornersShape(
+                            (32.dp * (animatedPredictiveBackProgress * 10f)).coerceIn(0.dp, 32.dp)
+                        )
                         Scaffold(
                             modifier = Modifier
                                 .heightIn(max = screenHeight * 0.7f)
+                                .graphicsLayer {
+                                    val progress = animatedPredictiveBackProgress
+                                    scaleX = (1f - progress).coerceAtLeast(0.85f)
+                                    scaleY = (1f - progress).coerceAtLeast(0.85f)
+                                    transformOrigin = TransformOrigin(
+                                        pivotFractionX = 0.5f,
+                                        pivotFractionY = 1f
+                                    )
+                                    shape = animatedShape
+                                    clip = progress > 0f
+                                }
                                 .clearFocusOnTap(),
                             topBar = {
                                 val scope = rememberCoroutineScope()

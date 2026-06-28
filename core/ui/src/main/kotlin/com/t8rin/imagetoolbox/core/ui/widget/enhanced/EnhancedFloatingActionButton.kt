@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.enhanced
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -46,13 +45,14 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.theme.onMixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.containerFabBorder
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.autoElevatedBorder
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -127,7 +127,7 @@ fun EnhancedFloatingActionButton(
             },
             modifier = modifier
                 .sizeIn(minWidth = width, minHeight = height)
-                .containerFabBorder(
+                .autoElevatedBorder(
                     shape = shape,
                     autoElevation = animateDpAsState(
                         if (settingsState.drawFabShadows) autoElevation

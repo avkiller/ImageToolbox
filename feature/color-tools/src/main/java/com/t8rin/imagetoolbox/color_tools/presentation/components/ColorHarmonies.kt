@@ -29,8 +29,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,8 +43,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.colors.parser.ColorWithName
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.resources.icons.BarChart
+import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ColorCopyFormatSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedChip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.other.ColorWithNameItem
@@ -57,8 +58,6 @@ import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
 internal fun ColorHarmonies(
     selectedColor: Color,
 ) {
-    val essentials = rememberLocalEssentials()
-
     var selectedHarmony by rememberSaveable {
         mutableStateOf(HarmonyType.COMPLEMENTARY)
     }
@@ -66,6 +65,9 @@ internal fun ColorHarmonies(
         derivedStateOf {
             selectedColor.applyHarmony(selectedHarmony)
         }
+    }
+    var colorCopyTarget by remember {
+        mutableStateOf<ColorWithName?>(null)
     }
 
     ExpandableItem(
@@ -131,10 +133,10 @@ internal fun ColorHarmonies(
                             ColorWithNameItem(
                                 color = color,
                                 containerShape = shape,
-                                onCopy = {
-                                    essentials.copyToClipboard(
-                                        text = getFormattedColor(color),
-                                        message = R.string.color_copied
+                                onCopy = { name ->
+                                    colorCopyTarget = ColorWithName(
+                                        color = color,
+                                        name = name
                                     )
                                 },
                                 modifier = Modifier
@@ -148,5 +150,10 @@ internal fun ColorHarmonies(
         },
         shape = ShapeDefaults.extraLarge,
         initialState = false
+    )
+
+    ColorCopyFormatSelectionDialog(
+        target = colorCopyTarget,
+        onDismiss = { colorCopyTarget = null }
     )
 }

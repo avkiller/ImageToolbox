@@ -20,7 +20,6 @@ package com.t8rin.imagetoolbox.feature.ai_tools.presentation.components
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -40,18 +39,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.DownloadForOffline
-import androidx.compose.material.icons.rounded.ModelTraining
-import androidx.compose.material.icons.rounded.RadioButtonChecked
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -71,17 +58,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.Download
+import com.t8rin.imagetoolbox.core.resources.icons.DownloadDone
+import com.t8rin.imagetoolbox.core.resources.icons.DownloadForOffline
+import com.t8rin.imagetoolbox.core.resources.icons.File
 import com.t8rin.imagetoolbox.core.resources.icons.FileImport
+import com.t8rin.imagetoolbox.core.resources.icons.Link
+import com.t8rin.imagetoolbox.core.resources.icons.ModelTraining
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonChecked
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonUnchecked
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.rememberHumanFileSize
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
-import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAutoCircularProgressIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBadge
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBottomSheetDefaults
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedCancellableCircularProgressIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -107,11 +104,11 @@ internal fun NeuralModelsColumn(
     onSelectModel: (NeuralModel) -> Unit,
     onDownloadModel: (NeuralModel) -> Unit,
     onDeleteModel: (NeuralModel) -> Unit,
-    onImportModel: (Uri, (SaveResult) -> Unit) -> Unit,
+    onImportModel: (Uri) -> Unit,
     downloadProgresses: Map<String, DownloadProgress>,
-    occupiedStorageSize: Long
+    occupiedStorageSize: Long,
+    onCancelDownload: (NeuralModel) -> Unit
 ) {
-    val essentials = rememberLocalEssentials()
     val scope = rememberCoroutineScope()
 
     val listState = rememberLazyListState()
@@ -119,29 +116,9 @@ internal fun NeuralModelsColumn(
     val filePicker = rememberFilePicker { uri: Uri ->
         val name = uri.filename().orEmpty()
         if (name.endsWith(".onnx") || name.endsWith(".ort")) {
-            onImportModel(uri) {
-                when (it) {
-                    SaveResult.Skipped -> {
-                        essentials.showToast(
-                            message = essentials.getString(R.string.model_already_downloaded),
-                            icon = Icons.Outlined.Info
-                        )
-                    }
-
-                    is SaveResult.Success -> {
-                        essentials.showToast(
-                            message = essentials.getString(R.string.model_successfully_imported),
-                            icon = Icons.Outlined.CheckCircle
-                        )
-                    }
-
-                    else -> essentials.parseFileSaveResult(it)
-                }
-            }
+            onImportModel(uri)
         } else {
-            essentials.showFailureToast(
-                essentials.getString(R.string.only_onnx_models)
-            )
+            AppToastHost.showFailureToast(R.string.only_onnx_models)
         }
     }
 
@@ -212,7 +189,7 @@ internal fun NeuralModelsColumn(
         if (importedModels.isNotEmpty()) {
             item {
                 TitleItem(
-                    icon = Icons.AutoMirrored.Rounded.InsertDriveFile,
+                    icon = Icons.Rounded.File,
                     text = stringResource(id = R.string.imported_models)
                 )
             }
@@ -321,8 +298,7 @@ internal fun NeuralModelsColumn(
                         ) {
                             Text(
                                 rememberHumanFileSize(
-                                    byteCount = occupiedStorageSize,
-                                    precision = 2
+                                    byteCount = occupiedStorageSize
                                 )
                             )
                         }
@@ -397,7 +373,7 @@ internal fun NeuralModelsColumn(
                             }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Link,
+                            imageVector = Icons.Rounded.Link,
                             contentDescription = "link",
                             modifier = Modifier
                                 .padding(16.dp)
@@ -522,7 +498,7 @@ internal fun NeuralModelsColumn(
                             }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Link,
+                            imageVector = Icons.Rounded.Link,
                             contentDescription = "link",
                             modifier = Modifier
                                 .padding(16.dp)
@@ -573,11 +549,12 @@ internal fun NeuralModelsColumn(
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                         Spacer(Modifier.width(8.dp))
-                                        EnhancedAutoCircularProgressIndicator(
+                                        EnhancedCancellableCircularProgressIndicator(
                                             progress = { progress.currentPercent },
                                             modifier = Modifier.size(24.dp),
                                             trackColor = MaterialTheme.colorScheme.primary.copy(0.2f),
-                                            strokeWidth = 3.dp
+                                            strokeWidth = 3.dp,
+                                            onCancel = { onCancelDownload(model) }
                                         )
                                     }
                                 } else {
@@ -654,7 +631,7 @@ internal fun NeuralModelsColumn(
                         )
                     )
                     Icon(
-                        imageVector = Icons.Rounded.SearchOff,
+                        imageVector = Icons.Outlined.SearchOff,
                         contentDescription = null,
                         modifier = Modifier
                             .weight(2f)

@@ -40,30 +40,25 @@ import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsS
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.rememberEditPresetsController
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeSurface
 import com.t8rin.imagetoolbox.core.ui.utils.confetti.ConfettiHost
-import com.t8rin.imagetoolbox.core.ui.utils.confetti.LocalConfettiHostState
-import com.t8rin.imagetoolbox.core.ui.utils.confetti.rememberConfettiHostState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.LocalFilterPreviewModelProvider
 import com.t8rin.imagetoolbox.core.ui.utils.helper.rememberFilterPreviewProvider
 import com.t8rin.imagetoolbox.core.ui.utils.helper.rememberSafeUriHandler
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.rememberEnhancedHapticFeedback
-import com.t8rin.imagetoolbox.core.ui.widget.other.LocalToastHostState
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastHost
-import com.t8rin.imagetoolbox.core.ui.widget.other.ToastHostState
-import com.t8rin.imagetoolbox.core.ui.widget.other.rememberToastHostState
+import com.t8rin.imagetoolbox.core.ui.widget.sheets.SkippedImagesSheetHost
 import kotlinx.coroutines.delay
 
 @Composable
 fun ImageToolboxCompositionLocals(
     settingsState: UiSettingsState,
-    toastHostState: ToastHostState = rememberToastHostState(),
     filterPreviewModel: ImageModel? = null,
     canSetDynamicFilterPreview: Boolean = false,
     currentScreen: Screen? = null,
+    onNavigate: (Screen) -> Unit = {},
     content: @Composable BoxScope.() -> Unit
 ) {
     val editPresetsController = rememberEditPresetsController()
-    val confettiHostState = rememberConfettiHostState()
     val customHapticFeedback = rememberEnhancedHapticFeedback(settingsState.hapticsStrength)
     val screenSize = rememberScreenSize()
     val previewProvider = filterPreviewModel?.let {
@@ -75,10 +70,8 @@ fun ImageToolboxCompositionLocals(
     val safeUriHandler = rememberSafeUriHandler()
 
     val values = remember(
-        toastHostState,
         settingsState,
         editPresetsController,
-        confettiHostState,
         customHapticFeedback,
         screenSize,
         filterPreviewModel,
@@ -87,11 +80,9 @@ fun ImageToolboxCompositionLocals(
     ) {
         derivedStateOf {
             listOfNotNull(
-                LocalToastHostState provides toastHostState,
                 LocalSettingsState provides settingsState,
                 LocalEditPresetsController provides editPresetsController,
                 LocalFilterPreviewModelProvider providesOrNull previewProvider,
-                LocalConfettiHostState provides confettiHostState,
                 LocalHapticFeedback provides customHapticFeedback,
                 LocalScreenSize provides screenSize,
                 LocalCurrentScreen provides currentScreen,
@@ -105,6 +96,10 @@ fun ImageToolboxCompositionLocals(
         content = {
             ImageToolboxThemeSurface {
                 content()
+
+                SkippedImagesSheetHost(
+                    onNavigate = onNavigate
+                )
 
                 ConfettiHost()
 

@@ -18,12 +18,12 @@
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.FileReplace
 import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
@@ -44,7 +44,8 @@ fun OverwriteFilesSettingItem(
         onClick = {
             onClick()
         },
-        enabled = settingsState.filenameBehavior is FilenameBehavior.None || settingsState.filenameBehavior is FilenameBehavior.Overwrite,
+        enabled = !settingsState.saveToOriginalFolder &&
+                (settingsState.filenameBehavior is FilenameBehavior.None || settingsState.filenameBehavior is FilenameBehavior.Overwrite),
         title = stringResource(R.string.overwrite_files),
         subtitle = stringResource(R.string.overwrite_files_sub),
         checked = settingsState.filenameBehavior is FilenameBehavior.Overwrite,

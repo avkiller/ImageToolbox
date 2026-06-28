@@ -29,11 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RichTooltip
@@ -60,7 +55,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Block
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
+import com.t8rin.imagetoolbox.core.resources.icons.PushPin
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorSelectionRow
@@ -86,7 +85,8 @@ fun ColorRowSelector(
     defaultColors: List<Color> = ColorSelectionRowDefaults.colorListVariant,
     topEndIcon: (@Composable () -> Unit)? = null,
     contentHorizontalPadding: Dp = 12.dp,
-    onNullClick: (() -> Unit)? = null
+    onNullClick: (() -> Unit)? = null,
+    allowCustom: Boolean = true
 ) {
     val isCompactLayout = LocalSettingsState.current.isCompactSelectorsLayout
     val tooltipState = rememberTooltipState()
@@ -182,7 +182,6 @@ fun ColorRowSelector(
                                 state = tooltipState,
                                 content = {
                                     IconShapeContainer(
-                                        enabled = true,
                                         content = {
                                             Icon(
                                                 imageVector = icon,
@@ -236,7 +235,8 @@ fun ColorRowSelector(
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier.weight(1f),
-                onNullClick = onNullClick
+                onNullClick = onNullClick,
+                allowCustom = allowCustom
             )
             if (isCompactLayout && topEndIcon != null) {
                 topEndIcon()

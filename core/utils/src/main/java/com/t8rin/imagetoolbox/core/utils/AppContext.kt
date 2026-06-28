@@ -20,6 +20,7 @@ package com.t8rin.imagetoolbox.core.utils
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.annotation.StringRes
+import com.t8rin.imagetoolbox.core.resources.R
 
 class AppContext private constructor(
     application: Context
@@ -29,13 +30,17 @@ class AppContext private constructor(
         internal var appContext: AppContext? = null
 
         internal fun init(application: Context) {
-            appContext = AppContext(application)
+            if (appContext == null) {
+                appContext = AppContext(application)
+            } else {
+                "AppContext is already initialized".makeLog("AppContext")
+            }
         }
     }
 
 }
 
-fun Context.initAppContext() = AppContext.init(this)
+fun Context.initAppContext() = AppContext.init(applicationContext)
 
 val appContext: AppContext
     get() = checkNotNull(AppContext.appContext) {
@@ -43,3 +48,20 @@ val appContext: AppContext
     }
 
 fun getString(@StringRes resId: Int): String = appContext.getString(resId)
+
+fun getString(
+    @StringRes resId: Int,
+    vararg formatArgs: Any?
+): String = appContext.getString(resId, *formatArgs)
+
+fun Throwable.extractMessage(): String = if (this is OutOfMemoryError) {
+    getString(R.string.oom_description)
+} else {
+    getString(
+        R.string.smth_went_wrong,
+        (localizedMessage?.takeIf { it.isNotBlank() } ?: message)?.decodeEscaped().orEmpty()
+            .ifEmpty {
+                this::class.java.simpleName
+            }
+    )
+}

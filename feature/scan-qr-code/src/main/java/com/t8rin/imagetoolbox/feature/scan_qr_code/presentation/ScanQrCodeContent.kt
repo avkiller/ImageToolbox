@@ -24,9 +24,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoFixHigh
-import androidx.compose.material.icons.rounded.ImageSearch
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,21 +31,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.BarcodeScanner
+import com.t8rin.imagetoolbox.core.resources.icons.ImageSearch
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.capturable.rememberCaptureController
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
+import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberBarcodeScanner
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.helper.rememberBarcodeScanner
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -73,9 +74,6 @@ import kotlinx.coroutines.launch
 fun ScanQrCodeContent(
     component: ScanQrCodeComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val params = component.params
 
     val scanner = rememberBarcodeScanner {
@@ -84,20 +82,14 @@ fun ScanQrCodeContent(
                 content = it
             )
         )
+        component.processFilterTemplateFromQrContent()
     }
 
     val isNotScannable = params.content.raw.isNotEmpty() && component.mayBeNotScannable
     val isSaveEnabled = params.content.raw.isNotEmpty() && component.isSaveEnabled
 
     val analyzerImagePicker = rememberImagePicker { uri: Uri ->
-        component.readBarcodeFromImage(
-            image = uri,
-            onFailure = {
-                essentials.showFailureToast(
-                    Throwable(essentials.getString(R.string.no_barcode_found), it)
-                )
-            }
-        )
+        component.readBarcodeFromImage(uri)
     }
 
     val captureController = rememberCaptureController()
@@ -113,31 +105,17 @@ fun ScanQrCodeContent(
         )
     }
 
-    LaunchedEffect(params.content) {
-        component.processFilterTemplateFromQrContent(
-            onSuccess = { filterName, filtersCount ->
-                essentials.showToast(
-                    message = essentials.getString(
-                        R.string.added_filter_template,
-                        filterName,
-                        filtersCount
-                    ),
-                    icon = Icons.Outlined.AutoFixHigh
-                )
-            }
-        )
-    }
-
     val saveBitmap: (oneTimeSaveLocationUri: String?, bitmap: Bitmap) -> Unit =
         { oneTimeSaveLocationUri, bitmap ->
             component.saveBitmap(
                 bitmap = bitmap,
-                oneTimeSaveLocationUri = oneTimeSaveLocationUri,
-                onComplete = essentials::parseSaveResult
+                oneTimeSaveLocationUri = oneTimeSaveLocationUri
             )
         }
 
     val isPortrait by isPortraitOrientationAsState()
+
+    val scope = rememberCoroutineScope()
 
     AdaptiveLayoutScreen(
         shouldDisableBackHandler = true,
@@ -161,7 +139,7 @@ fun ScanQrCodeContent(
                         .padding(horizontal = 2.dp)
                         .padding(bottom = 12.dp)
                         .scaleOnTap {
-                            showConfetti()
+                            AppToastHost.showConfetti()
                         }
                 )
             }
@@ -171,18 +149,17 @@ fun ScanQrCodeContent(
             ShareButton(
                 enabled = params.content.raw.isNotEmpty(),
                 onShare = {
-                    essentials.launch {
+                    scope.launch {
                         component.shareImage(
-                            bitmap = captureController.bitmap(),
-                            onComplete = showConfetti
+                            bitmap = captureController.bitmap()
                         )
                     }
                 },
                 onCopy = {
-                    essentials.launch {
+                    scope.launch {
                         component.cacheImage(
                             bitmap = captureController.bitmap(),
-                            onComplete = essentials::copyToClipboard
+                            onComplete = Clipboard::copy
                         )
                     }
                 }
@@ -231,7 +208,7 @@ fun ScanQrCodeContent(
                 onSecondaryButtonClick = scanner::scan,
                 isPrimaryButtonEnabled = isSaveEnabled,
                 onPrimaryButtonClick = {
-                    essentials.launch {
+                    scope.launch {
                         saveBitmap(null, captureController.bitmap())
                     }
                 },
@@ -273,7 +250,7 @@ fun ScanQrCodeContent(
                 visible = showFolderSelectionDialog,
                 onDismiss = { showFolderSelectionDialog = false },
                 onSaveRequest = {
-                    essentials.launch {
+                    scope.launch {
                         saveBitmap(it, captureController.bitmap())
                     }
                 },

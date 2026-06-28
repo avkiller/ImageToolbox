@@ -24,11 +24,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircleOutline
-import androidx.compose.material.icons.rounded.Password
-import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.TextFields
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,6 +37,10 @@ import com.t8rin.imagetoolbox.core.domain.model.QrType
 import com.t8rin.imagetoolbox.core.domain.model.QrType.Wifi.EncryptionType
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Build
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Password
+import com.t8rin.imagetoolbox.core.resources.icons.Security
+import com.t8rin.imagetoolbox.core.resources.icons.TextFields
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.DataSelector
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
@@ -97,7 +97,7 @@ internal fun QrWifiEditField(
             title = stringResource(R.string.security),
             titleIcon = Icons.Rounded.Security,
             itemContentText = { it.name },
-            itemContentIcon = { _, selected -> if (selected) Icons.Rounded.CheckCircleOutline else null },
+            itemContentIcon = { _, selected -> if (selected) Icons.Outlined.CheckCircle else null },
             spanCount = 1,
             behaveAsContainer = false,
             titlePadding = PaddingValues(top = 8.dp, bottom = 16.dp),

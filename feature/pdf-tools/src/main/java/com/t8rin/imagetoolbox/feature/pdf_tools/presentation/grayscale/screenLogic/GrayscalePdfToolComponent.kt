@@ -27,7 +27,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
@@ -58,6 +57,13 @@ class GrayscalePdfToolComponent @AssistedInject internal constructor(
     private val _uri: MutableState<Uri?> = mutableStateOf(initialUri)
     val uri by _uri
 
+    init {
+        checkPdf(
+            uri = initialUri,
+            onDecrypted = { _uri.value = it }
+        )
+    }
+
     override fun getKey(): Pair<String, Uri?> = "grayscale" to uri
 
     fun setUri(uri: Uri?) {
@@ -74,22 +80,18 @@ class GrayscalePdfToolComponent @AssistedInject internal constructor(
     }
 
     override fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
-        doSaving(
-            action = {
-                val processed = pdfManager.convertToGrayscale(
-                    uri = _uri.value.toString()
-                )
+        doSaving {
+            val processed = pdfManager.convertToGrayscale(
+                uri = _uri.value.toString()
+            )
 
-                fileController.transferBytes(
-                    fromUri = processed,
-                    toUri = uri.toString()
-                ).onSuccess(::registerSave)
-            },
-            onResult = onResult
-        )
+            fileController.transferBytes(
+                fromUri = processed,
+                toUri = uri.toString()
+            ).onSuccess(::registerSave)
+        }
     }
 
     override fun performSharing(

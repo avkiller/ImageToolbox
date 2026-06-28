@@ -21,10 +21,12 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 
 internal val SAVE_FOLDER_URI = stringPreferencesKey("saveFolder")
+internal val SAVE_TO_ORIGINAL_FOLDER = booleanPreferencesKey("SAVE_TO_ORIGINAL_FOLDER")
 internal val NIGHT_MODE = intPreferencesKey("nightMode")
 internal val DYNAMIC_COLORS = booleanPreferencesKey("dynamicColors")
 internal val ALLOW_IMAGE_MONET = booleanPreferencesKey("imageMonet")
@@ -45,6 +47,9 @@ internal val ADD_ORIGINAL_NAME_TO_FILENAME = booleanPreferencesKey("ADD_ORIGINAL
 internal val ADD_SEQ_NUM_TO_FILENAME = booleanPreferencesKey("ADD_SEQ_NUM")
 internal val AUTO_CACHE_CLEAR = booleanPreferencesKey("auto_clear")
 internal val GROUP_OPTIONS_BY_TYPE = booleanPreferencesKey("group_options")
+internal val SHOW_FAVORITE_TOOLS_IN_GROUPED_MODE =
+    booleanPreferencesKey("SHOW_FAVORITE_TOOLS_IN_GROUPED_MODE")
+internal val SHOW_FAVORITE_AS_LAST = booleanPreferencesKey("SHOW_FAVORITE_AS_LAST")
 internal val SELECTED_FONT = stringPreferencesKey("SELECTED_FONT")
 internal val FONT_SCALE = floatPreferencesKey("font_scale")
 internal val ALLOW_CRASHLYTICS = booleanPreferencesKey("allow_crashlytics")
@@ -67,6 +72,7 @@ internal val VIBRATION_STRENGTH = intPreferencesKey("VIBRATION_STRENGTH")
 internal val FILENAME_SUFFIX = stringPreferencesKey("FILENAME_SUFFIX")
 internal val IMAGE_SCALE_MODE = intPreferencesKey("IMAGE_SCALE_MODE")
 internal val MAGNIFIER_ENABLED = booleanPreferencesKey("MAGNIFIER_ENABLED")
+internal val DRAW_BITMAP_BORDER = booleanPreferencesKey("DRAW_BITMAP_BORDER")
 internal val EXIF_WIDGET_INITIAL_STATE = booleanPreferencesKey("EXIF_WIDGET_INITIAL_STATE")
 internal val INITIAL_OCR_CODES = stringPreferencesKey("INITIAL_OCR_CODES")
 internal val SCREENS_WITH_BRIGHTNESS_ENFORCEMENT =
@@ -74,6 +80,7 @@ internal val SCREENS_WITH_BRIGHTNESS_ENFORCEMENT =
 internal val CONFETTI_ENABLED = booleanPreferencesKey("CONFETTI_ENABLED")
 internal val SECURE_MODE = booleanPreferencesKey("SECURE_MODE")
 internal val USE_RANDOM_EMOJIS = booleanPreferencesKey("USE_RANDOM_EMOJIS")
+internal val USE_ANIMATED_EMOJIS = booleanPreferencesKey("USE_ANIMATED_EMOJIS")
 internal val ICON_SHAPE = intPreferencesKey("ICON_SHAPE")
 internal val USE_EMOJI_AS_PRIMARY_COLOR = booleanPreferencesKey("USE_EMOJI_AS_PRIMARY_COLOR")
 internal val DRAG_HANDLE_WIDTH = intPreferencesKey("DRAG_HANDLE_WIDTH")
@@ -105,6 +112,8 @@ internal val SYSTEM_BARS_VISIBILITY = intPreferencesKey("SYSTEM_BARS_VISIBILITY"
 internal val IS_SYSTEM_BARS_VISIBLE_BY_SWIPE =
     booleanPreferencesKey("IS_SYSTEM_BARS_VISIBLE_BY_SWIPE")
 internal val INITIAL_OCR_MODE = intPreferencesKey("INITIAL_OCR_MODE")
+internal val INITIAL_OCR_ENGINE = intPreferencesKey("INITIAL_OCR_ENGINE")
+internal val INITIAL_PADDLE_OCR_MODEL = intPreferencesKey("INITIAL_PADDLE_OCR_MODEL")
 internal val USE_COMPACT_SELECTORS_LAYOUT = booleanPreferencesKey("USE_COMPACT_SELECTORS_LAYOUT")
 internal val MAIN_SCREEN_TITLE = stringPreferencesKey("MAIN_SCREEN_TITLE")
 internal val SLIDER_TYPE = intPreferencesKey("SLIDER_TYPE")
@@ -127,8 +136,18 @@ internal val SNOWFALL_MODE = intPreferencesKey("SNOWFALL_MODE")
 internal val DEFAULT_QUALITY = stringPreferencesKey("DEFAULT_QUALITY")
 internal val DEFAULT_IMAGE_FORMAT = stringPreferencesKey("DEFAULT_IMAGE_FORMAT")
 internal val SHAPES_TYPE = stringPreferencesKey("SHAPES_TYPE_NEW")
+internal val SHAPE_BY_INTERACTION_THROTTLE = longPreferencesKey("SHAPE_BY_INTERACTION_THROTTLE")
 internal val FILENAME_PATTERN = stringPreferencesKey("FILENAME_PATTERN")
 internal val FILENAME_BEHAVIOR = stringPreferencesKey("FILENAME_BEHAVIOR")
 internal val FLING_TYPE = intPreferencesKey("FLING_TYPE")
 internal val HIDDEN_FOR_SHARE_SCREENS =
     stringPreferencesKey("HIDDEN_FOR_SHARE_SCREENS")
+internal val KEEP_DATE_TIME =
+    booleanPreferencesKey("KEEP_DATE_TIME")
+internal val ALWAYS_CLEAR_EXIF =
+    booleanPreferencesKey("ALWAYS_CLEAR_EXIF")
+internal val ENABLE_BACKGROUND_COLOR_FOR_ALPHA_FORMATS =
+    booleanPreferencesKey("ENABLE_BACKGROUND_COLOR_FOR_ALPHA_FORMATS")
+internal val PERFORMANCE_VERSION = intPreferencesKey("PERFORMANCE_VERSION")
+internal val SHOW_TOOLS_HISTORY = booleanPreferencesKey("SHOW_TOOLS_HISTORY")
+internal val MOTION_DURATION_SCALE = floatPreferencesKey("MOTION_DURATION_SCALE")

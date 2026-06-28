@@ -17,6 +17,7 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.sheets
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -45,14 +46,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.SearchOff
-import androidx.compose.material.icons.rounded.Visibility
-import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -67,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -75,11 +69,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.domain.model.ExtraDataType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Album
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Extension
+import com.t8rin.imagetoolbox.core.resources.icons.File
+import com.t8rin.imagetoolbox.core.resources.icons.GifBox
+import com.t8rin.imagetoolbox.core.resources.icons.Image
+import com.t8rin.imagetoolbox.core.resources.icons.KeyboardArrowDown
 import com.t8rin.imagetoolbox.core.resources.icons.LayersSearchOutline
+import com.t8rin.imagetoolbox.core.resources.icons.Pdf
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
+import com.t8rin.imagetoolbox.core.resources.icons.SettingsBackupRestore
+import com.t8rin.imagetoolbox.core.resources.icons.TextFields
+import com.t8rin.imagetoolbox.core.resources.icons.Visibility
+import com.t8rin.imagetoolbox.core.resources.icons.VisibilityOff
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.matchesSearchQuery
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
@@ -90,13 +99,12 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.ScreenPreference
+import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesSheetTitle.Companion.processImagesSheetTitle
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
 import com.t8rin.imagetoolbox.core.ui.widget.utils.screenList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.util.Locale
+import com.t8rin.imagetoolbox.core.utils.appContext
 
 @Composable
 fun ProcessImagesPreferenceSheet(
@@ -106,8 +114,6 @@ fun ProcessImagesPreferenceSheet(
     onDismiss: () -> Unit,
     onNavigate: (Screen) -> Unit
 ) {
-    val essentials = rememberLocalEssentials()
-
     var isSearching by rememberSaveable {
         mutableStateOf(false)
     }
@@ -116,19 +122,18 @@ fun ProcessImagesPreferenceSheet(
     }
 
     val (rawScreenList, hiddenScreenList) = uris.screenList(extraDataType).value
+    val sheetTitle = remember(extraDataType, uris.size) {
+        appContext.processImagesSheetTitle(
+            extraDataType = extraDataType,
+            uriCount = uris.size
+        )
+    }
 
     val urisCorrespondingScreens by remember(hiddenScreenList, rawScreenList, searchKeyword) {
         derivedStateOf {
             if (searchKeyword.isNotBlank()) {
                 (rawScreenList + hiddenScreenList).filter {
-                    val string =
-                        essentials.getString(it.title) + " " + essentials.getString(it.subtitle)
-                    val stringEn = essentials.getStringLocalized(it.title, Locale.ENGLISH.language)
-                        .plus(" ")
-                        .plus(essentials.getStringLocalized(it.subtitle, Locale.ENGLISH.language))
-                    stringEn.contains(other = searchKeyword, ignoreCase = true).or(
-                        string.contains(other = searchKeyword, ignoreCase = true)
-                    )
+                    it.matchesSearchQuery(searchKeyword)
                 }
             } else {
                 rawScreenList
@@ -167,7 +172,7 @@ fun ProcessImagesPreferenceSheet(
                                     modifier = Modifier.padding(start = 4.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit),
                                         tint = MaterialTheme.colorScheme.onSurface
                                     )
@@ -201,8 +206,8 @@ fun ProcessImagesPreferenceSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         TitleItem(
-                            text = stringResource(R.string.image),
-                            icon = Icons.Rounded.Image
+                            text = sheetTitle.title,
+                            icon = sheetTitle.icon
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         EnhancedIconButton(
@@ -242,7 +247,7 @@ fun ProcessImagesPreferenceSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         flingBehavior = enhancedFlingBehavior()
                     ) {
-                        if (extraDataType == null || extraDataType == ExtraDataType.Gif) {
+                        if (extraDataType == null || extraDataType == ExtraDataType.Gif || extraDataType == ExtraDataType.Pdf) {
                             item(
                                 span = StaggeredGridItemSpan.FullLine
                             ) {
@@ -256,11 +261,8 @@ fun ProcessImagesPreferenceSheet(
                             ScreenPreference(
                                 screen = screen,
                                 navigate = {
-                                    essentials.launch {
-                                        onDismiss()
-                                        delay(200)
-                                        onNavigate(screen)
-                                    }
+                                    onNavigate(screen)
+                                    onDismiss()
                                 }
                             )
                         }
@@ -324,11 +326,8 @@ fun ProcessImagesPreferenceSheet(
                                     ScreenPreference(
                                         screen = screen,
                                         navigate = {
-                                            essentials.launch {
-                                                onDismiss()
-                                                delay(200)
-                                                onNavigate(screen)
-                                            }
+                                            onNavigate(screen)
+                                            onDismiss()
                                         }
                                     )
                                 }
@@ -356,7 +355,7 @@ fun ProcessImagesPreferenceSheet(
                             )
                         )
                         Icon(
-                            imageVector = Icons.Rounded.SearchOff,
+                            imageVector = Icons.Outlined.SearchOff,
                             contentDescription = null,
                             modifier = Modifier
                                 .weight(2f)
@@ -375,6 +374,65 @@ fun ProcessImagesPreferenceSheet(
             if (!it) onDismiss()
         }
     )
+}
+
+private data class ProcessImagesSheetTitle(
+    val title: String,
+    val icon: ImageVector
+) {
+    companion object {
+        fun Context.processImagesSheetTitle(
+            extraDataType: ExtraDataType?,
+            uriCount: Int
+        ): ProcessImagesSheetTitle = when (extraDataType) {
+            null -> if (uriCount > 1) {
+                ProcessImagesSheetTitle(
+                    title = getString(R.string.images, uriCount),
+                    icon = Icons.Rounded.Image
+                )
+            } else {
+                ProcessImagesSheetTitle(
+                    title = getString(R.string.image),
+                    icon = Icons.Rounded.Image
+                )
+            }
+
+            ExtraDataType.Audio -> ProcessImagesSheetTitle(
+                title = getString(R.string.audio),
+                icon = Icons.Rounded.Album
+            )
+
+            is ExtraDataType.Backup -> ProcessImagesSheetTitle(
+                title = getString(R.string.backup),
+                icon = Icons.Rounded.SettingsBackupRestore
+            )
+
+            ExtraDataType.File -> ProcessImagesSheetTitle(
+                title = getString(R.string.file),
+                icon = Icons.Rounded.File
+            )
+
+            ExtraDataType.Gif -> ProcessImagesSheetTitle(
+                title = "GIF",
+                icon = Icons.Rounded.GifBox
+            )
+
+            ExtraDataType.Pdf -> ProcessImagesSheetTitle(
+                title = "PDF",
+                icon = Icons.Rounded.Pdf
+            )
+
+            is ExtraDataType.Template -> ProcessImagesSheetTitle(
+                title = getString(R.string.template),
+                icon = Icons.Rounded.Extension
+            )
+
+            is ExtraDataType.Text -> ProcessImagesSheetTitle(
+                title = getString(R.string.text),
+                icon = Icons.Rounded.TextFields
+            )
+        }
+    }
 }
 
 @Preview

@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,11 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.hasPermissionAllowed
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import com.t8rin.imagetoolbox.feature.wallpapers_export.domain.WallpapersProvider
 import com.t8rin.imagetoolbox.feature.wallpapers_export.domain.model.Permission
 import com.t8rin.imagetoolbox.feature.wallpapers_export.domain.model.Wallpaper
 import com.t8rin.imagetoolbox.feature.wallpapers_export.domain.model.WallpapersResult
-import com.t8rin.logger.makeLog
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -101,23 +101,19 @@ internal class AndroidWallpapersProvider @Inject constructor(
     private fun loadWallpapers(): List<Drawable?> {
         val home = safe { wallpaperManager.drawable }
         val builtIn = safe { wallpaperManager.getBuiltInDrawable(30000, 30000, false, 0.5f, 0.5f) }
-        val lock = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        val lock = safe {
+            wallpaperManager.getWallpaperFile(FLAG_LOCK)?.use {
+                BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
+                    .toDrawable(context.resources)
+            }
+        } ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             safe {
-                wallpaperManager.getWallpaperFile(FLAG_LOCK)?.use {
-                    BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
-                        .toDrawable(context.resources)
-                }
-            } ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                safe {
-                    wallpaperManager.getDrawable(FLAG_LOCK)
-                } ?: safe {
-                    wallpaperManager.getBuiltInDrawable(FLAG_LOCK)
-                }
-            } else {
-                safe { wallpaperManager.getBuiltInDrawable(FLAG_LOCK) }
+                wallpaperManager.getDrawable(FLAG_LOCK)
+            } ?: safe {
+                wallpaperManager.getBuiltInDrawable(FLAG_LOCK)
             }
         } else {
-            null
+            safe { wallpaperManager.getBuiltInDrawable(FLAG_LOCK) }
         }
 
         return listOf(home, lock, builtIn)

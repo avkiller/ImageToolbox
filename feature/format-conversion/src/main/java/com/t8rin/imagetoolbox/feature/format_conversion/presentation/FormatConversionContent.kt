@@ -18,15 +18,11 @@
 package com.t8rin.imagetoolbox.feature.format_conversion.presentation
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -34,31 +30,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.CompareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.SaveExifWidget
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedHorizontalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageContainer
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageCounter
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.detectSwipes
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.PickImageFromUrisSheet
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
@@ -73,15 +73,11 @@ import com.t8rin.imagetoolbox.feature.format_conversion.presentation.screenLogic
 fun FormatConversionContent(
     component: FormatConversionComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     AutoContentBasedColors(component.bitmap)
 
     val imagePicker = rememberImagePicker { uris: List<Uri> ->
-        component.updateUris(
-            uris = uris,
-            onFailure = essentials::showFailureToast
+        component.setUris(
+            uris = uris
         )
     }
 
@@ -94,8 +90,7 @@ fun FormatConversionContent(
 
     val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmaps(
-            oneTimeSaveLocationUri = it,
-            onResult = essentials::parseSaveResults
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -143,31 +138,55 @@ fun FormatConversionContent(
         },
         onGoBack = onBack,
         actions = {
-            var editSheetData by remember {
-                mutableStateOf(listOf<Uri>())
-            }
-            ShareButton(
-                enabled = component.bitmap != null,
-                onShare = {
-                    component.shareBitmaps(showConfetti)
-                },
-                onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
-                },
-                onEdit = {
-                    component.cacheImages {
-                        editSheetData = it
-                    }
+            val state = rememberScrollState()
+            Row(
+                modifier = Modifier
+                    .fadingEdges(state)
+                    .enhancedHorizontalScroll(state),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!isPortrait) {
+                    UndoRedoButtons(
+                        canUndo = component.canUndo,
+                        canRedo = component.canRedo,
+                        onUndo = component::undo,
+                        onRedo = component::redo,
+                        modifier = Modifier.padding(2.dp)
+                    )
                 }
-            )
-            ProcessImagesPreferenceSheet(
-                uris = editSheetData,
-                visible = editSheetData.isNotEmpty(),
-                onDismiss = {
-                    editSheetData = emptyList()
-                },
-                onNavigate = component.onNavigate
-            )
+                var editSheetData by remember {
+                    mutableStateOf(listOf<Uri>())
+                }
+                ShareButton(
+                    enabled = component.bitmap != null,
+                    onShare = component::shareBitmaps,
+                    onCopy = {
+                        component.cacheCurrentImage(Clipboard::copy)
+                    },
+                    onEdit = {
+                        component.cacheImages {
+                            editSheetData = it
+                        }
+                    }
+                )
+                ProcessImagesPreferenceSheet(
+                    uris = editSheetData,
+                    visible = editSheetData.isNotEmpty(),
+                    onDismiss = {
+                        editSheetData = emptyList()
+                    },
+                    onNavigate = component.onNavigate
+                )
+                if (isPortrait) {
+                    UndoRedoButtons(
+                        canUndo = component.canUndo,
+                        canRedo = component.canRedo,
+                        onUndo = component::undo,
+                        onRedo = component::redo,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                }
+            }
         },
         imagePreview = {
             ImageContainer(
@@ -192,22 +211,13 @@ fun FormatConversionContent(
                     showPickImageFromUrisSheet = true
                 }
             )
-            Spacer(Modifier.size(8.dp))
-            AnimatedVisibility(
-                visible = component.uris?.size != 1,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                Column {
-                    SaveExifWidget(
-                        imageFormat = component.imageInfo.imageFormat,
-                        checked = component.keepExif,
-                        onCheckedChange = component::setKeepExif
-                    )
-                    Spacer(Modifier.size(8.dp))
-                }
-            }
             Spacer(Modifier.height(8.dp))
+            SaveExifWidget(
+                imageFormat = component.imageInfo.imageFormat,
+                checked = component.keepExif,
+                onCheckedChange = component::setKeepExif
+            )
+            Spacer(Modifier.height(16.dp))
             ImageFormatSelector(
                 value = imageInfo.imageFormat,
                 onValueChange = component::setImageFormat,
@@ -292,18 +302,8 @@ fun FormatConversionContent(
         },
         uris = component.uris,
         selectedUri = component.selectedUri,
-        onUriPicked = { uri ->
-            component.updateSelectedUri(
-                uri = uri,
-                onFailure = essentials::showFailureToast
-            )
-        },
-        onUriRemoved = { uri ->
-            component.updateUrisSilently(
-                removedUri = uri,
-                onFailure = essentials::showFailureToast
-            )
-        },
+        onUriPicked = component::updateSelectedUri,
+        onUriRemoved = component::updateUrisSilently,
         columns = if (isPortrait) 2 else 4,
     )
 

@@ -22,11 +22,25 @@ sealed interface ShapeType {
 
     val strength: Float
 
+    val scaleRatio: Float
+        get() = when (this) {
+            is Notch,
+            is Scoop -> 0.65f
+
+            else -> 1f
+        }
+
+    val effectiveStrength: Float
+        get() = strength * scaleRatio
+
     fun copy(strength: Float): ShapeType = when (this) {
         is Cut -> Cut(strength = strength)
         is Rounded -> Rounded(strength = strength)
         is Squircle -> Squircle(strength = strength)
         is Smooth -> Smooth(strength = strength)
+        is Wavy -> Wavy(strength = strength)
+        is Scoop -> Scoop(strength = strength)
+        is Notch -> Notch(strength = strength)
     }
 
     class Rounded(
@@ -45,10 +59,28 @@ sealed interface ShapeType {
         override val strength: Float = 1f
     ) : ShapeType
 
+    class Wavy(
+        override val strength: Float = 1f
+    ) : ShapeType
+
+    class Scoop(
+        override val strength: Float = 1f
+    ) : ShapeType
+
+    class Notch(
+        override val strength: Float = 1f
+    ) : ShapeType
+
     companion object {
         val entries by lazy {
             listOf(
-                Rounded(), Cut(), Squircle(), Smooth()
+                Rounded(),
+                Cut(),
+                Squircle(),
+                Smooth(),
+                Wavy(),
+                Scoop(),
+                Notch(),
             )
         }
     }

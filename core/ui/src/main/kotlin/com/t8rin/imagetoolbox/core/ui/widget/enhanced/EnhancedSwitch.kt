@@ -30,29 +30,31 @@ import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.settings.domain.model.SwitchType
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
+import com.t8rin.imagetoolbox.core.ui.widget.switches.ComposeSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.switches.CupertinoSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.switches.CupertinoSwitchDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.switches.FluentSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.switches.HyperOSSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.switches.LiquidGlassSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.switches.M3Switch
+import com.t8rin.imagetoolbox.core.ui.widget.switches.OneUISwitch
 import com.t8rin.imagetoolbox.core.ui.widget.switches.PixelSwitch
 
 @Composable
@@ -69,7 +71,7 @@ fun EnhancedSwitch(
     val switchColors = colors ?: SwitchDefaults.colors(
         disabledUncheckedThumbColor = MaterialTheme.colorScheme.onSurface
             .copy(alpha = 0.12f)
-            .compositeOver(MaterialTheme.colorScheme.surface)
+            .compositeOverSafe(MaterialTheme.colorScheme.surface)
     )
     val settingsState = LocalSettingsState.current
     val haptics = LocalHapticFeedback.current
@@ -129,7 +131,7 @@ fun EnhancedSwitch(
                 }
 
                 is SwitchType.Compose -> {
-                    Switch(
+                    ComposeSwitch(
                         modifier = switchModifier,
                         colors = switchColors,
                         checked = checked,
@@ -182,7 +184,9 @@ fun EnhancedSwitch(
                         enabled = enabled,
                         interactionSource = interactionSource,
                         colors = CupertinoSwitchDefaults.colors(),
-                        backgroundColor = colorUnderSwitch
+                        backgroundColor = colorUnderSwitch.takeOrElse {
+                            MaterialTheme.colorScheme.surface
+                        }
                     )
                 }
 
@@ -191,6 +195,20 @@ fun EnhancedSwitch(
                         modifier = switchModifier,
                         colors = switchColors.copy(
                             uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        ),
+                        checked = checked,
+                        enabled = enabled,
+                        onCheckedChange = switchOnCheckedChange,
+                        interactionSource = interactionSource
+                    )
+                }
+
+                is SwitchType.OneUI -> {
+                    OneUISwitch(
+                        modifier = modifier
+                            .minimumInteractiveComponentSize(),
+                        colors = switchColors.copy(
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerLow
                         ),
                         checked = checked,
                         enabled = enabled,

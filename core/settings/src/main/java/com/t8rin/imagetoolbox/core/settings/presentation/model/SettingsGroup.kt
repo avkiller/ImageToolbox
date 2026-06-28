@@ -19,24 +19,25 @@
 
 package com.t8rin.imagetoolbox.core.settings.presentation.model
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Celebration
-import androidx.compose.material.icons.rounded.Description
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.t8rin.imagetoolbox.core.domain.utils.Flavor
+import com.t8rin.imagetoolbox.core.resources.BuildConfig
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Celebration
 import com.t8rin.imagetoolbox.core.resources.icons.ClipboardFile
 import com.t8rin.imagetoolbox.core.resources.icons.Cool
 import com.t8rin.imagetoolbox.core.resources.icons.Database
+import com.t8rin.imagetoolbox.core.resources.icons.Description
 import com.t8rin.imagetoolbox.core.resources.icons.DesignServices
 import com.t8rin.imagetoolbox.core.resources.icons.Draw
 import com.t8rin.imagetoolbox.core.resources.icons.Exif
 import com.t8rin.imagetoolbox.core.resources.icons.Firebase
-import com.t8rin.imagetoolbox.core.resources.icons.FolderOpened
+import com.t8rin.imagetoolbox.core.resources.icons.FolderOpen
 import com.t8rin.imagetoolbox.core.resources.icons.Glyphs
 import com.t8rin.imagetoolbox.core.resources.icons.HardDrive
 import com.t8rin.imagetoolbox.core.resources.icons.ImageSearch
+import com.t8rin.imagetoolbox.core.resources.icons.Info
 import com.t8rin.imagetoolbox.core.resources.icons.LabelPercent
 import com.t8rin.imagetoolbox.core.resources.icons.Mobile
 import com.t8rin.imagetoolbox.core.resources.icons.MobileArrowDown
@@ -46,8 +47,9 @@ import com.t8rin.imagetoolbox.core.resources.icons.MobileVibrate
 import com.t8rin.imagetoolbox.core.resources.icons.Psychology
 import com.t8rin.imagetoolbox.core.resources.icons.ResponsiveLayout
 import com.t8rin.imagetoolbox.core.resources.icons.Routine
+import com.t8rin.imagetoolbox.core.resources.icons.Shadow
 import com.t8rin.imagetoolbox.core.resources.icons.SquareFoot
-import com.t8rin.imagetoolbox.core.resources.icons.Tonality
+import java.util.Locale
 
 sealed class SettingsGroup(
     val id: Int,
@@ -103,7 +105,9 @@ sealed class SettingsGroup(
             Setting.SliderType,
             Setting.ShapeType,
             Setting.CornersSize,
+            Setting.ShapeByInteractionThrottle,
             Setting.FlingType,
+            Setting.MotionDurationScale,
             Setting.UseCompactSelectors,
             Setting.DragHandleWidth,
             Setting.CenterAlignDialogButtons,
@@ -124,7 +128,7 @@ sealed class SettingsGroup(
 
     data object Shadows : SettingsGroup(
         id = 5,
-        icon = Icons.Rounded.Tonality,
+        icon = Icons.Outlined.Shadow,
         titleId = R.string.shadows,
         settingsList = listOf(
             Setting.ContainerShadows,
@@ -155,9 +159,12 @@ sealed class SettingsGroup(
         titleId = R.string.tools_arrangement,
         settingsList = listOf(
             Setting.ScreenOrder,
+            Setting.ShowToolsHistory,
             Setting.ScreenSearch,
             Setting.EnableLauncherMode,
-            Setting.GroupOptions
+            Setting.GroupOptions,
+            Setting.FavoriteToolsInGroupedMode,
+            Setting.ShowFavoriteAsLast
         ),
         initialState = false
     )
@@ -196,7 +203,8 @@ sealed class SettingsGroup(
             Setting.DefaultDrawLineWidth,
             Setting.DefaultDrawColor,
             Setting.DefaultDrawPathMode,
-            Setting.Magnifier
+            Setting.Magnifier,
+            Setting.DrawBitmapBorder
         ),
         initialState = false
     )
@@ -206,17 +214,20 @@ sealed class SettingsGroup(
         icon = Icons.Rounded.Exif,
         titleId = R.string.exif,
         settingsList = listOf(
-            Setting.ExifWidgetInitialState
+            Setting.AlwaysClearExif,
+            Setting.ExifWidgetInitialState,
+            Setting.KeepDateTime
         ),
         initialState = false
     )
 
     data object Folder : SettingsGroup(
         id = 12,
-        icon = Icons.Rounded.FolderOpened,
+        icon = Icons.Rounded.FolderOpen,
         titleId = R.string.folder,
         settingsList = listOf(
             Setting.SavingFolder,
+            Setting.SaveToOriginalFolder,
             Setting.OneTimeSaveLocation
         ),
         initialState = false
@@ -304,15 +315,19 @@ sealed class SettingsGroup(
         id = 19,
         icon = Icons.Rounded.Info,
         titleId = R.string.about_app,
-        settingsList = listOf(
+        settingsList = listOfNotNull(
             Setting.CurrentVersionCode,
+            Setting.AppUsageStatistics,
+            Setting.AppLogs,
             Setting.OpenSourceLicenses,
             Setting.HelpTranslate,
             Setting.IssueTracker,
-            Setting.FreeSoftwarePartner,
+            Setting.FreeSoftwarePartner.takeIf { !Flavor.isFoss() && Locale.getDefault().language == "ru" },
             Setting.TelegramGroup,
             Setting.TelegramChannel,
-            Setting.SourceCode
+            Setting.SourceCode,
+            Setting.HelpTips,
+            Setting.DebugMenu.takeIf { BuildConfig.DEBUG }
         ),
         initialState = true
     )
@@ -359,6 +374,7 @@ sealed class SettingsGroup(
         settingsList = listOf(
             Setting.Emoji,
             Setting.EmojisCount,
+            Setting.UseAnimatedEmojis,
             Setting.UseRandomEmojis
         ),
         initialState = false
@@ -386,6 +402,7 @@ sealed class SettingsGroup(
             Setting.AllowSkipIfLarger,
             Setting.ToolsHiddenForShare,
             Setting.EnableToolExitConfirmation,
+            Setting.EnableBackgroundColorForAlphaFormats,
             Setting.ShowSettingsInLandscape,
             Setting.UseFullscreenSettings,
             Setting.FastSettingsSide,
@@ -399,7 +416,7 @@ sealed class SettingsGroup(
 
     companion object {
         val entries: List<SettingsGroup> by lazy {
-            listOf(
+            listOfNotNull(
                 ContactMe,
                 PrimaryCustomization,
                 SecondaryCustomization,
@@ -423,12 +440,10 @@ sealed class SettingsGroup(
                 Cache,
                 ImageSource,
                 BackupRestore,
-                Firebase,
+                Firebase.takeIf { !Flavor.isFoss() },
                 Updates,
                 AboutApp
-            ).filter {
-                !(it is Firebase && Flavor.isFoss())
-            }
+            )
         }
     }
 }

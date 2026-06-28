@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AddCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -40,17 +38,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AddCircle
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.ImageReorderCarousel
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
@@ -78,9 +79,6 @@ import com.t8rin.imagetoolbox.feature.image_stacking.presentation.screenLogic.Im
 fun ImageStackingContent(
     component: ImageStackingComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     AutoContentBasedColors(component.previewBitmap)
 
     val imagePicker = rememberImagePicker(onSuccess = component::updateUris)
@@ -105,8 +103,7 @@ fun ImageStackingContent(
 
     val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmaps(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResult
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -138,13 +135,20 @@ fun ImageStackingContent(
             var editSheetData by remember {
                 mutableStateOf(listOf<Uri>())
             }
+            if (!isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
             ShareButton(
                 enabled = component.previewBitmap != null,
-                onShare = {
-                    component.shareBitmap(showConfetti)
-                },
+                onShare = component::shareBitmap,
                 onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
+                    component.cacheCurrentImage(Clipboard::copy)
                 },
                 onEdit = {
                     component.cacheCurrentImage {
@@ -160,10 +164,15 @@ fun ImageStackingContent(
                 },
                 onNavigate = component.onNavigate
             )
-            ZoomButton(
-                onClick = { showZoomSheet = true },
-                visible = component.previewBitmap != null,
-            )
+            if (isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
         },
         imagePreview = {
             ImageContainer(
@@ -179,6 +188,11 @@ fun ImageStackingContent(
             if (component.stackImages.isEmpty()) {
                 TopAppBarEmoji()
             }
+
+            ZoomButton(
+                onClick = { showZoomSheet = true },
+                visible = component.previewBitmap != null,
+            )
         },
         controls = {
             Column(
@@ -220,8 +234,7 @@ fun ImageStackingContent(
                                 onStackImageChange = { image: StackImage ->
                                     component.updateStackImage(
                                         value = image,
-                                        index = index,
-                                        onFailure = essentials::showFailureToast
+                                        index = index
                                     )
                                 },
                                 isRemoveVisible = component.stackImages.size > 2,
@@ -244,7 +257,7 @@ fun ImageStackingContent(
                                 )
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.AddCircleOutline,
+                                imageVector = Icons.Outlined.AddCircle,
                                 contentDescription = stringResource(R.string.add_image)
                             )
                             Spacer(Modifier.width(8.dp))

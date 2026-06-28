@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
@@ -34,12 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.icons.Info
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCircleShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 
@@ -51,11 +52,12 @@ fun SupportingButton(
     containerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
     contentColor: Color = MaterialTheme.colorScheme.contentColorFor(containerColor),
     style: TextStyle = LocalTextStyle.current,
+    shape: Shape = AutoCircleShape(),
     iconPadding: Dp = 1.dp
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = shapeByInteraction(
-        shape = IconButtonDefaults.smallRoundShape,
+        shape = shape,
         pressedShape = ShapeDefaults.extraSmall,
         interactionSource = interactionSource
     )

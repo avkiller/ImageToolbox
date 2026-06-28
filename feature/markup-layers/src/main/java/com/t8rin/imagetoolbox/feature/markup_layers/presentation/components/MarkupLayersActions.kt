@@ -18,17 +18,18 @@
 package com.t8rin.imagetoolbox.feature.markup_layers.presentation.components
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Redo
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,9 +40,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.emoji.Emoji
-import com.t8rin.imagetoolbox.core.resources.icons.Stacks
-import com.t8rin.imagetoolbox.core.resources.icons.StickerEmoji
+import com.t8rin.imagetoolbox.core.resources.icons.AddSticky
+import com.t8rin.imagetoolbox.core.resources.icons.EmojiSticky
+import com.t8rin.imagetoolbox.core.resources.icons.ImageSticky
+import com.t8rin.imagetoolbox.core.resources.icons.Layers
+import com.t8rin.imagetoolbox.core.resources.icons.Redo
+import com.t8rin.imagetoolbox.core.resources.icons.StarSticky
+import com.t8rin.imagetoolbox.core.resources.icons.TextSticky
+import com.t8rin.imagetoolbox.core.resources.icons.Undo
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
@@ -52,6 +60,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.EmojiSelectionSheet
 import com.t8rin.imagetoolbox.feature.markup_layers.domain.LayerType
+import com.t8rin.imagetoolbox.feature.markup_layers.domain.withPreferredInitialGeometryFor
 import com.t8rin.imagetoolbox.feature.markup_layers.presentation.components.model.UiMarkupLayer
 import com.t8rin.imagetoolbox.feature.markup_layers.presentation.screenLogic.MarkupLayersComponent
 
@@ -63,7 +72,6 @@ internal fun MarkupLayersActions(
     onToggleLayersSectionQuick: () -> Unit
 ) {
     val layerImagePicker = rememberImagePicker { uri: Uri ->
-        component.deactivateAllLayers()
         component.addLayer(
             UiMarkupLayer(
                 type = LayerType.Picture.Image(uri)
@@ -74,6 +82,9 @@ internal fun MarkupLayersActions(
         mutableStateOf(false)
     }
     var showEmojiPicker by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showShapePicker by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -95,41 +106,95 @@ internal fun MarkupLayersActions(
             enabled = component.layers.isNotEmpty()
         ) {
             Icon(
-                imageVector = Icons.Rounded.Stacks,
+                imageVector = Icons.Rounded.Layers,
                 contentDescription = null
             )
         }
-        EnhancedIconButton(
-            onClick = {
-                showTextEnteringDialog = true
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.container(
+                shape = ShapeDefaults.circle,
+                color = takeColorFromScheme {
+                    if (component.isOptionsExpanded) surface else Color.Transparent
+                },
+                composeColorOnTopOfBackground = false,
+                clip = false,
+                resultPadding = 0.dp
+            )
+        ) {
+            EnhancedIconButton(
+                onClick = component::toggleExpandOptions,
+                containerColor = takeColorFromScheme {
+                    if (component.isOptionsExpanded) secondaryContainer else Color.Transparent
+                },
+                contentColor = takeColorFromScheme {
+                    if (component.isOptionsExpanded) onSecondaryContainer else LocalContentColor.current
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AddSticky,
+                    contentDescription = null
+                )
             }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.TextFields,
-                contentDescription = null
-            )
-        }
-        EnhancedIconButton(
-            onClick = {
-                showEmojiPicker = true
+
+            AnimatedVisibility(
+                visible = component.isOptionsExpanded,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(end = 4.dp)
+                ) {
+                    EnhancedIconButton(
+                        onClick = {
+                            showTextEnteringDialog = true
+                        },
+                        forceMinimumInteractiveComponentSize = false
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.TextSticky,
+                            contentDescription = null
+                        )
+                    }
+                    EnhancedIconButton(
+                        onClick = layerImagePicker::pickImage,
+                        forceMinimumInteractiveComponentSize = false
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ImageSticky,
+                            contentDescription = null
+                        )
+                    }
+                    EnhancedIconButton(
+                        onClick = {
+                            showEmojiPicker = true
+                        },
+                        forceMinimumInteractiveComponentSize = false
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.EmojiSticky,
+                            contentDescription = null
+                        )
+                    }
+                    EnhancedIconButton(
+                        onClick = {
+                            showShapePicker = true
+                        },
+                        forceMinimumInteractiveComponentSize = false
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.StarSticky,
+                            contentDescription = null
+                        )
+                    }
+                }
             }
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.StickerEmoji,
-                contentDescription = null
-            )
-        }
-        EnhancedIconButton(
-            onClick = layerImagePicker::pickImage
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Image,
-                contentDescription = null
-            )
         }
 
         val isPortrait by isPortraitOrientationAsState()
         if (isPortrait) {
+            Spacer(Modifier.width(8.dp))
             MarkupLayersUndoRedo(
                 component = component,
                 color = MaterialTheme.colorScheme.surface,
@@ -139,16 +204,12 @@ internal fun MarkupLayersActions(
         }
     }
 
-    val allEmojis = Emoji.allIcons()
-
     EmojiSelectionSheet(
         selectedEmojiIndex = null,
-        allEmojis = allEmojis,
         onEmojiPicked = {
-            component.deactivateAllLayers()
             component.addLayer(
                 UiMarkupLayer(
-                    type = LayerType.Picture.Sticker(allEmojis[it])
+                    type = LayerType.Picture.Sticker(Emoji.allIcons[it])
                 )
             )
             showEmojiPicker = false
@@ -156,16 +217,30 @@ internal fun MarkupLayersActions(
         visible = showEmojiPicker,
         onDismiss = {
             showEmojiPicker = false
+        },
+        icon = Icons.Outlined.EmojiSticky,
+        useAnimatedEmojis = false
+    )
+
+    AddShapeLayerDialog(
+        visible = showShapePicker,
+        onDismiss = {
+            showShapePicker = false
+        },
+        onShapePicked = { mode ->
+            component.addLayer(
+                UiMarkupLayer(
+                    type = LayerType.Shape.Default.withPreferredInitialGeometryFor(mode)
+                )
+            )
+            showShapePicker = false
         }
     )
 
     AddTextLayerDialog(
         visible = showTextEnteringDialog,
         onDismiss = { showTextEnteringDialog = false },
-        onAddLayer = {
-            component.deactivateAllLayers()
-            component.addLayer(it)
-        }
+        onAddLayer = component::addLayer
     )
 }
 
@@ -184,19 +259,19 @@ internal fun MarkupLayersUndoRedo(
     ) {
         EnhancedIconButton(
             onClick = component::undo,
-            enabled = component.lastLayers.isNotEmpty() || component.layers.isNotEmpty()
+            enabled = component.canUndo
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Undo,
+                imageVector = Icons.Rounded.Undo,
                 contentDescription = "Undo"
             )
         }
         EnhancedIconButton(
             onClick = component::redo,
-            enabled = component.undoneLayers.isNotEmpty()
+            enabled = component.canRedo
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Redo,
+                imageVector = Icons.Rounded.Redo,
                 contentDescription = "Redo"
             )
         }

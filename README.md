@@ -13,18 +13,18 @@
 </br>
 
 <p align="center">
-  <img alt="API" src="https://img.shields.io/badge/Api%2023+-50f270?logo=android&logoColor=black&style=for-the-badge"/></a>
+  <img alt="API" src="https://img.shields.io/badge/Api%2024+-50f270?logo=android&logoColor=black&style=for-the-badge"/></a>
   <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-a503fc?logo=kotlin&logoColor=white&style=for-the-badge"/></a>
   <img alt="Jetpack Compose" src="https://img.shields.io/static/v1?style=for-the-badge&message=Jetpack+Compose&color=4285F4&logo=Jetpack+Compose&logoColor=FFFFFF&label="/></a> 
     <img alt="material" src="https://custom-icon-badges.demolab.com/badge/material%20you-lightblue?style=for-the-badge&logoColor=333&logo=material-you"/></a>
   </br>
   </br>
   
- <img src="https://img.shields.io/badge/255.7K-aeff4d?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgICA8cGF0aCBkPSJNMTIuODksM0wxNC44NSwzLjRMMTEuMTEsMjFMOS4xNSwyMC42TDEyLjg5LDNNMTkuNTksMTJMMTYsOC40MVY1LjU4TDIyLjQyLDEyTDE2LDE4LjQxVjE1LjU4TDE5LjU5LDEyTTEuNTgsMTJMOCw1LjU4VjguNDFMNC40MSwxMkw4LDE1LjU4VjE4LjQxTDEuNTgsMTJaIgogICAgICAgIGZpbGw9IndoaXRlIiAvPgo8L3N2Zz4%3D&label=Lines%20of%20code&labelColor=4b731a"/>
+ <img src="https://img.shields.io/badge/391.2K-aeff4d?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgICA8cGF0aCBkPSJNMTIuODksM0wxNC44NSwzLjRMMTEuMTEsMjFMOS4xNSwyMC42TDEyLjg5LDNNMTkuNTksMTJMMTYsOC40MVY1LjU4TDIyLjQyLDEyTDE2LDE4LjQxVjE1LjU4TDE5LjU5LDEyTTEuNTgsMTJMOCw1LjU4VjguNDFMNC40MSwxMkw4LDE1LjU4VjE4LjQxTDEuNTgsMTJaIgogICAgICAgIGZpbGw9IndoaXRlIiAvPgo8L3N2Zz4%3D&label=Lines%20of%20code&labelColor=4b731a"/>
 
-<img src="https://img.shields.io/github/commits-since/t8rin/ImageResizer/v1.0?color=palegreen&label=Commits&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnNvdXJjZS1jb21taXQ8L3RpdGxlPjxwYXRoIGQ9Ik0xNywxMkMxNywxNC40MiAxNS4yOCwxNi40NCAxMywxNi45VjIxSDExVjE2LjlDOC43MiwxNi40NCA3LDE0LjQyIDcsMTJDNyw5LjU4IDguNzIsNy41NiAxMSw3LjFWM0gxM1Y3LjFDMTUuMjgsNy41NiAxNyw5LjU4IDE3LDEyTTEyLDlBMywzIDAgMCwwIDksMTJBMywzIDAgMCwwIDEyLDE1QTMsMyAwIDAsMCAxNSwxMkEzLDMgMCAwLDAgMTIsOVoiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg==&labelColor=07ab4e">
+<img src="https://img.shields.io/github/commits-since/t8rin/ImageToolbox/v1.0?color=palegreen&label=Commits&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnNvdXJjZS1jb21taXQ8L3RpdGxlPjxwYXRoIGQ9Ik0xNywxMkMxNywxNC40MiAxNS4yOCwxNi40NCAxMywxNi45VjIxSDExVjE2LjlDOC43MiwxNi40NCA3LDE0LjQyIDcsMTJDNyw5LjU4IDguNzIsNy41NiAxMSw3LjFWM0gxM1Y3LjFDMTUuMjgsNy41NiAxNyw5LjU4IDE3LDEyTTEyLDlBMywzIDAgMCwwIDksMTJBMywzIDAgMCwwIDEyLDE1QTMsMyAwIDAsMCAxNSwxMkEzLDMgMCAwLDAgMTIsOVoiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg==&labelColor=07ab4e&v=2">
  
-<img src="https://img.shields.io/github/languages/code-size/t8rin/imageresizer?style=for-the-badge&color=8ce2ff&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPndlaWdodDwvdGl0bGU+PHBhdGggZD0iTTEyLDNBNCw0IDAgMCwxIDE2LDdDMTYsNy43MyAxNS44MSw4LjQxIDE1LjQ2LDlIMThDMTguOTUsOSAxOS43NSw5LjY3IDE5Ljk1LDEwLjU2QzIxLjk2LDE4LjU3IDIyLDE4Ljc4IDIyLDE5QTIsMiAwIDAsMSAyMCwyMUg0QTIsMiAwIDAsMSAyLDE5QzIsMTguNzggMi4wNCwxOC41NyA0LjA1LDEwLjU2QzQuMjUsOS42NyA1LjA1LDkgNiw5SDguNTRDOC4xOSw4LjQxIDgsNy43MyA4LDdBNCw0IDAgMCwxIDEyLDNNMTIsNUEyLDIgMCAwLDAgMTAsN0EyLDIgMCAwLDAgMTIsOUEyLDIgMCAwLDAgMTQsN0EyLDIgMCAwLDAgMTIsNVoiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg==&labelColor=0782ab">
+<img src="https://img.shields.io/github/languages/code-size/t8rin/ImageToolbox?style=for-the-badge&color=8ce2ff&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPndlaWdodDwvdGl0bGU+PHBhdGggZD0iTTEyLDNBNCw0IDAgMCwxIDE2LDdDMTYsNy43MyAxNS44MSw4LjQxIDE1LjQ2LDlIMThDMTguOTUsOSAxOS43NSw5LjY3IDE5Ljk1LDEwLjU2QzIxLjk2LDE4LjU3IDIyLDE4Ljc4IDIyLDE5QTIsMiAwIDAsMSAyMCwyMUg0QTIsMiAwIDAsMSAyLDE5QzIsMTguNzggMi4wNCwxOC41NyA0LjA1LDEwLjU2QzQuMjUsOS42NyA1LjA1LDkgNiw5SDguNTRDOC4xOSw4LjQxIDgsNy43MyA4LDdBNCw0IDAgMCwxIDEyLDNNMTIsNUEyLDIgMCAwLDAgMTAsN0EyLDIgMCAwLDAgMTIsOUEyLDIgMCAwLDAgMTQsN0EyLDIgMCAwLDAgMTIsNVoiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg==&labelColor=0782ab">
  
 </br>
 </br>
@@ -35,23 +35,23 @@
   
 </a>
   
-<a href="https://github.com/t8rin/ImageResizer/releases">
+<a href="https://github.com/t8rin/ImageToolbox/releases">
   
-  <img src="https://img.shields.io/github/downloads/t8rin/ImageResizer/total?color=ff9500&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPmRvd25sb2FkPC90aXRsZT48cGF0aCBkPSJNNSwyMEgxOVYxOEg1TTE5LDlIMTVWM0g5VjlINUwxMiwxNkwxOSw5WiIgZmlsbD0id2hpdGUiIC8+PC9zdmc+&labelColor=a6660d"/>
+  <img src="https://img.shields.io/github/downloads/t8rin/ImageToolbox/total?color=ff9500&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPmRvd25sb2FkPC90aXRsZT48cGF0aCBkPSJNNSwyMEgxOVYxOEg1TTE5LDlIMTVWM0g5VjlINUwxMiwxNkwxOSw5WiIgZmlsbD0id2hpdGUiIC8+PC9zdmc+&labelColor=a6660d"/>
   
 </a>
   
-<a href="https://github.com/t8rin/ImageResizer/stargazers">
+<a href="https://github.com/t8rin/ImageToolbox/stargazers">
   
-  <img src="https://img.shields.io/github/stars/t8rin/imageresizer?color=ffff00&style=for-the-badge&labelColor=a1a116&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnN0YXI8L3RpdGxlPjxwYXRoIGQ9Ik0xMiwxNy4yN0wxOC4xOCwyMUwxNi41NCwxMy45N0wyMiw5LjI0TDE0LjgxLDguNjJMMTIsMkw5LjE5LDguNjJMMiw5LjI0TDcuNDUsMTMuOTdMNS44MiwyMUwxMiwxNy4yN1oiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg=="/>
+  <img src="https://img.shields.io/github/stars/t8rin/ImageToolbox?color=ffff00&style=for-the-badge&labelColor=a1a116&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnN0YXI8L3RpdGxlPjxwYXRoIGQ9Ik0xMiwxNy4yN0wxOC4xOCwyMUwxNi41NCwxMy45N0wyMiw5LjI0TDE0LjgxLDguNjJMMTIsMkw5LjE5LDguNjJMMiw5LjI0TDcuNDUsMTMuOTdMNS44MiwyMUwxMiwxNy4yN1oiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg=="/>
   
 </a>
   
 </br>
 
-<a href="https://github.com/t8rin/imageresizer/releases/latest">
+<a href="https://github.com/t8rin/ImageToolbox/releases/latest">
 
-  <img src="https://img.shields.io/github/v/release/t8rin/imageresizer?color=a1168e&include_prereleases&logo=github&style=for-the-badge&labelColor=700f63"/>
+  <img src="https://img.shields.io/github/v/release/t8rin/ImageToolbox?color=a1168e&include_prereleases&logo=github&style=for-the-badge&labelColor=700f63"/>
   
 </a>
 
@@ -70,13 +70,16 @@
 </br>
 </br>
 
-<img src="https://wakatime.com/badge/user/7fa5ec35-3afd-4c14-984e-6ea7daf545c7.svg?style=social" style="height: 28px;"/>
+<img src="https://wakatime-badge.malik-mirov3.workers.dev/" style="height: 28px;"/>
 
 </br>
-</br>
+
+<a href="https://trendshift.io/repositories/12928" target="_blank">
+<img src="https://trendshift-badge.malik-mirov3.workers.dev/?v=2" alt="T8RIN%2FImageToolbox | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
+</a>
 
   <a href="https://hellogithub.com/repository/4c5f2fae4eb545ab87cad9ffd19870ca" target="_blank">
-    <img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=4c5f2fae4eb545ab87cad9ffd19870ca&claim_uid=ubtZe5aXVz0n2QA&theme=dark" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" />
+    <img src="https://hello-github.malik-mirov3.workers.dev/" alt="Featured｜HelloGitHub" style="width: 250px; height: 55px;" width="250" height="55" />
   </a>
   
 
@@ -291,7 +294,7 @@ or click one of the badges below.
     - [x] CodaChrome
     - [x] Cool
     - [x] Deutaromaly
-    - [x] Deutaronotopia
+    - [x] Deuteranopia
     - [x] Night Vision
     - [x] Polaroid
     - [x] Protanopia
@@ -491,6 +494,12 @@ or click one of the badges below.
     - [x] Crt Curvature
     - [x] Pixel Melt
     - [x] Bloom
+    - [x] Distortion
+    - [x] VHS NTSC
+    - [x] Expand Image
+    - [x] Shader
+    - [x] Torn Edge
+    - [x] Drop Shadow 
 
 
   </details>
@@ -510,14 +519,25 @@ or click one of the badges below.
     - Multiple languages at the same time
     - Reading from batch of images to file
     - Placing in EXIF metadata of batch images
+    - Creating searchable PDF with recognized text behind images
+    - Tesseract or PaddleOCR (v5/v6)
 - EXIF metadata editing/deleting
 - Loading images from internet
 - Image Stitching
 - Image Stacking
 - Image Splitting
 - Background Removal
-    - By drawing
-  - Automatically (MlKit, U2NetP, U2Net, RMBG, InSPyReNet, BiRefNet, ISNet)
+  - By drawing
+  - Automatically
+    - MlKit
+    - U2NetP
+    - U2Net
+    - RMBG
+    - InSPyReNet
+    - BiRefNet
+    - ISNet
+    - YOLO
+    - MODNet
 - Watermarking
     - Repeating Text
     - Image
@@ -686,8 +706,9 @@ or click one of the badges below.
     - Zip PDF
     - Print PDF
     - PDF to Text (OCR)
+    - Remove Annotations
 - Document Scanning
-- AI tools (95+ ready to use models available)
+- AI tools (100+ ready to use models available)
     - Upscale
     - Remove BG
     - DeJPEG
@@ -725,8 +746,8 @@ or click one of the badges below.
       - UPC A
       - UPC E
 - Collage Creation
-    - From 2 to 10 images
-    - More than 180 various collage layouts
+    - From 1 to 20 images
+    - More than 310 various collage layouts
 - Image Shrinking
     - Quality compressing
     - Preset shrinking
@@ -788,6 +809,8 @@ or click one of the badges below.
     - JPG
     - PNG Lossless
     - PNG Lossy
+    - OxiPNG
+    - ImageQuant
     - MozJpeg
     - Jpegli
     - JXL
@@ -998,7 +1021,7 @@ or click one of the badges below.
 
 # 📚 Tech stack & Open-source libraries
 
-- Minimum SDK level 23
+- Minimum SDK level 24
 
 - [Kotlin](https://kotlinlang.org/) based
 
@@ -1015,8 +1038,6 @@ or click one of the badges below.
 
 - [Flow](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/)
   to emit values from data layer reactively.
-
-- [Accompanist](https://github.com/google/accompanist) to expand jetpack compose opportunities.
 
 - [Decompose](https://github.com/arkivanov/Decompose) - KMP lifecycle-aware business logic
   components (aka BLoCs) with routing (navigation) and pluggable UI
@@ -1038,16 +1059,10 @@ or click one of the badges below.
     - [Data Store](https://developer.android.com/jetpack/androidx/releases/datastore) - Store data
       asynchronously, consistently, and transactionally.
 
-    - [Lifecycle](https://developer.android.com/jetpack/androidx/releases/lifecycle) - Observe
-      Android lifecycles and handle UI states upon the lifecycle changes.
-
-    - [Exif Interface](https://developer.android.com/jetpack/androidx/releases/exifinterface) - Read
-      and write image file EXIF tags.
-
 - [GPU Image](https://github.com/cats-oss/android-gpuimage) for creating and applying filters to the
   images.
 
-- [SmartToolFactory](https://github.com/SmartToolFactory) provides a bunch of helpful libraries.
+- [DeJpeg](https://github.com/jeeneo/dejpeg) for start of AI tools
 
 - [AVIF Coder](https://github.com/awxkee/avif-coder)
   and [JXL Coder](https://github.com/awxkee/jxl-coder) libraries which provide avif, heic, heif and

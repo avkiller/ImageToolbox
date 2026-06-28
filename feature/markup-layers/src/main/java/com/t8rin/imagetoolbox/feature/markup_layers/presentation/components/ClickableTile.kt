@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,50 +17,91 @@
 
 package com.t8rin.imagetoolbox.feature.markup_layers.presentation.components
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.longPress
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
-import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 
 @Composable
 internal fun ClickableTile(
     onClick: () -> Unit,
     icon: ImageVector,
-    text: String,
+    text: String?,
+    enabled: Boolean = true,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    onHoldStep: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    ClickableTile(
-        onClick = onClick,
-        modifier = modifier
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null
-        )
-        AutoSizeText(
-            text = text,
-            textAlign = TextAlign.Center,
-            style = LocalTextStyle.current.copy(
-                fontSize = 12.sp,
-                lineHeight = 13.sp
+    if (text != null) {
+        val tooltipState = rememberTooltipState()
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                TooltipAnchorPosition.Above
             ),
-            maxLines = 2
-        )
+            tooltip = {
+                PlainTooltip {
+                    Text(text)
+                }
+            },
+            state = tooltipState
+        ) {
+            ClickableTile(
+                containerColor = containerColor,
+                onClick = onClick,
+                enabled = enabled,
+                onHoldStep = onHoldStep,
+                modifier = modifier
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null
+                )
+            }
+        }
+    } else {
+        ClickableTile(
+            containerColor = containerColor,
+            onClick = onClick,
+            enabled = enabled,
+            onHoldStep = onHoldStep,
+            modifier = modifier
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -68,24 +109,102 @@ internal fun ClickableTile(
 @Composable
 internal fun ClickableTile(
     onClick: () -> Unit,
+    enabled: Boolean = true,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    onHoldStep: (() -> Unit)? = null,
+    shape: Shape = ShapeDefaults.extraSmall,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val haptics = LocalHapticFeedback.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val interactionModifier = if (!enabled) {
+        Modifier
+    } else if (onHoldStep != null) {
+        Modifier.pointerInput(onClick, onHoldStep) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                down.consume()
+
+                val press = PressInteraction.Press(down.position)
+                interactionSource.tryEmit(press)
+
+                haptics.longPress()
+                onClick()
+
+                var repeatDelayMs = 140L
+                val minRepeatDelayMs = 45L
+
+                var up = withTimeoutOrNull(240L) {
+                    waitForUpOrCancellation()
+                }
+                if (up != null) {
+                    up.consume()
+                    interactionSource.tryEmit(PressInteraction.Release(press))
+                    return@awaitEachGesture
+                }
+
+                val holdStartNanos = System.nanoTime()
+                var stepsAccumulator = 0f
+                while (up == null) {
+                    val holdDurationMs = ((System.nanoTime() - holdStartNanos) / 1_000_000L)
+
+                    // Smoothly ramps average speed from 1 to 10 steps per tick.
+                    val progress = (holdDurationMs / 3000f).coerceIn(0f, 1f)
+                    val smoothStepsPerTick = 1f + 9f * progress
+                    stepsAccumulator += smoothStepsPerTick
+
+                    val stepsPerTick = stepsAccumulator.toInt().coerceIn(1, 20).also {
+                        stepsAccumulator -= it
+                    }
+                    repeat(stepsPerTick) {
+                        onHoldStep()
+                    }
+
+                    repeatDelayMs = (repeatDelayMs * 0.94f).toLong()
+                        .coerceAtLeast(minRepeatDelayMs)
+                    up = withTimeoutOrNull(repeatDelayMs) {
+                        waitForUpOrCancellation()
+                    }
+                }
+                up.consume()
+                interactionSource.tryEmit(PressInteraction.Release(press))
+            }
+        }
+    } else {
+        Modifier.hapticsClickable(
+            interactionSource = interactionSource,
+            indication = LocalIndication.current,
+            onClick = onClick
+        )
+    }
+
+    val animatedShape = shapeByInteraction(
+        shape = shape,
+        pressedShape = ShapeDefaults.pressed,
+        interactionSource = interactionSource
+    )
+
     Column(
         modifier = Modifier
             .then(
                 if (modifier == Modifier) {
-                    Modifier.size(84.dp)
+                    Modifier.size(
+                        width = 100.dp,
+                        height = 72.dp
+                    )
                 } else {
                     modifier
                 }
             )
             .container(
-                shape = ShapeDefaults.extraSmall,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                shape = animatedShape,
+                color = containerColor,
                 resultPadding = 0.dp
             )
-            .hapticsClickable(onClick = onClick)
+            .alpha(if (enabled) 1f else 0.5f)
+            .then(interactionModifier)
             .padding(6.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

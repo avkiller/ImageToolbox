@@ -26,9 +26,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ColorLens
-import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,13 +45,15 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
 import com.t8rin.imagetoolbox.core.settings.domain.model.ColorHarmonizer
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
 import com.t8rin.imagetoolbox.core.ui.theme.toColor
-import com.t8rin.imagetoolbox.core.ui.utils.confetti.LocalConfettiHostState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorSelection
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.RecentAndFavoriteColorsCard
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
@@ -81,7 +80,6 @@ fun ConfettiHarmonizationColorSettingItem(
 
     val enabled = settingsState.isConfettiEnabled
 
-    val confettiHostState = LocalConfettiHostState.current
     val scope = rememberCoroutineScope()
 
     var showColorPicker by remember {
@@ -110,7 +108,7 @@ fun ConfettiHarmonizationColorSettingItem(
                 ),
                 iconEndPadding = 14.dp,
                 text = stringResource(R.string.harmonization_color),
-                icon = Icons.Outlined.ColorLens
+                icon = Icons.Outlined.Palette
             )
 
             FlowRow(
@@ -130,7 +128,10 @@ fun ConfettiHarmonizationColorSettingItem(
                 items.forEach { harmonizer ->
                     val colorScheme = MaterialTheme.colorScheme
                     val selectedColor = when (harmonizer) {
-                        is ColorHarmonizer.Custom -> Color(value.ordinal)
+                        is ColorHarmonizer.Custom -> ((value as? ColorHarmonizer.Custom)
+                            ?.color
+                            ?.toColor()
+                            ?: colorScheme.primary)
                             .blend(
                                 color = colorScheme.surface,
                                 fraction = 0.1f
@@ -143,11 +144,11 @@ fun ConfettiHarmonizationColorSettingItem(
                     EnhancedChip(
                         onClick = {
                             if (harmonizer !is ColorHarmonizer.Custom) {
-                                confettiHostState.currentToastData?.dismiss()
+                                AppToastHost.dismissToasts()
                                 onValueChange(harmonizer)
                                 scope.launch {
                                     delay(200L)
-                                    confettiHostState.showConfetti()
+                                    AppToastHost.showConfetti()
                                 }
                             } else {
                                 showColorPicker = true
@@ -217,18 +218,18 @@ fun ConfettiHarmonizationColorSettingItem(
         title = {
             TitleItem(
                 text = stringResource(R.string.color),
-                icon = Icons.Rounded.ColorLens
+                icon = Icons.Rounded.Palette
             )
         },
         confirmButton = {
             EnhancedButton(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 onClick = {
-                    confettiHostState.currentToastData?.dismiss()
+                    AppToastHost.dismissToasts()
                     onValueChange(ColorHarmonizer.Custom(tempColor.toArgb()))
                     scope.launch {
                         delay(200L)
-                        confettiHostState.showConfetti()
+                        AppToastHost.showConfetti()
                     }
                     showColorPicker = false
                 }

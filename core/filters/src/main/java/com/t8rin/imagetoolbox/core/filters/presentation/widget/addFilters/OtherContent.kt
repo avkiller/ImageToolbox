@@ -18,7 +18,6 @@
 package com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters
 
 import android.graphics.Bitmap
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,9 +33,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ImageSearch
-import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
@@ -55,12 +51,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiCubeLutFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
-import com.t8rin.imagetoolbox.core.filters.presentation.utils.collectAsUiState
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterSelectionItem
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ImageSearch
+import com.t8rin.imagetoolbox.core.resources.icons.Save
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.LocalFilterPreviewModelProvider
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageSelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
@@ -79,13 +78,13 @@ internal fun OtherContent(
     component: AddFiltersSheetComponent,
     currentGroup: UiFilter.Group,
     filters: List<UiFilter<*>>,
+    favoriteFilterKeys: Set<String>,
     onVisibleChange: (Boolean) -> Unit,
     onFilterPickedWithParams: (UiFilter<*>) -> Unit,
     onFilterPicked: (UiFilter<*>) -> Unit,
     previewBitmap: Bitmap?,
+    showPreviewImages: Boolean
 ) {
-    val essentials = rememberLocalEssentials()
-    val favoriteFilters by component.favoritesFlow.collectAsUiState()
     val onRequestFilterMapping = component::filterToTransformation
 
     LazyColumn(
@@ -104,7 +103,8 @@ internal fun OtherContent(
             FilterSelectionItem(
                 filter = filter,
                 canOpenPreview = previewBitmap != null,
-                favoriteFilters = favoriteFilters,
+                showPreviewImage = showPreviewImages,
+                isInFavorite = filter::class.java.name in favoriteFilterKeys,
                 onLongClick = {
                     component.setPreviewData(filter)
                 },
@@ -131,7 +131,7 @@ internal fun OtherContent(
                     component.updateCubeLuts(
                         startDownloadIfNeeded = true,
                         forceUpdate = forceUpdate,
-                        onFailure = essentials::showFailureToast,
+                        onFailure = AppToastHost::showFailureToast,
                         downloadOnlyNewData = downloadOnlyNewData
                     )
                 }
@@ -144,7 +144,6 @@ private fun LazyListScope.lutAdditionalSection(
     component: AddFiltersSheetComponent
 ) {
     item {
-        val essentials = rememberLocalEssentials()
         PreferenceItemOverload(
             title = stringResource(R.string.save_empty_lut),
             subtitle = stringResource(R.string.save_empty_lut_sub),
@@ -172,18 +171,13 @@ private fun LazyListScope.lutAdditionalSection(
                     }
                     val saveNeutralLut: (String?) -> Unit = {
                         component.saveNeutralLut(
-                            oneTimeSaveLocationUri = it,
-                            onComplete = essentials::parseSaveResult
+                            oneTimeSaveLocationUri = it
                         )
                     }
                     Row {
                         ShareButton(
-                            onShare = {
-                                component.shareNeutralLut(essentials::showConfetti)
-                            },
-                            onCopy = {
-                                component.cacheNeutralLut(essentials::copyToClipboard)
-                            }
+                            onShare = component::shareNeutralLut,
+                            onCopy = component::cacheNeutralLut
                         )
                         EnhancedIconButton(
                             onClick = {

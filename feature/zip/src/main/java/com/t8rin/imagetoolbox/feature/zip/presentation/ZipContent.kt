@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
 package com.t8rin.imagetoolbox.feature.zip.presentation
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,9 +28,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FileOpen
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
@@ -58,8 +57,6 @@ fun ZipContent(
         } else component.onGoBack()
     }
 
-    val essentials = rememberLocalEssentials()
-
     val filePicker = rememberFilePicker(onSuccess = component::setUris)
 
     AutoFilePicker(
@@ -83,7 +80,7 @@ fun ZipContent(
         imagePreview = {},
         showImagePreviewAsStickyHeader = false,
         placeImagePreview = false,
-        addHorizontalCutoutPaddingIfNoPreview = false,
+        addHorizontalCutoutPaddingIfNoPreview = component.uris.isNotEmpty(),
         noDataControls = {
             FileNotPickedWidget(onPickFile = filePicker::pickFile)
         },
@@ -100,9 +97,7 @@ fun ZipContent(
                 secondaryButtonIcon = Icons.Rounded.FileOpen,
                 secondaryButtonText = stringResource(R.string.pick_file),
                 isPrimaryButtonVisible = component.uris.isNotEmpty(),
-                onPrimaryButtonClick = {
-                    component.startCompression(essentials::showFailureToast)
-                },
+                onPrimaryButtonClick = component::startCompression,
                 actions = {
                     EnhancedChip(
                         selected = true,

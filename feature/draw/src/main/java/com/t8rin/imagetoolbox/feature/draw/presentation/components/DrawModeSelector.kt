@@ -24,12 +24,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoFixHigh
-import androidx.compose.material.icons.outlined.Healing
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.rounded.BlurCircular
-import androidx.compose.material.icons.rounded.TextFormat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,12 +44,18 @@ import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.model.Pt
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheetComponent
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.BlurCircular
 import com.t8rin.imagetoolbox.core.resources.icons.Cube
+import com.t8rin.imagetoolbox.core.resources.icons.Healing
 import com.t8rin.imagetoolbox.core.resources.icons.Highlighter
+import com.t8rin.imagetoolbox.core.resources.icons.Image
 import com.t8rin.imagetoolbox.core.resources.icons.MeshGradient
 import com.t8rin.imagetoolbox.core.resources.icons.NeonBrush
 import com.t8rin.imagetoolbox.core.resources.icons.Pen
+import com.t8rin.imagetoolbox.core.resources.icons.TextFormat
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.SupportingButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButtonGroup
@@ -251,7 +251,7 @@ private fun DrawMode.getIcon(): ImageVector = when (this) {
     is DrawMode.Highlighter -> Icons.Outlined.Highlighter
     is DrawMode.Neon -> Icons.Outlined.NeonBrush
     is DrawMode.Pen -> Icons.Outlined.Pen
-    is DrawMode.PathEffect.PrivacyBlur -> Icons.Rounded.BlurCircular
+    is DrawMode.PathEffect.PrivacyBlur -> Icons.Outlined.BlurCircular
     is DrawMode.PathEffect.Pixelation -> Icons.Outlined.Cube
     is DrawMode.Text -> Icons.Rounded.TextFormat
     is DrawMode.Image -> Icons.Outlined.Image

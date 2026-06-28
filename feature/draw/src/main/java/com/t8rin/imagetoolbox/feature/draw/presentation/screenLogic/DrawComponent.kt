@@ -22,9 +22,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
@@ -39,7 +42,6 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.domain.utils.update
 import com.t8rin.imagetoolbox.core.filters.domain.FilterProvider
@@ -48,6 +50,7 @@ import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCre
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsProvider
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.savable
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
@@ -86,12 +89,7 @@ class DrawComponent @AssistedInject internal constructor(
 
     init {
         debounce {
-            initialUri?.let {
-                setUri(
-                    uri = it,
-                    onFailure = {}
-                )
-            }
+            initialUri?.let(::setUri)
         }
     }
 
@@ -114,8 +112,8 @@ class DrawComponent @AssistedInject internal constructor(
     )
     val drawOnBackgroundParams: DrawOnBackgroundParams by _drawOnBackgroundParams
 
-    private val _bitmap: MutableState<Bitmap?> = mutableStateOf(null)
-    val bitmap: Bitmap? by _bitmap
+    private val _imageBitmap: MutableState<ImageBitmap?> = mutableStateOf(null)
+    val imageBitmap: ImageBitmap? by _imageBitmap
 
     private val _backgroundColor: MutableState<Color> = mutableStateOf(Color.Transparent)
     val backgroundColor by _backgroundColor
@@ -147,6 +145,9 @@ class DrawComponent @AssistedInject internal constructor(
     private val _undonePaths = mutableStateOf(listOf<UiPathPaint>())
     val undonePaths: List<UiPathPaint> by _undonePaths
 
+    private val _spotHealCache = mutableStateMapOf<Int, Bitmap>()
+    val spotHealCache: Map<Int, Bitmap> = _spotHealCache
+
     val havePaths: Boolean
         get() = paths.isNotEmpty() || lastPaths.isNotEmpty() || undonePaths.isNotEmpty()
 
@@ -177,13 +178,12 @@ class DrawComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmap(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (saveResult: SaveResult) -> Unit,
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
             getDrawingBitmap()?.let { localBitmap ->
-                onComplete(
+                parseSaveResult(
                     fileController.save(
                         saveTarget = ImageSaveTarget(
                             imageInfo = ImageInfo(
@@ -213,9 +213,8 @@ class DrawComponent @AssistedInject internal constructor(
         }
     }
 
-    private suspend fun calculateScreenOrientationBasedOnUri(uri: Uri): Int {
-        val bmp = imageGetter.getImage(uri = uri.toString(), originalSize = false)?.image
-        val imageRatio = (bmp?.width ?: 0) / (bmp?.height?.toFloat() ?: 1f)
+    private fun calculateScreenOrientationBasedOnBitmap(bitmap: Bitmap): Int {
+        val imageRatio = bitmap.width / bitmap.height.toFloat()
         return if (imageRatio <= 1.05f) {
             ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         } else {
@@ -236,34 +235,43 @@ class DrawComponent @AssistedInject internal constructor(
     private fun updateBitmap(bitmap: Bitmap?) {
         componentScope.launch {
             _isImageLoading.value = true
-            _bitmap.value = imageScaler.scaleUntilCanShow(bitmap)
+            val scaledBitmap = imageScaler.scaleUntilCanShow(bitmap)
+            val scaledImageBitmap = scaledBitmap?.let {
+                withContext(defaultDispatcher) {
+                    it.copy(Bitmap.Config.ARGB_8888, true).asImageBitmap()
+                }
+            }
+            _imageBitmap.value = scaledImageBitmap
             _isImageLoading.value = false
         }
     }
 
     fun setUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit,
+        uri: Uri
     ) {
         componentScope.launch {
             _paths.value = listOf()
             _lastPaths.value = listOf()
             _undonePaths.value = listOf()
+            _spotHealCache.clear()
+            _imageBitmap.value = null
             _isImageLoading.value = true
 
             _uri.value = uri
-            if (drawBehavior !is DrawBehavior.Image) {
-                _drawBehavior.update {
-                    DrawBehavior.Image(calculateScreenOrientationBasedOnUri(uri))
-                }
-            }
             imageGetter.getImageData(
                 uri = uri.toString(),
                 size = 2500,
-                onFailure = onFailure
+                onFailure = AppToastHost::showFailureToast
             )?.let { data ->
+                if (drawBehavior !is DrawBehavior.Background) {
+                    _drawBehavior.update {
+                        DrawBehavior.Image(calculateScreenOrientationBasedOnBitmap(data.image))
+                    }
+                }
                 updateBitmap(data.image)
                 _imageFormat.update { data.imageInfo.imageFormat }
+            } ?: run {
+                _isImageLoading.value = false
             }
         }
     }
@@ -289,7 +297,8 @@ class DrawComponent @AssistedInject internal constructor(
         _paths.value = listOf()
         _lastPaths.value = listOf()
         _undonePaths.value = listOf()
-        _bitmap.value = null
+        _spotHealCache.clear()
+        _imageBitmap.value = null
         _drawBehavior.update {
             DrawBehavior.None
         }
@@ -320,6 +329,7 @@ class DrawComponent @AssistedInject internal constructor(
             )
         }
         _backgroundColor.value = color
+        _spotHealCache.clear()
 
         componentScope.launch {
             val newValue = DrawOnBackgroundParams(
@@ -332,7 +342,7 @@ class DrawComponent @AssistedInject internal constructor(
         }
     }
 
-    fun shareBitmap(onComplete: () -> Unit) {
+    fun shareBitmap() {
         savingJob = trackProgress {
             _isSaving.value = true
             getDrawingBitmap()?.let {
@@ -344,7 +354,7 @@ class DrawComponent @AssistedInject internal constructor(
                         width = it.width,
                         height = it.height
                     ),
-                    onComplete = onComplete
+                    onComplete = AppToastHost::showConfetti
                 )
             }
             _isSaving.value = false
@@ -353,6 +363,7 @@ class DrawComponent @AssistedInject internal constructor(
 
     fun updateBackgroundColor(color: Color) {
         _backgroundColor.value = color
+        _spotHealCache.clear()
         registerChanges()
     }
 
@@ -361,6 +372,7 @@ class DrawComponent @AssistedInject internal constructor(
             _lastPaths.value = paths
             _paths.value = listOf()
             _undonePaths.value = listOf()
+            _spotHealCache.clear()
             registerChanges()
         }
     }
@@ -393,6 +405,13 @@ class DrawComponent @AssistedInject internal constructor(
         _paths.update { it + pathPaint }
         _undonePaths.value = listOf()
         registerChanges()
+    }
+
+    fun cacheSpotHealPathResult(
+        key: Int,
+        bitmap: Bitmap
+    ) {
+        _spotHealCache[key] = bitmap
     }
 
     fun cancelSaving() {

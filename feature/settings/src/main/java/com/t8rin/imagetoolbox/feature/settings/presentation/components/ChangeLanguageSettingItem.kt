@@ -25,16 +25,12 @@ import android.os.Build
 import android.os.LocaleList
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,8 +46,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Language
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getCurrentLocaleString
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getDisplayName
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getLanguages
@@ -66,7 +65,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemOverload
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import java.util.Locale
 
 @Composable
@@ -85,7 +84,7 @@ fun ChangeLanguageSettingItem(
             subtitle = remember {
                 context.getCurrentLocaleString()
             },
-            startIcon = Icons.Outlined.Language,
+            startIcon = Icons.Rounded.Language,
             endIcon = Icons.Rounded.MiniEdit,
             onClick = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -217,11 +216,7 @@ private fun Context.setGlobalLocale(locale: Locale?) {
                 LocaleList.forLanguageTags(locale.toLanguageTag())
             } ?: LocaleList.getEmptyLocaleList()
     } else {
-        val newLocale = locale ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Resources.getSystem().configuration.locales[0]
-        } else {
-            Resources.getSystem().configuration.locale
-        }
+        val newLocale = locale ?: Resources.getSystem().configuration.locales[0]
         Locale.setDefault(newLocale)
 
         val configuration = resources.configuration

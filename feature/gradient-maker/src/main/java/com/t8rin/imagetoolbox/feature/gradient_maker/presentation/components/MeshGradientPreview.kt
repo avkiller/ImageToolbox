@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.zIndex
-import com.smarttoolfactory.colordetector.util.ColorUtil.roundToTwoDigits
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.meshGradient
@@ -42,7 +43,8 @@ internal fun MeshGradientPreview(
     allowPickingImage: Boolean?,
     gradientSize: IntegerSize,
     imageAspectRatio: Float,
-    selectedUri: Uri
+    selectedUri: Uri,
+    shape: Shape = MaterialTheme.shapes.medium
 ) {
     val alpha by animateFloatAsState(gradientAlpha)
     AnimatedContent(
@@ -59,7 +61,7 @@ internal fun MeshGradientPreview(
             Spacer(
                 modifier = Modifier
                     .aspectRatio(aspectRatio)
-                    .clip(MaterialTheme.shapes.medium)
+                    .clip(shape)
                     .then(
                         if (allowPickingImage != true) {
                             Modifier.transparencyChecker()
@@ -77,7 +79,7 @@ internal fun MeshGradientPreview(
                 Picture(
                     model = selectedUri,
                     modifier = Modifier.matchParentSize(),
-                    shape = MaterialTheme.shapes.medium,
+                    shape = shape,
                     size = 1500
                 )
             }

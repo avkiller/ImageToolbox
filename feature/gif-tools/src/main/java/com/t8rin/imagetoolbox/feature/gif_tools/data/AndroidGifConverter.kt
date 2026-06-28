@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.t8rin.awebp.encoder.AnimatedWebpEncoder
 import com.t8rin.gif_converter.GifDecoder
 import com.t8rin.gif_converter.GifEncoder
 import com.t8rin.imagetoolbox.core.data.image.utils.drawBitmap
+import com.t8rin.imagetoolbox.core.data.utils.outputStream
 import com.t8rin.imagetoolbox.core.data.utils.safeConfig
 import com.t8rin.imagetoolbox.core.data.utils.toSoftware
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
@@ -41,6 +42,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFrames
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
+import com.t8rin.imagetoolbox.core.domain.saving.FailureNotifier
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.feature.gif_tools.domain.GifConverter
 import com.t8rin.imagetoolbox.feature.gif_tools.domain.GifParams
@@ -48,12 +50,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import javax.inject.Inject
 
 
@@ -61,6 +62,7 @@ internal class AndroidGifConverter @Inject constructor(
     private val imageGetter: ImageGetter<Bitmap>,
     private val imageShareProvider: ImageShareProvider<Bitmap>,
     @ApplicationContext private val context: Context,
+    private val failureNotifier: FailureNotifier,
     dispatchersHolder: DispatchersHolder
 ) : DispatchersHolder by dispatchersHolder, GifConverter {
 
@@ -91,69 +93,76 @@ internal class AndroidGifConverter @Inject constructor(
         params: GifParams,
         onFailure: (Throwable) -> Unit,
         onProgress: () -> Unit
-    ): ByteArray? = withContext(defaultDispatcher) {
-        val out = ByteArrayOutputStream()
-        val encoder = GifEncoder().apply {
-            params.size?.let { size ->
-                if (size.width <= 0 || size.height <= 0) {
-                    onFailure(IllegalArgumentException("Width and height must be > 0"))
-                    return@withContext null
-                }
-
-                setSize(
-                    size.width,
-                    size.height
-                )
+    ): String? = withContext(defaultDispatcher) {
+        params.size?.let { size ->
+            if (size.width <= 0 || size.height <= 0) {
+                onFailure(IllegalArgumentException("Width and height must be > 0"))
+                return@withContext null
             }
-            setRepeat(params.repeatCount)
-            setQuality(
-                (100 - ((params.quality.qualityValue - 1) * (100 / 19f))).toInt()
-            )
-            setFrameRate(params.fps.toFloat())
-            setDispose(
-                if (params.dontStack) 2 else 0
-            )
-            setTransparent(Color.Transparent.toArgb())
-            start(out)
         }
-        imageUris.forEachIndexed { index, uri ->
-            imageGetter.getImage(
-                data = uri,
-                size = params.size
-            )?.apply { setHasAlpha(true) }?.let { frame ->
-                encoder.addFrame(frame)
-                if (params.crossfadeCount > 1) {
-                    val list = mutableSetOf(0, 255)
-                    for (a in 0..255 step (255 / params.crossfadeCount)) {
-                        list.add(a)
+
+        runSuspendCatching {
+            imageShareProvider.cacheDataOrThrow(
+                filename = "temp_gif.gif"
+            ) { writeable ->
+                val encoder = GifEncoder().apply {
+                    params.size?.let { size ->
+                        setSize(
+                            size.width,
+                            size.height
+                        )
                     }
-                    val alphas = list.sortedDescending()
-
-
+                    setRepeat(params.repeatCount)
+                    setQuality(
+                        (100 - ((params.quality.qualityValue - 1) * (100 / 19f))).toInt()
+                    )
+                    setFrameRate(params.fps.toFloat())
+                    setDispose(
+                        if (params.dontStack) 2 else 0
+                    )
+                    setTransparent(Color.Transparent.toArgb())
+                    start(writeable.outputStream())
+                }
+                imageUris.forEachIndexed { index, uri ->
                     imageGetter.getImage(
-                        data = imageUris.getOrNull(index + 1) ?: Unit,
+                        data = uri,
                         size = params.size
-                    )?.let { next ->
-                        alphas.forEach { alpha ->
-                            encoder.addFrame(
-                                next.overlay(
-                                    frame.copy(frame.safeConfig, true).applyCanvas {
-                                        drawColor(
-                                            Color.Black.copy(alpha / 255f).toArgb(),
-                                            PorterDuff.Mode.DST_IN
+                    )!!.apply { setHasAlpha(true) }.let { frame ->
+                        encoder.addFrame(frame)
+                        if (params.crossfadeCount > 1) {
+                            val list = mutableSetOf(0, 255)
+                            for (a in 0..255 step (255 / params.crossfadeCount)) {
+                                list.add(a)
+                            }
+                            val alphas = list.sortedDescending()
+
+
+                            imageGetter.getImage(
+                                data = imageUris.getOrNull(index + 1) ?: Unit,
+                                size = params.size
+                            )?.let { next ->
+                                alphas.forEach { alpha ->
+                                    encoder.addFrame(
+                                        next.overlay(
+                                            frame.copy(frame.safeConfig, true).applyCanvas {
+                                                drawColor(
+                                                    Color.Black.copy(alpha / 255f).toArgb(),
+                                                    PorterDuff.Mode.DST_IN
+                                                )
+                                            }
                                         )
-                                    }
-                                )
-                            )
+                                    )
+                                }
+                            }
                         }
                     }
+                    onProgress()
                 }
+                encoder.finish()
             }
-            onProgress()
-        }
-        encoder.finish()
-
-        out.toByteArray()
+        }.onFailure {
+            onFailure(it)
+        }.getOrNull()
     }
 
     private fun Bitmap.overlay(overlay: Bitmap): Bitmap {
@@ -169,11 +178,11 @@ internal class AndroidGifConverter @Inject constructor(
         onProgress: suspend (String, ByteArray) -> Unit
     ) = withContext(defaultDispatcher) {
         gifUris.forEach { uri ->
-            uri.bytes?.let { gifData ->
-                runSuspendCatching {
+            runSuspendCatching {
+                uri.bytes?.let { gifData ->
                     JxlCoder.Convenience.gif2JXL(
                         gifData = gifData,
-                        quality = quality.qualityValue,
+                        quality = quality.qualityValue.coerceIn(0, 99),
                         effort = JxlEffort.entries.first { it.ordinal == quality.effort },
                         decodingSpeed = JxlDecodingSpeed.entries.first { it.ordinal == quality.speed }
                     ).let {
@@ -238,16 +247,16 @@ internal class AndroidGifConverter @Inject constructor(
                 pos in indexes
             }?.let { emit(it) }
         }
+    }.catch {
+        failureNotifier.send(it)
     }
 
-    private val String.inputStream: InputStream?
+    private val String.bytes: ByteArray?
         get() = context
             .contentResolver
             .openInputStream(toUri())
-
-    private val String.bytes: ByteArray?
-        get() = inputStream?.use {
-            it.readBytes()
-        }
+            ?.use {
+                it.readBytes()
+            }
 
 }

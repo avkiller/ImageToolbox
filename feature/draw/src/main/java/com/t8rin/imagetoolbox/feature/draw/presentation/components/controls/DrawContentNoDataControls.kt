@@ -35,9 +35,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FormatPaint
-import androidx.compose.material.icons.rounded.FormatPaint
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,9 +51,11 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.BackgroundColor
-import com.t8rin.imagetoolbox.core.resources.icons.ImageTooltip
+import com.t8rin.imagetoolbox.core.resources.icons.ImagesMode
+import com.t8rin.imagetoolbox.core.resources.icons.ImagesearchRoller
 import com.t8rin.imagetoolbox.core.ui.theme.toColor
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.restrict
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
@@ -108,7 +107,7 @@ internal fun DrawContentNoDataControls(
         item {
             PreferenceItem(
                 onClick = onPickImage,
-                startIcon = Icons.Outlined.ImageTooltip,
+                startIcon = Icons.Outlined.ImagesMode,
                 title = stringResource(R.string.draw_on_image),
                 subtitle = stringResource(R.string.draw_on_image_sub),
                 modifier = Modifier.fillMaxWidth()
@@ -117,7 +116,7 @@ internal fun DrawContentNoDataControls(
         item {
             PreferenceItem(
                 onClick = { showBackgroundDrawingSetup = true },
-                startIcon = Icons.Outlined.FormatPaint,
+                startIcon = Icons.Outlined.ImagesearchRoller,
                 title = stringResource(R.string.draw_on_background),
                 subtitle = stringResource(R.string.draw_on_background_sub),
                 modifier = Modifier.fillMaxWidth()
@@ -135,14 +134,14 @@ internal fun DrawContentNoDataControls(
         screenWidth,
         drawOnBackgroundParams
     ) {
-        mutableIntStateOf(drawOnBackgroundParams.width.takeIf { it > -1 } ?: screenWidth)
+        mutableIntStateOf(drawOnBackgroundParams.width.takeIf { it > 0 } ?: screenWidth)
     }
     var height by remember(
         showBackgroundDrawingSetup,
         screenHeight,
         drawOnBackgroundParams
     ) {
-        mutableIntStateOf(drawOnBackgroundParams.height.takeIf { it > -1 } ?: screenHeight)
+        mutableIntStateOf(drawOnBackgroundParams.height.takeIf { it > 0 } ?: screenHeight)
     }
     var sheetBackgroundColor by rememberSaveable(
         showBackgroundDrawingSetup,
@@ -155,7 +154,7 @@ internal fun DrawContentNoDataControls(
         title = {
             TitleItem(
                 text = stringResource(R.string.draw),
-                icon = Icons.Rounded.FormatPaint
+                icon = Icons.Rounded.ImagesearchRoller
             )
         },
         confirmButton = {

@@ -54,10 +54,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -74,9 +70,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -85,9 +79,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Error
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.ui.theme.White
+import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.onPrimaryContainerFixed
 import com.t8rin.imagetoolbox.core.ui.theme.primaryContainerFixed
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
@@ -274,14 +274,16 @@ internal fun MediaImagePager(
                             error = {
                                 Box(
                                     contentAlignment = Alignment.Center,
-                                    modifier = Modifier.background(
-                                        takeColorFromScheme { isNightMode ->
-                                            errorContainer.copy(
-                                                if (isNightMode) 0.25f
-                                                else 1f
-                                            ).compositeOver(surface)
-                                        }
-                                    )
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            takeColorFromScheme { isNightMode ->
+                                                errorContainer.copy(
+                                                    if (isNightMode) 0.25f
+                                                    else 1f
+                                                ).compositeOverSafe(surface)
+                                            }
+                                        )
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.BrokenImageAlt,
@@ -346,8 +348,10 @@ internal fun MediaImagePager(
                                         MaterialTheme.colorScheme.error
                                     } else MaterialTheme.colorScheme.primary,
                                     checkedIcon = if (isImageError) {
-                                        Icons.Filled.Error
-                                    } else Icons.Filled.CheckCircle,
+                                        Icons.Rounded.Error
+                                    } else {
+                                        Icons.Rounded.CheckCircle
+                                    },
                                     addContainer = isChecked
                                 )
                             }
@@ -358,7 +362,7 @@ internal fun MediaImagePager(
                                     onClick = onDismiss
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit),
                                         tint = White
                                     )
@@ -426,7 +430,8 @@ internal fun MediaImagePager(
                                 dateModified = { currentMedia?.timestamp?.times(1000) },
                                 path = { currentMedia?.path },
                                 name = { currentMedia?.label },
-                                fileSize = { currentMedia?.humanFileSize }
+                                fileSize = { currentMedia?.humanFileSize },
+                                imageSize = { currentMedia?.takeIf { it.isImage }?.imageSize }
                             )
                         }
                         Spacer(Modifier.width(16.dp))
@@ -435,7 +440,7 @@ internal fun MediaImagePager(
                             modifier = Modifier
                                 .height(50.dp)
                                 .width(90.dp),
-                            bordersColor = Color.White
+                            bordersColor = MaterialTheme.colorScheme.primaryFixed.blend(White, 0.5f)
                         )
                     }
                 }

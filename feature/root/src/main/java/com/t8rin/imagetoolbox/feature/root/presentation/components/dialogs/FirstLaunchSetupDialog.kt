@@ -22,10 +22,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.NewReleases
-import androidx.compose.material.icons.rounded.SystemSecurityUpdate
-import androidx.compose.material.icons.rounded.Webhook
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -42,12 +38,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.PerformanceClass
 import com.t8rin.imagetoolbox.core.domain.utils.Flavor
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Beta
+import com.t8rin.imagetoolbox.core.resources.icons.MobileArrowDown
+import com.t8rin.imagetoolbox.core.resources.icons.ReleaseAlert
+import com.t8rin.imagetoolbox.core.resources.icons.Webhook
 import com.t8rin.imagetoolbox.core.settings.presentation.model.isFirstLaunch
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.isInstalledFromPlayStore
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.performanceClass
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedVerticalScroll
@@ -71,10 +71,7 @@ internal fun FirstLaunchSetupDialog(
 
     OneTimeEffect {
         updateOnFirstOpen = settingsState.isFirstLaunch(false)
-
-        if (updateOnFirstOpen) {
-            adjustPerformance(appContext.performanceClass)
-        }
+        adjustPerformance(appContext.performanceClass)
     }
 
     EnhancedAlertDialog(
@@ -82,7 +79,7 @@ internal fun FirstLaunchSetupDialog(
         onDismissRequest = {},
         icon = {
             Icon(
-                imageVector = Icons.Rounded.SystemSecurityUpdate,
+                imageVector = Icons.Rounded.MobileArrowDown,
                 contentDescription = null
             )
         },
@@ -90,7 +87,6 @@ internal fun FirstLaunchSetupDialog(
             Text(stringResource(R.string.updates))
         },
         text = {
-            val essentials = rememberLocalEssentials()
             val state = rememberScrollState()
             ProvideTextStyle(value = LocalTextStyle.current.copy(textAlign = TextAlign.Left)) {
                 Column(
@@ -114,7 +110,7 @@ internal fun FirstLaunchSetupDialog(
                         )
                     }
                     PreferenceRowSwitch(
-                        shape = if (!essentials.isInstalledFromPlayStore()) {
+                        shape = if (!appContext.isInstalledFromPlayStore()) {
                             ShapeDefaults.top
                         } else ShapeDefaults.default,
                         modifier = Modifier,
@@ -124,9 +120,9 @@ internal fun FirstLaunchSetupDialog(
                         onClick = {
                             toggleShowUpdateDialog()
                         },
-                        startIcon = Icons.Rounded.NewReleases
+                        startIcon = Icons.Rounded.ReleaseAlert
                     )
-                    if (!essentials.isInstalledFromPlayStore()) {
+                    if (!appContext.isInstalledFromPlayStore()) {
                         Spacer(Modifier.height(4.dp))
                         PreferenceRowSwitch(
                             modifier = Modifier,

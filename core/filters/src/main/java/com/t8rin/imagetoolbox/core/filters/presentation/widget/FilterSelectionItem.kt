@@ -30,17 +30,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SignalCellularConnectedNoInternet0Bar
-import androidx.compose.material.icons.rounded.Bookmark
-import androidx.compose.material.icons.rounded.BookmarkBorder
-import androidx.compose.material.icons.rounded.Slideshow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,44 +41,38 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.request.ImageRequest
 import coil3.request.error
 import coil3.request.transformations
-import coil3.toBitmap
 import coil3.transform.Transformation
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResources
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
 import com.t8rin.imagetoolbox.core.resources.icons.BookmarkRemove
-import com.t8rin.imagetoolbox.core.ui.theme.StrongBlack
-import com.t8rin.imagetoolbox.core.ui.theme.White
+import com.t8rin.imagetoolbox.core.resources.icons.WifiTetheringError
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.isNetworkAvailable
 import com.t8rin.imagetoolbox.core.ui.utils.helper.LocalFilterPreviewModelProvider
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
-import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
-import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.shimmer
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemOverload
 import com.t8rin.imagetoolbox.core.utils.appContext
-import kotlinx.coroutines.launch
+import com.t8rin.imagetoolbox.core.utils.getString
 
 @Composable
 internal fun FilterSelectionItem(
     filter: UiFilter<*>,
     isFavoritePage: Boolean,
     canOpenPreview: Boolean,
-    favoriteFilters: List<UiFilter<*>>,
+    showPreviewImage: Boolean,
+    isInFavorite: Boolean,
     onLongClick: (() -> Unit)?,
     onOpenPreview: () -> Unit,
     onClick: (UiFilter<*>?) -> Unit,
@@ -97,15 +84,7 @@ internal fun FilterSelectionItem(
     cubeLutDownloadProgress: DownloadProgress? = null,
     onCubeLutDownloadRequest: (forceUpdate: Boolean, downloadOnlyNewData: Boolean) -> Unit = { _, _ -> }
 ) {
-    val essentials = rememberLocalEssentials()
     val previewModel = LocalFilterPreviewModelProvider.current.preview
-
-    var isBitmapDark by remember {
-        mutableStateOf(true)
-    }
-    var loading by remember {
-        mutableStateOf(false)
-    }
 
     var showDownloadDialog by rememberSaveable {
         mutableStateOf(false)
@@ -123,61 +102,21 @@ internal fun FilterSelectionItem(
         title = stringResource(filter.title),
         startIcon = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(contentAlignment = Alignment.Center) {
-                    Picture(
-                        model = remember(filter, previewModel) {
-                            ImageRequest.Builder(appContext)
-                                .data(previewModel.data)
-                                .error(R.drawable.filter_preview_source)
-                                .transformations(onRequestFilterMapping(filter))
-                                .diskCacheKey(filter::class.simpleName + previewModel.data.hashCode())
-                                .memoryCacheKey(filter::class.simpleName + previewModel.data.hashCode())
-                                .size(300, 300)
-                                .build()
-                        },
-                        contentScale = ContentScale.Crop,
-                        contentDescription = null,
-                        onLoading = {
-                            loading = true
-                        },
-                        onSuccess = {
-                            loading = false
-                            essentials.launch {
-                                isBitmapDark =
-                                    calculateBrightnessEstimate(it.result.image.toBitmap()) < 110
-                            }
-                        },
-                        modifier = Modifier
-                            .size(48.dp)
-                            .scale(1.2f)
-                            .clip(MaterialTheme.shapes.medium)
-                            .transparencyChecker()
-                            .shimmer(loading)
-                    )
-                    if (canOpenPreview) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(ShapeDefaults.circle)
-                                .hapticsClickable(onClick = onOpenPreview),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Slideshow,
-                                contentDescription = stringResource(R.string.image_preview),
-                                tint = if (isBitmapDark) StrongBlack
-                                else White,
-                                modifier = Modifier.scale(1.2f)
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.Slideshow,
-                                contentDescription = stringResource(R.string.image_preview),
-                                tint = if (isBitmapDark) White
-                                else StrongBlack
-                            )
-                        }
-                    }
-                }
+                FilterPreviewPicture(
+                    model = remember(filter, previewModel) {
+                        ImageRequest.Builder(appContext)
+                            .data(previewModel.data)
+                            .error(R.drawable.filter_preview_source)
+                            .transformations(onRequestFilterMapping(filter))
+                            .diskCacheKey(filter::class.simpleName + previewModel.data.hashCode())
+                            .memoryCacheKey(filter::class.simpleName + previewModel.data.hashCode())
+                            .size(160, 160)
+                            .build()
+                    },
+                    canShowImage = showPreviewImage,
+                    canOpenPreview = canOpenPreview,
+                    onOpenPreview = onOpenPreview
+                )
                 Spacer(Modifier.width(16.dp))
                 Box(
                     modifier = Modifier
@@ -192,25 +131,18 @@ internal fun FilterSelectionItem(
                 onClick = onToggleFavorite,
                 modifier = Modifier.offset(8.dp)
             ) {
-                val inFavorite by remember(favoriteFilters, filter) {
-                    derivedStateOf {
-                        favoriteFilters.filterIsInstance(filter::class.java).isNotEmpty()
-                    }
-                }
                 AnimatedContent(
-                    targetState = inFavorite to isFavoritePage,
+                    targetState = isInFavorite to isFavoritePage,
                     transitionSpec = {
                         (fadeIn() + scaleIn(initialScale = 0.85f))
                             .togetherWith(fadeOut() + scaleOut(targetScale = 0.85f))
                     }
                 ) { (isInFavorite, isFavPage) ->
-                    val icon by remember(isInFavorite, isFavPage) {
-                        derivedStateOf {
-                            when {
-                                isFavPage && isInFavorite -> Icons.Rounded.BookmarkRemove
-                                isInFavorite -> Icons.Rounded.Bookmark
-                                else -> Icons.Rounded.BookmarkBorder
-                            }
+                    val icon = remember(isInFavorite, isFavPage) {
+                        when {
+                            isFavPage && isInFavorite -> Icons.Rounded.BookmarkRemove
+                            isInFavorite -> Icons.Rounded.Bookmark
+                            else -> Icons.Outlined.Bookmark
                         }
                     }
                     Icon(
@@ -244,15 +176,15 @@ internal fun FilterSelectionItem(
         visible = showDownloadDialog,
         onDismiss = { showDownloadDialog = false },
         onDownload = {
-            if (essentials.isNetworkAvailable()) {
+            if (appContext.isNetworkAvailable()) {
                 onCubeLutDownloadRequest(
                     forceUpdate, downloadOnlyNewData
                 )
                 showDownloadDialog = false
             } else {
-                essentials.showToast(
-                    message = essentials.getString(R.string.no_connection),
-                    icon = Icons.Outlined.SignalCellularConnectedNoInternet0Bar,
+                AppToastHost.showToast(
+                    message = getString(R.string.no_connection),
+                    icon = Icons.Rounded.WifiTetheringError,
                     duration = ToastDuration.Long
                 )
             }

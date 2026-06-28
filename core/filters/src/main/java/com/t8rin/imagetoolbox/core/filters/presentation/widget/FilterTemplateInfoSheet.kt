@@ -37,13 +37,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoFixHigh
-import androidx.compose.material.icons.outlined.Extension
-import androidx.compose.material.icons.rounded.FilePresent
-import androidx.compose.material.icons.rounded.QrCode
-import androidx.compose.material.icons.rounded.QrCode2
-import androidx.compose.material.icons.rounded.Save
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.FilePresent
+import com.t8rin.imagetoolbox.core.resources.icons.QrCode2
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -72,8 +68,12 @@ import com.t8rin.imagetoolbox.core.filters.domain.model.TemplateFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
 import com.t8rin.imagetoolbox.core.resources.icons.EditAlt
+import com.t8rin.imagetoolbox.core.resources.icons.Extension
+import com.t8rin.imagetoolbox.core.resources.icons.QrCode
+import com.t8rin.imagetoolbox.core.resources.icons.Save
 import com.t8rin.imagetoolbox.core.ui.utils.capturable.capturable
 import com.t8rin.imagetoolbox.core.ui.utils.capturable.rememberCaptureController
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
@@ -322,7 +322,7 @@ internal fun FilterTemplateInfoSheet(
                     PreferenceItem(
                         title = stringResource(R.string.as_qr_code),
                         shape = ShapeDefaults.top,
-                        startIcon = Icons.Rounded.QrCode,
+                        startIcon = Icons.Outlined.QrCode,
                         onClick = {
                             showShareDialog = false
                             scope.launch {

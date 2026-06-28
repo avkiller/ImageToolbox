@@ -17,46 +17,45 @@
 
 package com.t8rin.imagetoolbox.core.data.image
 
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
-import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import coil3.ImageLoader
-import coil3.gif.repeatCount
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import coil3.size.Precision
 import coil3.size.Size
 import coil3.toBitmap
-import com.awxkee.jxlcoder.coil.enableJxlAnimation
-import com.github.awxkee.avifcoil.decoder.animation.enableAvifAnimation
-import com.t8rin.imagetoolbox.core.data.coil.UpscaleSvgDecoder
-import com.t8rin.imagetoolbox.core.data.utils.openFileDescriptor
+import com.t8rin.imagetoolbox.core.data.image.utils.static
 import com.t8rin.imagetoolbox.core.data.utils.toCoil
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
+import com.t8rin.imagetoolbox.core.domain.image.MetadataProvider
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageData
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
+import com.t8rin.imagetoolbox.core.domain.saving.FailureNotifier
 import com.t8rin.imagetoolbox.core.domain.transformation.Transformation
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
+import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsProvider
-import com.t8rin.imagetoolbox.core.utils.filename
-import com.t8rin.imagetoolbox.core.utils.tryRequireOriginal
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.utils.extension
+import com.t8rin.imagetoolbox.core.utils.makeLog
+import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 import javax.inject.Inject
 
 internal class AndroidImageGetter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageLoader: ImageLoader,
     private val appScope: AppScope,
+    private val failureNotifier: FailureNotifier,
+    metadataProvider: Lazy<MetadataProvider>,
     settingsProvider: SettingsProvider,
     dispatchersHolder: DispatchersHolder,
 ) : DispatchersHolder by dispatchersHolder, ImageGetter<Bitmap> {
@@ -65,32 +64,33 @@ internal class AndroidImageGetter @Inject constructor(
 
     private val settingsState get() = _settingsState.value
 
+    private val metadataProvider by lazy {
+        metadataProvider.get()
+    }
+
     override suspend fun getImage(
         uri: String,
         originalSize: Boolean,
-        onFailure: (Throwable) -> Unit
+        onFailure: ((Throwable) -> Unit)?
     ): ImageData<Bitmap>? = withContext(defaultDispatcher) {
         getImageImpl(
             data = uri,
             size = null,
             addSizeToRequest = originalSize,
-            onFailure = onFailure
+            onFailure = onFailure ?: failureNotifier::send
         )?.let { bitmap ->
-            val newUri = uri.toUri().tryRequireOriginal(context)
-            context.openFileDescriptor(newUri).use {
-                ImageData(
-                    image = bitmap,
-                    imageInfo = ImageInfo(
-                        width = bitmap.width,
-                        height = bitmap.height,
-                        imageFormat = settingsState.defaultImageFormat
-                            ?: ImageFormat[getExtension(uri)],
-                        originalUri = uri,
-                        resizeType = settingsState.defaultResizeType
-                    ),
-                    metadata = it?.fileDescriptor?.toMetadata()
-                )
-            }
+            ImageData(
+                image = bitmap,
+                imageInfo = ImageInfo(
+                    width = bitmap.width,
+                    height = bitmap.height,
+                    imageFormat = settingsState.defaultImageFormat
+                        ?: ImageFormat[getExtension(uri)],
+                    originalUri = uri,
+                    resizeType = settingsState.defaultResizeType
+                ),
+                metadata = metadataProvider.readMetadata(uri)
+            )
         }
     }
 
@@ -141,21 +141,18 @@ internal class AndroidImageGetter @Inject constructor(
             precision = Precision.INEXACT,
             onFailure = onFailure
         )?.let { bitmap ->
-            val newUri = uri.toUri().tryRequireOriginal(context)
-            context.openFileDescriptor(newUri).use {
-                ImageData(
-                    image = bitmap,
-                    imageInfo = ImageInfo(
-                        width = bitmap.width,
-                        height = bitmap.height,
-                        imageFormat = settingsState.defaultImageFormat
-                            ?: ImageFormat[getExtension(uri)],
-                        originalUri = uri,
-                        resizeType = settingsState.defaultResizeType
-                    ),
-                    metadata = it?.fileDescriptor?.toMetadata()
-                )
-            }
+            ImageData(
+                image = bitmap,
+                imageInfo = ImageInfo(
+                    width = bitmap.width,
+                    height = bitmap.height,
+                    imageFormat = settingsState.defaultImageFormat
+                        ?: ImageFormat[getExtension(uri)],
+                    originalUri = uri,
+                    resizeType = settingsState.defaultResizeType
+                ),
+                metadata = metadataProvider.readMetadata(uri)
+            )
         }
     }
 
@@ -170,20 +167,17 @@ internal class AndroidImageGetter @Inject constructor(
             size = null,
             addSizeToRequest = originalSize
         )?.let { bitmap ->
-            val newUri = uri.toUri().tryRequireOriginal(context)
-            context.openFileDescriptor(newUri).use {
-                ImageData(
-                    image = bitmap,
-                    imageInfo = ImageInfo(
-                        width = bitmap.width,
-                        height = bitmap.height,
-                        imageFormat = ImageFormat[getExtension(uri)],
-                        originalUri = uri,
-                        resizeType = settingsState.defaultResizeType
-                    ),
-                    metadata = it?.fileDescriptor?.toMetadata()
-                )
-            }
+            ImageData(
+                image = bitmap,
+                imageInfo = ImageInfo(
+                    width = bitmap.width,
+                    height = bitmap.height,
+                    imageFormat = ImageFormat[getExtension(uri)],
+                    originalUri = uri,
+                    resizeType = settingsState.defaultResizeType
+                ),
+                metadata = metadataProvider.readMetadata(uri)
+            )
         }
     }
 
@@ -204,27 +198,28 @@ internal class AndroidImageGetter @Inject constructor(
         onFailure: (Throwable) -> Unit
     ) {
         appScope.launch {
-            getImage(
+            var failureDelivered = false
+
+            val imageData = getImage(
                 uri = uri,
                 originalSize = originalSize,
-                onFailure = onFailure
-            )?.let(onGetImage)
+                onFailure = {
+                    failureDelivered = true
+                    onFailure(it)
+                }
+            )
+
+            if (imageData != null) {
+                onGetImage(imageData)
+            } else if (!failureDelivered) {
+                onFailure(
+                    IllegalStateException(context.getString(R.string.failed_to_open))
+                )
+            }
         }
     }
 
-    override fun getExtension(uri: String): String? {
-        val filename = uri.toUri().filename(context) ?: ""
-        if (filename.endsWith(".qoi")) return "qoi"
-        if (filename.endsWith(".jxl")) return "jxl"
-        return if (ContentResolver.SCHEME_CONTENT == uri.toUri().scheme) {
-            MimeTypeMap.getSingleton()
-                .getExtensionFromMimeType(
-                    context.contentResolver.getType(uri.toUri())
-                )
-        } else {
-            MimeTypeMap.getFileExtensionFromUrl(uri).lowercase(Locale.getDefault())
-        }
-    }
+    override fun getExtension(uri: String): String? = uri.toUri().extension(context)
 
     private suspend fun getImageImpl(
         data: Any,
@@ -239,10 +234,8 @@ internal class AndroidImageGetter @Inject constructor(
         val request = ImageRequest
             .Builder(context)
             .data(data)
-            .repeatCount(0)
+            .static()
             .precision(precision)
-            .enableAvifAnimation(false)
-            .enableJxlAnimation(false)
             .transformations(
                 transformations.map(Transformation<Bitmap>::toCoil)
             )
@@ -255,8 +248,9 @@ internal class AndroidImageGetter @Inject constructor(
                     )
                 }
             }
-            .decoderFactory(UpscaleSvgDecoder.Factory())
             .build()
+
+        ensureActive()
 
         runSuspendCatching {
             imageLoader.execute(request).image?.toBitmap()

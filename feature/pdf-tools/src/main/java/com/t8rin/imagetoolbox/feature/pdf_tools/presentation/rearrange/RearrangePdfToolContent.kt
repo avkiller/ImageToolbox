@@ -60,19 +60,14 @@ fun RearrangePdfToolContent(
 
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
         isPickedAlready = component.initialUri != null,
         canShowScreenData = component.uri != null,
         title = stringResource(R.string.rearrange_pdf),
-        actions = {},
-        imagePreview = {},
-        placeImagePreview = false,
-        showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -86,7 +81,6 @@ fun RearrangePdfToolContent(
                 pages = component.pages,
                 onReorder = component::updatePages
             )
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

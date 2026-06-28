@@ -19,6 +19,7 @@ package com.t8rin.imagetoolbox.core.ui.widget.enhanced
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -68,6 +69,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.PredictiveBackObserver
+import com.t8rin.imagetoolbox.core.ui.widget.icon_shape.IconShapeContainer
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.alertDialogBorder
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.tappable
 import com.t8rin.modalsheet.FullscreenPopup
@@ -128,14 +130,21 @@ fun EnhancedAlertDialog(
                 tonalElevation = tonalElevation,
                 // Note that a button content color is provided here from the dialog's token, but in
                 // most cases, TextButtons should be used for dismiss and confirm buttons.
-                // TextButtons will not consume this provided content color value, and will used their
+                // TextButtons will not consume this provided content color value, and will be used their
                 // own defined or default colors.
                 buttonContentColor = MaterialTheme.colorScheme.primary,
                 iconContentColor = iconContentColor,
                 titleContentColor = titleContentColor,
                 textContentColor = textContentColor,
                 modifier = modifier
-                    .alertDialogBorder()
+                    .alertDialogBorder(
+                        colorScheme = MaterialTheme.colorScheme,
+                        shape = shape,
+                        autoElevation = animateDpAsState(
+                            if (LocalSettingsState.current.drawContainerShadows) 16.dp
+                            else 0.dp
+                        ).value
+                    )
                     .sizeIn(
                         minWidth = DialogMinWidth,
                         maxWidth = DialogMaxWidth
@@ -272,7 +281,13 @@ private fun EnhancedAlertDialogContent(
                             .padding(IconPadding)
                             .align(Alignment.CenterHorizontally)
                     ) {
-                        icon()
+                        IconShapeContainer(
+                            contentColor = iconContentColor,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                            content = {
+                                icon()
+                            }
+                        )
                     }
                 }
             }

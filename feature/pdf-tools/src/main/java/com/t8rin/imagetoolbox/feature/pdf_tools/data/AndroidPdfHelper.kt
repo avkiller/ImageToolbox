@@ -19,32 +19,51 @@ package com.t8rin.imagetoolbox.feature.pdf_tools.data
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color.WHITE
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import androidx.core.text.HtmlCompat
+import com.awxkee.aire.Aire
+import com.awxkee.aire.ResizeFunction
+import com.awxkee.aire.ScaleColorSpace
+import com.t8rin.imagetoolbox.core.data.utils.aspectRatio
 import com.t8rin.imagetoolbox.core.data.utils.observeHasChanges
 import com.t8rin.imagetoolbox.core.domain.PDF
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
+import com.t8rin.imagetoolbox.core.domain.image.ImageScaler
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
+import com.t8rin.imagetoolbox.core.domain.image.model.ResizeType
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
+import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.utils.filename
-import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.PdfRenderer
-import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.pageIndices
+import com.t8rin.imagetoolbox.core.utils.getString
+import com.t8rin.imagetoolbox.core.utils.makeLog
+import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.HocrData
+import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.HocrPageBox
+import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.HocrWord
+import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.asXObject
+import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.createPage
+import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.createPdf
 import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.safeOpenPdf
 import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.save
 import com.t8rin.imagetoolbox.feature.pdf_tools.data.utils.setMetadata
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfHelper
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PageSize
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCheckResult
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCreationParams
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfMetadata
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PrintPdfParams
-import com.t8rin.logger.makeLog
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.PDPage
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
+import com.tom_roush.pdfbox.pdmodel.font.PDFont
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -58,22 +77,38 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
+import kotlin.io.deleteRecursively
+import kotlin.io.outputStream
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.use
+import android.graphics.Matrix as AndroidMatrix
+import android.graphics.pdf.PdfRenderer as AndroidPdfRenderer
 
 internal class AndroidPdfHelper @Inject constructor(
     @ApplicationContext private val context: Context,
     private val appScope: AppScope,
     private val shareProvider: ShareProvider,
     private val imageGetter: ImageGetter<Bitmap>,
+    private val imageScaler: ImageScaler<Bitmap>,
     dispatchersHolder: DispatchersHolder
 ) : PdfHelper, DispatchersHolder by dispatchersHolder {
 
     companion object {
         private const val SIGNATURES_LIMIT = 20
-    }
 
-    private val pagesCache = hashMapOf<String, List<IntegerSize>>()
+        val HOCR_PAGE_REGEX = Regex(
+            pattern = "<(?:div|span)[^>]*class=[\"'][^\"']*ocr_page[^\"']*[\"'][^>]*title=[\"'][^\"']*bbox\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)[^\"']*[\"'][^>]*>",
+            options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
+        )
+        val HOCR_WORD_REGEX = Regex(
+            pattern = "<span[^>]*class=[\"'][^\"']*ocrx_word[^\"']*[\"'][^>]*title=[\"'][^\"']*bbox\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)[^\"']*[\"'][^>]*>(.*?)</span>",
+            options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
+        )
+        val HOCR_TAG_REGEX = Regex("<[^>]+>")
+        val PDF_CONTROL_REGEX = Regex("[\\p{Cntrl}&&[^\\n\\r\\t]]")
+    }
 
     private val signaturesDir: File get() = File(context.filesDir, "signatures").apply(File::mkdirs)
 
@@ -168,41 +203,6 @@ internal class AndroidPdfHelper @Inject constructor(
         }.makeLog("checkPdf")
     }
 
-    override suspend fun getPdfPages(
-        uri: String
-    ): List<Int> = withContext(decodingDispatcher) {
-        try {
-            usePdf(
-                uri = uri,
-                password = masterPassword,
-                action = PDDocument::pageIndices
-            )
-        } catch (_: Throwable) {
-            emptyList()
-        }
-    }
-
-    override suspend fun getPdfPageSizes(
-        uri: String
-    ): List<IntegerSize> = withContext(decodingDispatcher) {
-        pagesCache[uri]?.takeIf { it.isNotEmpty() }?.let { return@withContext it }
-
-        try {
-            PdfRenderer(
-                uri = uri,
-                password = masterPassword
-            )?.use { renderer ->
-                List(renderer.pageCount) {
-                    renderer.openPage(it).run {
-                        IntegerSize(width, height)
-                    }
-                }
-            }.orEmpty()
-        } catch (_: Throwable) {
-            emptyList()
-        }.also { pagesCache[uri] = it }
-    }
-
     internal fun tempName(
         key: String,
         uri: String? = null
@@ -233,15 +233,61 @@ internal class AndroidPdfHelper @Inject constructor(
         password = password
     )
 
-    internal inline fun <T> useRenderer(
+    inline fun <T> useAndroidPdfRenderer(
         uri: String,
-        password: String? = masterPassword,
-        action: (PdfRenderer) -> T
-    ) = PdfRenderer(
-        uri = uri,
-        password = password,
-        onFailure = { throw it }
-    )?.use(action)
+        action: (AndroidPdfRenderer) -> T
+    ): T = context.contentResolver.openFileDescriptor(
+        uri.toUri(),
+        "r"
+    )?.use { fileDescriptor ->
+        AndroidPdfRenderer(fileDescriptor).use(action)
+    } ?: error(getString(R.string.something_went_wrong))
+
+    fun AndroidPdfRenderer.safeRenderDpi(
+        pageIndex: Int,
+        dpi: Float
+    ): Bitmap {
+        val scale = dpi / 72f
+
+        return try {
+            renderPage(pageIndex, scale)
+        } catch (t1: Throwable) {
+            t1.makeLog("safeRenderDpi")
+            System.gc()
+            try {
+                renderPage(pageIndex, 1f)
+            } catch (t2: Throwable) {
+                t2.makeLog("safeRenderDpi")
+                System.gc()
+                renderPage(pageIndex, 0.5f)
+            }
+        } finally {
+            System.gc()
+        }
+    }
+
+    private fun AndroidPdfRenderer.renderPage(
+        pageIndex: Int,
+        scale: Float
+    ): Bitmap = openPage(pageIndex).use { page ->
+        createBitmap(
+            (page.width * scale).toInt().coerceAtLeast(1),
+            (page.height * scale).toInt().coerceAtLeast(1)
+        ).apply {
+            eraseColor(WHITE)
+            page.render(
+                this,
+                null,
+                AndroidMatrix().apply { setScale(scale, scale) },
+                AndroidPdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
+            )
+        }
+    }
+
+    val AndroidPdfRenderer.pageIndices: List<Int>
+        get() = List(pageCount) { it }
+
+    fun List<Int>?.orAll(renderer: AndroidPdfRenderer) = orEmpty().ifEmpty { renderer.pageIndices }
 
     internal suspend fun PDDocument.save(
         filename: String,
@@ -275,5 +321,149 @@ internal class AndroidPdfHelper @Inject constructor(
                 )
             }
         ).pageSizeFinal
+
+    internal fun parseHocrData(hocr: String): HocrData {
+        val pageBox = HOCR_PAGE_REGEX.find(hocr)?.let { match ->
+            val left = match.groupValues.getOrNull(1)?.toFloatOrNull() ?: return@let null
+            val top = match.groupValues.getOrNull(2)?.toFloatOrNull() ?: return@let null
+            val right = match.groupValues.getOrNull(3)?.toFloatOrNull() ?: return@let null
+            val bottom = match.groupValues.getOrNull(4)?.toFloatOrNull() ?: return@let null
+            HocrPageBox(
+                width = (right - left).coerceAtLeast(1f),
+                height = (bottom - top).coerceAtLeast(1f)
+            )
+        }
+
+        val words = HOCR_WORD_REGEX
+            .findAll(hocr)
+            .mapNotNull { match ->
+                val left = match.groupValues.getOrNull(1)?.toFloatOrNull() ?: return@mapNotNull null
+                val top = match.groupValues.getOrNull(2)?.toFloatOrNull() ?: return@mapNotNull null
+                val right =
+                    match.groupValues.getOrNull(3)?.toFloatOrNull() ?: return@mapNotNull null
+                val bottom =
+                    match.groupValues.getOrNull(4)?.toFloatOrNull() ?: return@mapNotNull null
+                val rawText = match.groupValues.getOrNull(5).orEmpty()
+                val text = HtmlCompat
+                    .fromHtml(rawText.replace(HOCR_TAG_REGEX, ""), HtmlCompat.FROM_HTML_MODE_LEGACY)
+                    .toString()
+                    .trim()
+                    .takeIf { it.isNotBlank() }
+                    ?: return@mapNotNull null
+
+                HocrWord(
+                    left = left,
+                    top = top,
+                    right = right,
+                    bottom = bottom,
+                    text = text
+                )
+            }
+            .toList()
+
+        return HocrData(
+            pageBox = pageBox,
+            words = words
+        )
+    }
+
+    internal fun String.cleanPdfText(font: PDFont): String {
+        return replace(PDF_CONTROL_REGEX, "")
+            .take(2000)
+            .mapNotNull { char ->
+                char.takeIf {
+                    font.hasGlyph(it)
+                }
+            }
+            .joinToString("")
+    }
+
+    private fun PDFont.hasGlyph(char: Char): Boolean {
+        return runCatching {
+            encode(char.toString())
+        }.isSuccess
+    }
+
+    internal suspend fun prepareImagesForPdf(
+        imageUris: List<String>,
+        params: PdfCreationParams
+    ): List<Bitmap> {
+        val scale = params.preset.value / 100f
+        return imageUris.mapNotNull { uri ->
+            imageGetter.getImage(data = uri)?.let {
+                imageScaler.scaleImage(
+                    image = it,
+                    width = (it.width * scale).roundToInt(),
+                    height = (it.height * scale).roundToInt(),
+                    resizeType = ResizeType.Flexible
+                )
+            }
+        }
+    }
+
+    internal suspend fun createPdfFromPreparedImages(
+        images: List<Bitmap>,
+        quality: Float,
+        scaleSmallImagesToLarge: Boolean,
+        addTextLayer: (PDPageContentStream.(pageIndex: Int, pageWidth: Float, pageHeight: Float, document: PDDocument) -> Unit)?
+    ): String {
+        if (images.isEmpty()) error("No PDF created")
+
+        return createPdf { newDoc ->
+            var h = 0
+            var maxWidth = 0
+
+            images.forEach {
+                maxWidth = max(maxWidth, it.width)
+            }
+
+            for (image in images) {
+                h += if (scaleSmallImagesToLarge && image.width != maxWidth) {
+                    (maxWidth / image.aspectRatio).toInt().coerceAtLeast(1)
+                } else {
+                    image.height.coerceAtLeast(1)
+                }
+            }
+
+            val size = IntegerSize(maxWidth, h)
+
+            images.forEachIndexed { index, image ->
+                val bitmap = if (scaleSmallImagesToLarge && image.width != size.width) {
+                    Aire.scale(
+                        bitmap = image,
+                        dstWidth = size.width,
+                        dstHeight = (size.width / image.aspectRatio).toInt(),
+                        scaleMode = ResizeFunction.Bicubic,
+                        colorSpace = ScaleColorSpace.SRGB
+                    )
+                } else image
+
+                val pageHeight = bitmap.height.toFloat()
+                val pageWidth = bitmap.width.toFloat()
+                newDoc.createPage(
+                    PDPage(
+                        PDRectangle(
+                            pageWidth,
+                            pageHeight
+                        )
+                    )
+                ) {
+                    drawImage(
+                        bitmap.asXObject(newDoc, quality),
+                        0f,
+                        0f,
+                        pageWidth,
+                        pageHeight
+                    )
+                    addTextLayer?.invoke(this, index, pageWidth, pageHeight, newDoc)
+                }
+            }
+
+            shareProvider.cacheData(
+                writeData = newDoc::save,
+                filename = createTempName(key = "")
+            ) ?: error("No PDF created")
+        }
+    }
 
 }

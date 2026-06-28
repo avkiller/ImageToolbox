@@ -54,9 +54,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -73,9 +70,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -84,10 +79,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
 import com.t8rin.imagetoolbox.core.resources.icons.EditAlt
+import com.t8rin.imagetoolbox.core.resources.icons.Share
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
 import com.t8rin.imagetoolbox.core.ui.theme.White
+import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.onPrimaryContainerFixed
 import com.t8rin.imagetoolbox.core.ui.theme.primaryContainerFixed
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
@@ -277,14 +277,16 @@ fun ImagePager(
                             error = {
                                 Box(
                                     contentAlignment = Alignment.Center,
-                                    modifier = Modifier.background(
-                                        takeColorFromScheme { isNightMode ->
-                                            errorContainer.copy(
-                                                if (isNightMode) 0.25f
-                                                else 1f
-                                            ).compositeOver(surface)
-                                        }
-                                    )
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            takeColorFromScheme { isNightMode ->
+                                                errorContainer.copy(
+                                                    if (isNightMode) 0.25f
+                                                    else 1f
+                                                ).compositeOverSafe(surface)
+                                            }
+                                        )
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.BrokenImageAlt,
@@ -374,7 +376,7 @@ fun ImagePager(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit),
                                         tint = White
                                     )
@@ -425,7 +427,7 @@ fun ImagePager(
                                 ?.let { size ->
                                     Spacer(Modifier.width(8.dp))
                                     Text(
-                                        text = rememberHumanFileSize(size, 2),
+                                        text = rememberHumanFileSize(size),
                                         modifier = Modifier
                                             .animateContentSizeNoClip()
                                             .background(
@@ -440,7 +442,7 @@ fun ImagePager(
                             MetadataPreviewButton(
                                 uri = selectedUri,
                                 name = { selectedUriFilename },
-                                fileSize = { selectedUriFileSize?.let { humanFileSize(it, 2) } }
+                                fileSize = { selectedUriFileSize?.let { humanFileSize(it) } }
                             )
                         }
                         Spacer(Modifier.width(16.dp))
@@ -449,7 +451,7 @@ fun ImagePager(
                             modifier = Modifier
                                 .height(50.dp)
                                 .width(90.dp),
-                            bordersColor = Color.White
+                            bordersColor = MaterialTheme.colorScheme.primaryFixed.blend(White, 0.5f)
                         )
                     }
                 }

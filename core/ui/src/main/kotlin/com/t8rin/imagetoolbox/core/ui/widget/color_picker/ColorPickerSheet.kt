@@ -17,17 +17,13 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.color_picker
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bookmark
-import androidx.compose.material.icons.rounded.BookmarkRemove
-import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -44,7 +40,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.toColorModel
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
+import com.t8rin.imagetoolbox.core.resources.icons.BookmarkRemove
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSimpleSettingsInteractor
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
@@ -61,7 +62,8 @@ fun ColorPickerSheet(
     onDismiss: () -> Unit,
     color: Color?,
     onColorSelected: (Color) -> Unit,
-    allowAlpha: Boolean
+    allowAlpha: Boolean,
+    additionalContent: @Composable ColumnScope.(onColorChange: (Color) -> Unit) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     var tempColor by remember(visible) {
@@ -78,10 +80,19 @@ fun ColorPickerSheet(
                         .enhancedVerticalScroll(rememberScrollState(), reverseScrolling = true)
                         .padding(24.dp)
                 ) {
+                    BasicColorsCard(
+                        value = tempColor,
+                        onValueChange = { tempColor = it },
+                        allowAlpha = allowAlpha,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
                     RecentAndFavoriteColorsCard(
                         onRecentColorClick = { tempColor = it },
                         onFavoriteColorClick = { tempColor = it }
                     )
+
+                    additionalContent { tempColor = it }
 
                     ColorSelection(
                         value = tempColor,
@@ -98,7 +109,7 @@ fun ColorPickerSheet(
         title = {
             TitleItem(
                 text = stringResource(R.string.color),
-                icon = Icons.Rounded.ColorLens
+                icon = Icons.Rounded.Palette
             )
         },
         confirmButton = {

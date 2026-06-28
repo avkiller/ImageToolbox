@@ -21,6 +21,11 @@ package com.t8rin.imagetoolbox.feature.settings.presentation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -50,11 +55,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +64,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -77,13 +79,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Search
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
 import com.t8rin.imagetoolbox.core.settings.presentation.model.SettingsGroup
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
-import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
@@ -104,6 +109,8 @@ import com.t8rin.imagetoolbox.feature.settings.presentation.components.Searchabl
 import com.t8rin.imagetoolbox.feature.settings.presentation.components.SettingGroupItem
 import com.t8rin.imagetoolbox.feature.settings.presentation.components.SettingItem
 import com.t8rin.imagetoolbox.feature.settings.presentation.screenLogic.SettingsComponent
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 
 @Composable
@@ -113,9 +120,6 @@ fun SettingsContent(
     appBarNavigationIcon: (@Composable (Boolean, () -> Unit) -> Unit)? = null
 ) {
     val isStandaloneScreen = appBarNavigationIcon == null
-
-    val isUpdateAvailable by component.isUpdateAvailable.subscribeAsState()
-
     val settingsState = LocalSettingsState.current
     val layoutDirection = LocalLayoutDirection.current
     val initialSettingGroups = SettingsGroup.entries
@@ -125,6 +129,35 @@ fun SettingsContent(
 
     val settings = component.filteredSettings
     val loading = component.isFilteringSettings
+    val targetSetting = component.targetSetting
+
+    val gridState = rememberLazyStaggeredGridState()
+
+    var showTargetHighlight by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var isHighlightShown by rememberSaveable(targetSetting) {
+        mutableStateOf(false)
+    }
+
+    val highlightedContainerColor = if (showTargetHighlight) {
+        val highlightTransition = rememberInfiniteTransition()
+        val fraction by highlightTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 0.75f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 500),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
+        MaterialTheme.colorScheme.surfaceContainerLow.blend(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            fraction = fraction
+        )
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    }
 
     val padding = WindowInsets.navigationBars
         .union(WindowInsets.displayCutout)
@@ -160,6 +193,32 @@ fun SettingsContent(
     }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    LaunchedEffect(targetSetting, settings) {
+        targetSetting ?: return@LaunchedEffect
+        val index = settings?.indexOfFirst { (_, setting) ->
+            setting == targetSetting
+        } ?: initialSettingGroups.indexOfFirst { group ->
+            group.settingsList.contains(targetSetting)
+        }
+
+        if (index >= 0) {
+            gridState.scrollToItem(index)
+        }
+    }
+
+    LaunchedEffect(targetSetting) {
+        if (targetSetting != null && !showTargetHighlight && !isHighlightShown) {
+            showTargetHighlight = true
+            delay(3.seconds)
+            showTargetHighlight = false
+            isHighlightShown = true
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { showTargetHighlight = false }
+    }
 
     Scaffold(
         modifier = if (isStandaloneScreen) {
@@ -227,7 +286,7 @@ fun SettingsContent(
                                 )
                             } else if (!searching) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Search,
+                                    imageVector = Icons.Outlined.Search,
                                     contentDescription = stringResource(R.string.search_here)
                                 )
                             }
@@ -253,7 +312,7 @@ fun SettingsContent(
                             containerColor = Color.Transparent
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                imageVector = Icons.Rounded.ArrowBack,
                                 contentDescription = stringResource(R.string.exit)
                             )
                         }
@@ -304,6 +363,7 @@ fun SettingsContent(
 
                 if (settingsAnimated == null) {
                     LazyVerticalStaggeredGrid(
+                        state = gridState,
                         contentPadding = padding,
                         columns = StaggeredGridCells.Adaptive(300.dp),
                         verticalItemSpacing = spacing,
@@ -354,16 +414,10 @@ fun SettingsContent(
                                                 SettingItem(
                                                     setting = setting,
                                                     component = component,
-                                                    isUpdateAvailable = isUpdateAvailable,
-                                                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                                                    onNavigateToEasterEgg = {
-                                                        component.onNavigate(Screen.EasterEgg)
-                                                    },
-                                                    onNavigateToSettings = {
-                                                        component.onNavigate(Screen.Settings())
-                                                    },
-                                                    onNavigateToLibrariesInfo = {
-                                                        component.onNavigate(Screen.LibrariesInfo)
+                                                    containerColor = if (showTargetHighlight && setting == targetSetting) {
+                                                        highlightedContainerColor
+                                                    } else {
+                                                        MaterialTheme.colorScheme.surfaceContainerLow
                                                     }
                                                 )
                                             }
@@ -374,7 +428,8 @@ fun SettingsContent(
                                         groupKey = group.id,
                                         icon = group.icon,
                                         text = stringResource(group.titleId),
-                                        initialState = group.initialState
+                                        initialState = group.initialState,
+                                        forceExpanded = targetSetting in group.settingsList
                                     ) {
                                         Column(
                                             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -383,15 +438,10 @@ fun SettingsContent(
                                                 SettingItem(
                                                     setting = setting,
                                                     component = component,
-                                                    isUpdateAvailable = isUpdateAvailable,
-                                                    onNavigateToEasterEgg = {
-                                                        component.onNavigate(Screen.EasterEgg)
-                                                    },
-                                                    onNavigateToSettings = {
-                                                        component.onNavigate(Screen.Settings())
-                                                    },
-                                                    onNavigateToLibrariesInfo = {
-                                                        component.onNavigate(Screen.LibrariesInfo)
+                                                    containerColor = if (showTargetHighlight && setting == targetSetting) {
+                                                        highlightedContainerColor
+                                                    } else {
+                                                        MaterialTheme.colorScheme.surface
                                                     }
                                                 )
                                             }
@@ -403,6 +453,7 @@ fun SettingsContent(
                     }
                 } else if (settingsAnimated.isNotEmpty()) {
                     LazyVerticalStaggeredGrid(
+                        state = gridState,
                         contentPadding = padding,
                         columns = StaggeredGridCells.Adaptive(300.dp),
                         verticalItemSpacing = spacing,
@@ -420,17 +471,7 @@ fun SettingsContent(
                                 ),
                                 group = group,
                                 setting = setting,
-                                component = component,
-                                isUpdateAvailable = isUpdateAvailable,
-                                onNavigateToEasterEgg = {
-                                    component.onNavigate(Screen.EasterEgg)
-                                },
-                                onNavigateToSettings = {
-                                    component.onNavigate(Screen.Settings())
-                                },
-                                onNavigateToLibrariesInfo = {
-                                    component.onNavigate(Screen.LibrariesInfo)
-                                }
+                                component = component
                             )
                         }
                     }
@@ -453,7 +494,7 @@ fun SettingsContent(
                             )
                         )
                         Icon(
-                            imageVector = Icons.Rounded.SearchOff,
+                            imageVector = Icons.Outlined.SearchOff,
                             contentDescription = null,
                             modifier = Modifier
                                 .weight(2f)

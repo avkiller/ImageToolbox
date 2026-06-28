@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FileCopy
-import androidx.compose.material.icons.outlined.FolderOpen
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,10 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FileCopy
+import com.t8rin.imagetoolbox.core.resources.icons.FolderOpen
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.FileType
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFolderPicker
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.PagerScrollPanel
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -68,9 +68,6 @@ import com.t8rin.imagetoolbox.feature.checksum_tools.presentation.screenLogic.Ch
 internal fun ColumnScope.CompareWithUrisPage(
     component: ChecksumToolsComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val onCopyText: (String) -> Unit = essentials::copyToClipboard
-
     var previousFolder by rememberSaveable {
         mutableStateOf<Uri?>(null)
     }
@@ -101,7 +98,7 @@ internal fun ColumnScope.CompareWithUrisPage(
             onClick = filePicker::pickFile,
             shape = ShapeDefaults.start,
             titleFontStyle = PreferenceItemDefaults.TitleFontStyleCenteredSmall,
-            startIcon = Icons.Outlined.FileCopy,
+            startIcon = Icons.Rounded.FileCopy,
             drawStartIconContainer = false,
             modifier = Modifier
                 .weight(1f)
@@ -154,7 +151,7 @@ internal fun ColumnScope.CompareWithUrisPage(
             ) { nestedPage ->
                 UriWithHashItem(
                     uriWithHash = page.uris[nestedPage],
-                    onCopyText = onCopyText
+                    onCopyText = Clipboard::copy
                 )
             }
         } else {

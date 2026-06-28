@@ -28,9 +28,9 @@ import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
 import com.t8rin.imagetoolbox.core.domain.model.ExtraDataType
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.utils.filename
@@ -66,6 +66,13 @@ class OCRPdfToolComponent @AssistedInject internal constructor(
     private val _uri: MutableState<Uri?> = mutableStateOf(initialUri)
     val uri by _uri
 
+    init {
+        checkPdf(
+            uri = initialUri,
+            onDecrypted = { _uri.value = it }
+        )
+    }
+
     fun setUri(uri: Uri?) {
         if (uri == null) {
             registerChangesCleared()
@@ -82,9 +89,7 @@ class OCRPdfToolComponent @AssistedInject internal constructor(
     override fun createTargetFilename(): String =
         "${uri?.filename()?.substringBeforeLast('.') ?: timestamp()}_extracted.txt"
 
-    fun navigateToOcr(
-        onFailure: (Throwable) -> Unit
-    ) {
+    fun navigateToOcr() {
         doSharing(
             action = {
                 pdfManager.extractPagesFromPdf(uri.toString())
@@ -95,7 +100,7 @@ class OCRPdfToolComponent @AssistedInject internal constructor(
                 )
             },
             onFailure = {
-                onFailure(it)
+                AppToastHost.showFailureToast(it)
                 _uri.value = null
                 registerChangesCleared()
             }
@@ -103,22 +108,18 @@ class OCRPdfToolComponent @AssistedInject internal constructor(
     }
 
     override fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
-        doSaving(
-            action = {
-                val processed = stripText()
+        doSaving {
+            val processed = stripText()
 
-                fileController.writeBytes(
-                    uri = uri.toString(),
-                    block = {
-                        it.writeBytes(processed)
-                    }
-                ).onSuccess(::registerSave)
-            },
-            onResult = onResult
-        )
+            fileController.writeBytes(
+                uri = uri.toString(),
+                block = {
+                    it.writeBytes(processed)
+                }
+            ).onSuccess(::registerSave)
+        }
     }
 
     override fun performSharing(

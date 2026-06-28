@@ -17,13 +17,10 @@
 
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -43,20 +40,24 @@ import androidx.compose.ui.unit.dp
 import com.t8rin.dynamic.theme.ColorTuple
 import com.t8rin.dynamic.theme.ColorTupleItem
 import com.t8rin.dynamic.theme.PaletteStyle
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
-import com.t8rin.imagetoolbox.core.resources.icons.Theme
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
+import com.t8rin.imagetoolbox.core.resources.icons.PaletteBox
 import com.t8rin.imagetoolbox.core.resources.shapes.MaterialStarShape
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.rememberAppColorTuple
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.AvailableColorTuplesSheet
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorTuplePicker
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRow
+import com.t8rin.imagetoolbox.core.utils.getString
 
 @Composable
 fun ColorSchemeSettingItem(
@@ -69,7 +70,6 @@ fun ColorSchemeSettingItem(
     shape: Shape = ShapeDefaults.top,
     modifier: Modifier = Modifier.padding(horizontal = 8.dp),
 ) {
-    val essentials = rememberLocalEssentials()
     val settingsState = LocalSettingsState.current
     val enabled = !settingsState.isDynamicColors
 
@@ -79,15 +79,15 @@ fun ColorSchemeSettingItem(
         enabled = enabled,
         shape = shape,
         title = stringResource(R.string.color_scheme),
-        startIcon = Icons.Outlined.Theme,
+        startIcon = Icons.Outlined.PaletteBox,
         subtitle = stringResource(R.string.pick_accent_color),
         onClick = {
             showPickColorSheet = true
         },
         onDisabledClick = {
-            essentials.showToast(
+            AppToastHost.showToast(
                 icon = Icons.Rounded.Palette,
-                message = essentials.getString(R.string.cannot_change_palette_while_dynamic_colors_applied)
+                message = getString(R.string.cannot_change_palette_while_dynamic_colors_applied)
             )
         },
         endContent = {

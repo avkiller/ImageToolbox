@@ -33,14 +33,18 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.isBase64
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
 import com.t8rin.imagetoolbox.core.domain.utils.trimToBase64
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Base64
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.base64_tools.domain.Base64Converter
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -129,7 +133,7 @@ class Base64ToolsComponent @AssistedInject internal constructor(
 
     fun getFormatForFilenameSelection(): ImageFormat = imageFormat
 
-    fun shareBitmap(onComplete: () -> Unit) {
+    fun shareBitmap() {
         savingJob = trackProgress {
             _isSaving.update { true }
             uri?.let { imageGetter.getImage(it) }?.let { image ->
@@ -142,7 +146,7 @@ class Base64ToolsComponent @AssistedInject internal constructor(
                         quality = quality,
                         originalUri = uri.toString()
                     ),
-                    onComplete = onComplete
+                    onComplete = AppToastHost::showConfetti
                 )
             }
             _isSaving.update { false }
@@ -177,8 +181,7 @@ class Base64ToolsComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmap(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (result: SaveResult) -> Unit,
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.update { true }
@@ -190,7 +193,7 @@ class Base64ToolsComponent @AssistedInject internal constructor(
                     quality = quality,
                     originalUri = uri.toString()
                 )
-                onComplete(
+                parseSaveResult(
                     fileController.save(
                         saveTarget = ImageSaveTarget(
                             imageInfo = imageInfo,
@@ -213,10 +216,7 @@ class Base64ToolsComponent @AssistedInject internal constructor(
         }
     }
 
-    fun saveContentToTxt(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
-    ) {
+    fun saveContentToTxt(uri: Uri) {
         base64String.takeIf { it.isNotEmpty() }?.let { data ->
             componentScope.launch {
                 fileController.writeBytes(
@@ -224,14 +224,14 @@ class Base64ToolsComponent @AssistedInject internal constructor(
                     block = {
                         it.writeBytes(data.encodeToByteArray())
                     }
-                ).also(onResult).onSuccess(::registerSave)
+                ).also(::parseFileSaveResult).onSuccess(::registerSave)
             }
         }
     }
 
     fun generateTextFilename(): String = "Base64_${timestamp()}.txt"
 
-    fun shareText(onSuccess: () -> Unit) {
+    fun shareText() {
         base64String.takeIf { it.isNotEmpty() }?.let { data ->
             componentScope.launch {
                 shareProvider.shareData(
@@ -240,21 +240,21 @@ class Base64ToolsComponent @AssistedInject internal constructor(
                     },
                     filename = generateTextFilename()
                 )
-                onSuccess()
+                AppToastHost.showConfetti()
             }
         }
     }
 
-    fun setBase64FromUri(
-        uri: Uri,
-        onFailure: () -> Unit
-    ) {
+    fun setBase64FromUri(uri: Uri) {
         componentScope.launch {
             val text = fileController.readBytes(uri.toString()).decodeToString().trimToBase64()
             if (text.isBase64()) {
                 setBase64(text)
             } else {
-                onFailure()
+                AppToastHost.showToast(
+                    message = getString(R.string.not_a_valid_base_64),
+                    icon = Icons.Rounded.Base64
+                )
             }
         }
     }

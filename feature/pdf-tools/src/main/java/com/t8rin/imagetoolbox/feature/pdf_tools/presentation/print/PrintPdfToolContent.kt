@@ -19,9 +19,7 @@ package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.print
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material.icons.outlined.ViewWeek
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -32,6 +30,8 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Receipt
+import com.t8rin.imagetoolbox.core.resources.icons.ViewWeek
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.DataSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
@@ -56,20 +56,14 @@ fun PrintPdfToolContent(
 
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
         isPickedAlready = component.initialUri != null,
         canShowScreenData = component.uri != null,
         title = stringResource(R.string.print_pdf),
-        actions = {},
-        imagePreview = {},
-        placeImagePreview = false,
-        showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -81,9 +75,11 @@ fun PrintPdfToolContent(
             }
             QualitySelector(
                 imageFormat = ImageFormat.Jpg,
-                quality = Quality.Base((component.quality * 100).roundToInt()),
+                quality = Quality.Base((params.quality * 100).roundToInt()),
                 onQualityChange = {
-                    component.updateQuality(it.qualityValue / 100f)
+                    component.updateParams(
+                        params.copy(quality = it.qualityValue / 100f)
+                    )
                 },
                 autoCoerce = false
             )
@@ -148,9 +144,6 @@ fun PrintPdfToolContent(
                 shape = ShapeDefaults.large,
                 valueSuffix = "%"
             )
-
-
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

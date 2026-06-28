@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.controls
 
-import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Exif
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
@@ -39,13 +39,16 @@ fun SaveExifWidget(
     backgroundColor: Color = Color.Unspecified
 ) {
     val settingsState = LocalSettingsState.current
-    LaunchedEffect(Unit) {
-        onCheckedChange(settingsState.exifWidgetInitialState)
+    val canSaveExif = imageFormat.canWriteExif && !settingsState.isAlwaysClearExif
+    LaunchedEffect(settingsState.exifWidgetInitialState, settingsState.isAlwaysClearExif) {
+        onCheckedChange(settingsState.exifWidgetInitialState && !settingsState.isAlwaysClearExif)
     }
     PreferenceRowSwitch(
         modifier = modifier,
         title = stringResource(R.string.keep_exif),
-        subtitle = if (imageFormat.canWriteExif) {
+        subtitle = if (settingsState.isAlwaysClearExif) {
+            stringResource(R.string.always_clear_exif_sub)
+        } else if (imageFormat.canWriteExif) {
             stringResource(R.string.keep_exif_sub)
         } else {
             stringResource(
@@ -54,10 +57,10 @@ fun SaveExifWidget(
             )
         },
         checked = checked,
-        enabled = imageFormat.canWriteExif,
+        enabled = canSaveExif,
         shape = ShapeDefaults.extraLarge,
         containerColor = backgroundColor,
         onClick = onCheckedChange,
-        startIcon = Icons.Rounded.Exif
+        startIcon = Icons.Outlined.Exif
     )
 }

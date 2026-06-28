@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -33,21 +32,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.toBitmap
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.CompareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
@@ -68,6 +67,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.sheets.ZoomModalSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
 import com.t8rin.imagetoolbox.feature.compare.presentation.components.CompareSheet
 import com.t8rin.imagetoolbox.image_cutting.presentation.components.CutParamsSelector
+import com.t8rin.imagetoolbox.image_cutting.presentation.components.CutPreview
 import com.t8rin.imagetoolbox.image_cutting.presentation.components.rememberCutTransformations
 import com.t8rin.imagetoolbox.image_cutting.presentation.screenLogic.ImageCutterComponent
 
@@ -75,9 +75,6 @@ import com.t8rin.imagetoolbox.image_cutting.presentation.screenLogic.ImageCutter
 fun ImageCutterContent(
     component: ImageCutterComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val imagePicker = rememberImagePicker(onSuccess = component::updateUris)
 
     val pickImage = imagePicker::pickImage
@@ -89,8 +86,7 @@ fun ImageCutterContent(
 
     val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmaps(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResults
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -120,18 +116,25 @@ fun ImageCutterContent(
             var editSheetData by remember {
                 mutableStateOf(listOf<Uri>())
             }
+            if (!isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
             ShareButton(
                 enabled = component.uris != null,
-                onShare = {
-                    component.shareBitmaps(showConfetti)
-                },
+                onShare = component::shareBitmaps,
                 onEdit = {
                     component.cacheImages {
                         editSheetData = it
                     }
                 },
                 onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
+                    component.cacheCurrentImage(Clipboard::copy)
                 }
             )
             ProcessImagesPreferenceSheet(
@@ -142,6 +145,15 @@ fun ImageCutterContent(
                 },
                 onNavigate = component.onNavigate
             )
+            if (isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
         },
         imagePreview = {
             Box(
@@ -157,19 +169,9 @@ fun ImageCutterContent(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                var aspectRatio by remember {
-                    mutableFloatStateOf(1f)
-                }
-                Picture(
-                    model = component.selectedUri,
-                    size = 1500,
-                    contentScale = ContentScale.FillBounds,
-                    transformations = component.rememberCutTransformations(component.selectedUri),
-                    modifier = Modifier.aspectRatio(aspectRatio),
-                    onSuccess = {
-                        aspectRatio = it.result.image.toBitmap().safeAspectRatio
-                    },
-                    shape = MaterialTheme.shapes.medium,
+                CutPreview(
+                    uri = component.selectedUri,
+                    params = component.params,
                     isLoadingFromDifferentPlace = component.isImageLoading
                 )
             }

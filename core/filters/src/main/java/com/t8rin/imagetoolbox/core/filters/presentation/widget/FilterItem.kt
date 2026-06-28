@@ -17,6 +17,7 @@
 
 package com.t8rin.imagetoolbox.core.filters.presentation.widget
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -33,14 +34,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.Extension
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
-import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -64,8 +57,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.filters.domain.model.shader.ShaderPreset
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.DragHandle
+import com.t8rin.imagetoolbox.core.resources.icons.Extension
+import com.t8rin.imagetoolbox.core.resources.icons.KeyboardArrowDown
+import com.t8rin.imagetoolbox.core.resources.icons.MoreVert
+import com.t8rin.imagetoolbox.core.resources.icons.RemoveCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Visibility
+import com.t8rin.imagetoolbox.core.resources.icons.VisibilityOff
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedDropdownMenu
@@ -90,11 +92,16 @@ fun <T : Any> FilterItem(
     onCreateTemplate: (() -> Unit)?,
     backgroundColor: Color = Color.Unspecified,
     shape: Shape = MaterialTheme.shapes.extraLarge,
-    canHide: Boolean = true
+    canHide: Boolean = true,
+    shaderPresets: List<ShaderPreset> = emptyList(),
+    onImportShaderPreset: (suspend (Uri) -> ShaderPreset?)? = null,
+    additionalContent: @Composable (() -> Unit)? = null
 ) {
     var isControlsExpanded by rememberSaveable {
         mutableStateOf(true)
     }
+
+    val onCreateTemplateSafe = onCreateTemplate?.takeIf { filter.canUseTemplate }
 
     val isVisible = filter.isVisible
 
@@ -182,7 +189,7 @@ fun <T : Any> FilterItem(
                                             containerColor = MaterialTheme.colorScheme.secondary
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.RemoveCircleOutline,
+                                                imageVector = Icons.Outlined.RemoveCircle,
                                                 contentDescription = stringResource(R.string.create_template)
                                             )
                                             Spacer(Modifier.width(8.dp))
@@ -196,14 +203,14 @@ fun <T : Any> FilterItem(
                                                 onFilterChange(filter.value as Any)
                                                 showPopup = false
                                             },
-                                            shape = onCreateTemplate?.let {
+                                            shape = onCreateTemplateSafe?.let {
                                                 ShapeDefaults.center
                                             } ?: ShapeDefaults.bottom,
                                             containerColor = MaterialTheme.colorScheme.primary
                                         ) {
                                             Icon(
                                                 imageVector = if (isVisible) {
-                                                    Icons.Outlined.VisibilityOff
+                                                    Icons.Rounded.VisibilityOff
                                                 } else {
                                                     Icons.Rounded.Visibility
                                                 },
@@ -217,12 +224,12 @@ fun <T : Any> FilterItem(
                                                 )
                                             )
                                         }
-                                        onCreateTemplate?.let {
+                                        onCreateTemplateSafe?.let {
                                             Spacer(Modifier.height(4.dp))
                                             EnhancedButton(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 onClick = {
-                                                    onCreateTemplate()
+                                                    onCreateTemplateSafe()
                                                     showPopup = false
                                                 },
                                                 shape = ShapeDefaults.bottom,
@@ -244,7 +251,7 @@ fun <T : Any> FilterItem(
                                 onClick = onRemove
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.RemoveCircleOutline,
+                                    imageVector = Icons.Outlined.RemoveCircle,
                                     contentDescription = stringResource(R.string.remove)
                                 )
                             }
@@ -313,11 +320,16 @@ fun <T : Any> FilterItem(
                 AnimatedVisibility(
                     visible = isControlsExpanded || filter.value.isSingle() || previewOnly
                 ) {
-                    FilterItemContent(
-                        filter = filter,
-                        onFilterChange = onFilterChange,
-                        previewOnly = previewOnly
-                    )
+                    Column {
+                        FilterItemContent(
+                            filter = filter,
+                            onFilterChange = onFilterChange,
+                            shaderPresets = shaderPresets,
+                            onImportShaderPreset = onImportShaderPreset,
+                            previewOnly = previewOnly
+                        )
+                        additionalContent?.invoke()
+                    }
                 }
             }
             if (showDragHandle) {

@@ -18,7 +18,6 @@
 package com.t8rin.imagetoolbox.core.ui.widget.sheets
 
 import android.net.Uri
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,9 +33,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PhotoLibrary
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -52,7 +48,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.transform.Transformation
 import com.t8rin.imagetoolbox.core.domain.utils.notNullAnd
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.PhotoLibrary
+import com.t8rin.imagetoolbox.core.resources.icons.RemoveCircle
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
@@ -197,7 +197,7 @@ fun PickImageFromUrisSheet(
                                     )
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.RemoveCircleOutline,
+                                        imageVector = Icons.Outlined.RemoveCircle,
                                         contentDescription = stringResource(R.string.remove)
                                     )
                                 }

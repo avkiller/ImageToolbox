@@ -19,26 +19,23 @@ package com.t8rin.imagetoolbox.feature.root.presentation.screenLogic
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.items
+import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.router.stack.pop
-import com.arkivanov.decompose.router.stack.popWhile
 import com.arkivanov.decompose.router.stack.pushNew
-import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import com.t8rin.imagetoolbox.core.domain.APP_RELEASES
+import com.t8rin.imagetoolbox.core.domain.APP_CHANGELOG
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
+import com.t8rin.imagetoolbox.core.domain.history.AppHistoryRepository
 import com.t8rin.imagetoolbox.core.domain.model.ExtraDataType
 import com.t8rin.imagetoolbox.core.domain.model.ImageModel
 import com.t8rin.imagetoolbox.core.domain.model.PerformanceClass
@@ -47,25 +44,34 @@ import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.filters.domain.FilterParamsInteractor
-import com.t8rin.imagetoolbox.core.resources.BuildConfig
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.DownloadOff
+import com.t8rin.imagetoolbox.core.resources.icons.Error
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.handleDeeplinks
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
-import com.t8rin.imagetoolbox.core.ui.widget.other.ToastHostState
+import com.t8rin.imagetoolbox.core.utils.isNeedUpdate
+import com.t8rin.imagetoolbox.core.utils.makeLog
+import com.t8rin.imagetoolbox.core.utils.parseChangelog
 import com.t8rin.imagetoolbox.core.utils.toImageModel
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.ChildProvider
 import com.t8rin.imagetoolbox.feature.root.presentation.components.navigation.NavigationChild
 import com.t8rin.imagetoolbox.feature.root.presentation.components.utils.BackEventObserver
 import com.t8rin.imagetoolbox.feature.settings.presentation.screenLogic.SettingsComponent
-import com.t8rin.logger.makeLog
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -75,19 +81,16 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import org.w3c.dom.Element
-import java.net.URL
-import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.time.Duration.Companion.seconds
 
 class RootComponent @AssistedInject internal constructor(
     @Assisted componentContext: ComponentContext,
     private val settingsManager: SettingsManager,
     private val childProvider: ChildProvider,
     private val analyticsManager: AnalyticsManager,
-    filterParamsInteractor: FilterParamsInteractor,
-    fileController: FileController,
+    private val client: HttpClient,
+    private val filterParamsInteractor: FilterParamsInteractor,
+    private val fileController: FileController,
+    private val appHistoryRepository: AppHistoryRepository,
     dispatchersHolder: DispatchersHolder,
     settingsComponentFactory: SettingsComponent.Factory,
     resourceManager: ResourceManager,
@@ -174,8 +177,6 @@ class RootComponent @AssistedInject internal constructor(
         mutableStateOf(false)
     val canSetDynamicFilterPreview by _canSetDynamicFilterPreview
 
-    val toastHostState = ToastHostState()
-
     init {
         runBlocking {
             _settingsState.value = settingsManager.getSettingsState()
@@ -234,7 +235,12 @@ class RootComponent @AssistedInject internal constructor(
 
     fun tryGetUpdate(
         isNewRequest: Boolean = false,
-        onNoUpdates: () -> Unit = {}
+        onNoUpdates: (() -> Unit)? = {
+            AppToastHost.showToast(
+                icon = Icons.Rounded.DownloadOff,
+                message = getString(R.string.no_updates)
+            )
+        }
     ) {
         if (settingsState.appOpenCount < 2 && !isNewRequest) return
         val isInstalledFromMarket = settingsManager.isInstalledFromPlayStore()
@@ -249,7 +255,7 @@ class RootComponent @AssistedInject internal constructor(
                 updatesJob = componentScope.launch {
                     checkForUpdates(
                         showDialog = showDialog,
-                        onNoUpdates = onNoUpdates
+                        onNoUpdates = onNoUpdates ?: {}
                     )
                 }
             }
@@ -262,37 +268,21 @@ class RootComponent @AssistedInject internal constructor(
     ) = withContext(defaultDispatcher) {
         "start updates check".makeLog("checkForUpdates")
         runCatching {
-            withTimeoutOrNull(30.seconds) {
-                val nodes =
-                    DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                        URL("$APP_RELEASES.atom").openConnection().getInputStream()
-                    )?.getElementsByTagName("feed")
+            val (tag, changelog) = client
+                .get(APP_CHANGELOG).bodyAsChannel().toInputStream()
+                .use { it.parseChangelog() }
 
-                if (nodes != null) {
-                    for (i in 0 until nodes.length) {
-                        val element = nodes.item(i) as Element
-                        val title = element.getElementsByTagName("entry")
-                        val line = (title.item(0) as Element)
-                        _tag.value = (line.getElementsByTagName("title")
-                            .item(0) as Element).textContent
-                        _changelog.value = (line.getElementsByTagName("content")
-                            .item(0) as Element).textContent
-                    }
-                }
-            }
+            _tag.update { tag }
+            _changelog.update { changelog }
 
             val isNeedUpdate = isNeedUpdate(
-                currentName = BuildConfig.VERSION_NAME,
-                updateName = tag
-            )
-
-            "isNeedUpdate = $isNeedUpdate".makeLog("checkForUpdates")
+                updateName = tag,
+                allowBetas = settingsState.allowBetas
+            ).makeLog("checkForUpdates") { "isNeedUpdate = $it" }
 
             if (isNeedUpdate) {
                 _isUpdateAvailable.value = true
-                if (showDialog) {
-                    _showUpdateDialog.value = true
-                }
+                _showUpdateDialog.value = showDialog
             } else {
                 onNoUpdates()
             }
@@ -300,54 +290,6 @@ class RootComponent @AssistedInject internal constructor(
             it.makeLog("checkForUpdates")
             onNoUpdates()
         }
-    }
-
-    private fun isNeedUpdate(
-        currentName: String,
-        updateName: String,
-        allowBetas: Boolean = settingsState.allowBetas
-    ): Boolean {
-        val betaList = listOf(
-            "alpha", "beta", "rc"
-        )
-
-        fun String.toVersionCodeString(): String {
-            return replace(
-                regex = Regex("0\\d"),
-                transform = {
-                    it.value.replace("0", "")
-                }
-            ).replace("-", "")
-                .replace(".", "")
-                .replace("_", "")
-                .let { version ->
-                    if (betaList.any { it in version }) version
-                    else version + "4"
-                }
-                .replace("alpha", "1")
-                .replace("beta", "2")
-                .replace("rc", "3")
-                .replace("foss", "")
-                .replace("jxl", "")
-        }
-
-        val currentVersionCodeString = currentName.toVersionCodeString()
-        val updateVersionCodeString = updateName.toVersionCodeString()
-
-        val maxLength = maxOf(currentVersionCodeString.length, updateVersionCodeString.length)
-
-        val currentVersionCode = currentVersionCodeString.padEnd(maxLength, '0').toIntOrNull() ?: -1
-        val updateVersionCode = updateVersionCodeString.padEnd(maxLength, '0').toIntOrNull() ?: -1
-
-        return if (!updateName.startsWith(currentName)) {
-            if (betaList.all { it !in updateName }) {
-                updateVersionCode > currentVersionCode
-            } else {
-                if (allowBetas || betaList.any { it in currentName }) {
-                    updateVersionCode > currentVersionCode
-                } else false
-            }
-        } else false
     }
 
     fun hideSelectDialog() {
@@ -364,6 +306,8 @@ class RootComponent @AssistedInject internal constructor(
     }
 
     fun updateExtraDataType(type: ExtraDataType?) {
+        type.makeLog("updateExtraDataType")
+
         if (type is ExtraDataType.Backup) {
             componentScope.launch {
                 settingsManager.restoreFromBackupFile(
@@ -372,12 +316,12 @@ class RootComponent @AssistedInject internal constructor(
                         _backupRestoredEvents.trySend(true)
                     },
                     onFailure = { throwable ->
-                        showToast(
+                        AppToastHost.showToast(
                             message = getString(
                                 R.string.smth_went_wrong,
                                 throwable.localizedMessage ?: ""
                             ),
-                            icon = Icons.Rounded.ErrorOutline,
+                            icon = Icons.Outlined.Error,
                             duration = ToastDuration.Long
                         )
                         _backupRestoredEvents.trySend(false)
@@ -387,22 +331,32 @@ class RootComponent @AssistedInject internal constructor(
             return
         }
 
+        if (type is ExtraDataType.Template) {
+            componentScope.launch {
+                val content = fileController.readBytes(type.uri).toString(Charsets.UTF_8)
+
+                if (filterParamsInteractor.isValidTemplateFilter(content)) {
+                    filterParamsInteractor.addTemplateFilterFromString(
+                        string = content,
+                        onSuccess = { filterName, filtersCount ->
+                            AppToastHost.showToast(
+                                message = getString(
+                                    R.string.added_filter_template,
+                                    filterName,
+                                    filtersCount
+                                ),
+                                icon = Icons.Outlined.AutoFixHigh
+                            )
+                        },
+                        onFailure = {}
+                    )
+                }
+            }
+            return
+        }
+
         _extraDataType.update { null }
         _extraDataType.update { type }
-    }
-
-    fun showToast(
-        message: String,
-        icon: ImageVector? = null,
-        duration: ToastDuration = ToastDuration.Short
-    ) {
-        componentScope.launch {
-            toastHostState.showToast(
-                message = message,
-                icon = icon,
-                duration = duration
-            )
-        }
     }
 
     fun cancelShowingExitDialog() {
@@ -454,19 +408,24 @@ class RootComponent @AssistedInject internal constructor(
     fun navigateTo(screen: Screen) {
         componentScope.launch {
             delay(100)
-            hideSelectDialog()
-            screen.simpleName.makeLog("Navigator").also(analyticsManager::registerScreenOpen)
+            screen.saveToHistory().simpleName.makeLog("Navigator")
+                .also(analyticsManager::registerScreenOpen)
             navController.pushNew(screen)
+            hideSelectDialog()
         }
     }
 
     fun replaceTo(screen: Screen) {
         componentScope.launch {
             delay(100)
+            screen.saveToHistory().simpleName.makeLog("Navigator")
+                .also(analyticsManager::registerScreenOpen)
+            navController.navigate(
+                transformer = { stack ->
+                    stack.dropLastWhile { it !is Screen.PdfTools && it !is Screen.Main } + screen
+                }
+            )
             hideSelectDialog()
-            screen.simpleName.makeLog("Navigator").also(analyticsManager::registerScreenOpen)
-            navController.popWhile { it is Screen.PdfTools }
-            navController.replaceCurrent(screen)
         }
     }
 
@@ -474,7 +433,8 @@ class RootComponent @AssistedInject internal constructor(
         if (childStack.items.lastOrNull()?.configuration != Screen.Main) {
             navigateBack()
         }
-        screen.simpleName.makeLog("Navigator").also(analyticsManager::registerScreenOpen)
+        screen.saveToHistory().simpleName.makeLog("Navigator")
+            .also(analyticsManager::registerScreenOpen)
         navController.pushNew(screen)
     }
 
@@ -508,12 +468,19 @@ class RootComponent @AssistedInject internal constructor(
             onHasExtraDataType = ::updateExtraDataType,
             onColdStart = ::cancelShowingExitDialog,
             onGetUris = ::updateUris,
-            onShowToast = ::showToast,
             onNavigate = ::navigateTo,
             isHasUris = !uris.isNullOrEmpty(),
             onWantGithubReview = ::onWantGithubReview,
             isOpenEditInsteadOfPreview = settingsState.openEditInsteadOfPreview
         )
+    }
+
+    private fun Screen.saveToHistory() = apply {
+        if (id < 0) return@apply
+
+        componentScope.launch {
+            appHistoryRepository.pushLastTool(id)
+        }
     }
 
 

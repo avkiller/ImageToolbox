@@ -38,9 +38,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.outlined.Extension
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -75,10 +73,12 @@ import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheet
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Extension
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.LocalFilterPreviewModelProvider
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageSelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
@@ -117,8 +117,6 @@ fun FilterTemplateCreationSheet(
     val isPortrait by isPortraitOrientationAsState()
 
     var showAddFilterSheet by rememberSaveable { mutableStateOf(false) }
-
-    val essentials = rememberLocalEssentials()
 
     var showExitDialog by remember { mutableStateOf(false) }
 
@@ -167,7 +165,7 @@ fun FilterTemplateCreationSheet(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        imageVector = Icons.Rounded.ArrowBack,
                         contentDescription = stringResource(R.string.exit)
                     )
                 }
@@ -299,7 +297,7 @@ fun FilterTemplateCreationSheet(
                                                     component.updateFilter(
                                                         value = it,
                                                         index = index,
-                                                        showError = essentials::showFailureToast
+                                                        showError = AppToastHost::showFailureToast
                                                     )
                                                 },
                                                 onLongPress = {

@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,16 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.t8rin.imagetoolbox.core.settings.domain.model.ColorHarmonizer
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastHostState
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
-
-val LocalConfettiHostState = compositionLocalOf { ConfettiHostState() }
-
-@Composable
-fun rememberConfettiHostState() = remember { ConfettiHostState() }
 
 @Stable
 @Immutable
@@ -80,18 +75,18 @@ fun ConfettiHost(
                 modifier = Modifier.fillMaxSize(),
                 parties = particles(harmonizationColor.copy(confettiHarmonizationLevel))
             )
-        }
+        },
+        enableSwipes = false
     )
 }
 
 @Composable
 fun ConfettiHost() {
     val settingsState = LocalSettingsState.current
-    val confettiHostState = LocalConfettiHostState.current
 
     AnimatedVisibility(settingsState.isConfettiEnabled) {
         ConfettiHost(
-            hostState = confettiHostState,
+            hostState = AppToastHost.confettiState,
             particles = { harmonizer ->
                 val particlesType by remember(settingsState.confettiType) {
                     derivedStateOf {
@@ -112,7 +107,7 @@ fun ConfettiHost() {
 
     if (!settingsState.isConfettiEnabled) {
         SideEffect {
-            confettiHostState.currentToastData?.dismiss()
+            AppToastHost.confettiState.currentToastData?.dismiss()
         }
     }
 }

@@ -27,7 +27,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
@@ -65,6 +64,10 @@ class MetadataPdfToolComponent @AssistedInject internal constructor(
     private val _deepClean: MutableState<Boolean> = mutableStateOf(false)
     val deepClean by _deepClean
 
+    init {
+        checkSelectedPdf(initialUri)
+    }
+
     override fun getKey(): Pair<String, Uri?> = "metadata" to uri
 
     fun setUri(uri: Uri?) {
@@ -74,6 +77,10 @@ class MetadataPdfToolComponent @AssistedInject internal constructor(
             registerChanges()
         }
         _uri.update { uri }
+        checkSelectedPdf(uri)
+    }
+
+    private fun checkSelectedPdf(uri: Uri?) {
         checkPdf(
             uri = uri,
             onDecrypted = { _uri.value = it },
@@ -109,25 +116,21 @@ class MetadataPdfToolComponent @AssistedInject internal constructor(
     }
 
     override fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
-        doSaving(
-            action = {
-                val processed = pdfManager.changePdfMetadata(
-                    uri = _uri.value.toString(),
-                    metadata = metadata.takeIf { !deepClean }?.copy(
-                        producer = metadata.producer.orEmpty().ifEmpty { "ImageToolbox" }
-                    )
+        doSaving {
+            val processed = pdfManager.changePdfMetadata(
+                uri = _uri.value.toString(),
+                metadata = metadata.takeIf { !deepClean }?.copy(
+                    producer = metadata.producer.orEmpty().ifEmpty { "ImageToolbox" }
                 )
+            )
 
-                fileController.transferBytes(
-                    fromUri = processed,
-                    toUri = uri.toString()
-                ).onSuccess(::registerSave)
-            },
-            onResult = onResult
-        )
+            fileController.transferBytes(
+                fromUri = processed,
+                toUri = uri.toString()
+            ).onSuccess(::registerSave)
+        }
     }
 
     override fun performSharing(

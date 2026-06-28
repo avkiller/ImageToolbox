@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,36 +18,36 @@
 package com.t8rin.imagetoolbox.feature.compare.presentation.components
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Compare
-import androidx.compose.material.icons.rounded.TouchApp
-import androidx.compose.material.icons.rounded.ZoomIn
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Compare
 import com.t8rin.imagetoolbox.core.resources.icons.Cube
-import com.t8rin.imagetoolbox.core.resources.icons.Transparency
+import com.t8rin.imagetoolbox.core.resources.icons.Tonality
+import com.t8rin.imagetoolbox.core.resources.icons.TouchApp
+import com.t8rin.imagetoolbox.core.resources.icons.ZoomIn
 
 sealed class CompareType(
     val icon: ImageVector,
     @StringRes val title: Int
 ) {
     data object Slide : CompareType(
-        icon = Icons.Rounded.Compare,
+        icon = Icons.Outlined.Compare,
         title = R.string.slide
     )
 
     data object SideBySide : CompareType(
-        icon = Icons.Rounded.ZoomIn,
+        icon = Icons.Outlined.ZoomIn,
         title = R.string.side_by_side
     )
 
     data object Tap : CompareType(
-        icon = Icons.Rounded.TouchApp,
+        icon = Icons.Outlined.TouchApp,
         title = R.string.toggle_tap
     )
 
     data object Transparency : CompareType(
-        icon = Icons.Filled.Transparency,
+        icon = Icons.Outlined.Tonality,
         title = R.string.transparency
     )
 

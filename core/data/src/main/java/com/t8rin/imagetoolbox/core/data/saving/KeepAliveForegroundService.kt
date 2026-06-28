@@ -32,7 +32,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.getSystemService
 import com.t8rin.imagetoolbox.core.domain.saving.KeepAliveService
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import kotlin.math.roundToInt
 
 internal class KeepAliveForegroundService : Service() {
@@ -64,7 +64,12 @@ internal class KeepAliveForegroundService : Service() {
         if (intent == null) {
             startForeground()
             Handler(Looper.getMainLooper()).postDelayed(
-                ::stopForegroundSafe,
+                {
+                    runCatching {
+                        stopForegroundSafe()
+                        stopSelfResult(startId)
+                    }.onFailure { it.makeLog("KeepAliveForegroundService") }
+                },
                 1000
             )
             return START_NOT_STICKY
@@ -143,19 +148,21 @@ internal class KeepAliveForegroundService : Service() {
         }
     }
 
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        "Timeout: startId = $startId, fgsType = $fgsType".makeLog("KeepAliveForegroundService")
+        removeNotification = true
+        stopForegroundSafe()
+    }
+
     @Suppress("DEPRECATION")
     private fun stopForegroundSafe() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(
-                if (removeNotification) {
-                    STOP_FOREGROUND_REMOVE
-                } else {
-                    STOP_FOREGROUND_DETACH
-                }
-            )
-        } else {
-            stopForeground(removeNotification)
-        }
+        stopForeground(
+            if (removeNotification) {
+                STOP_FOREGROUND_REMOVE
+            } else {
+                STOP_FOREGROUND_DETACH
+            }
+        )
         if (removeNotification) {
             notificationManager.cancel(NOTIFICATION_ID)
         }

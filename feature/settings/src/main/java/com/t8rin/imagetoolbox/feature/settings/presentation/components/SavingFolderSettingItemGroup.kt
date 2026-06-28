@@ -18,23 +18,23 @@
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
 import android.net.Uri
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FolderShared
-import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FolderShared
+import com.t8rin.imagetoolbox.core.resources.icons.FolderSpecial
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFolderPicker
@@ -51,6 +51,7 @@ fun SavingFolderSettingItemGroup(
     Column(modifier) {
         val settingsState = LocalSettingsState.current
         val currentFolderUri = settingsState.saveFolderUri
+        val enabled = !settingsState.saveToOriginalFolder
         val launcher = rememberFolderPicker(
             onSuccess = onValueChange
         )
@@ -60,6 +61,7 @@ fun SavingFolderSettingItemGroup(
             onClick = { onValueChange(null) },
             title = stringResource(R.string.def),
             subtitle = stringResource(R.string.default_folder),
+            enabled = enabled,
             containerColor = takeColorFromScheme {
                 if (currentFolderUri == null) secondaryContainer.copy(0.7f)
                 else SafeLocalContainerColor
@@ -88,6 +90,7 @@ fun SavingFolderSettingItemGroup(
             subtitle = currentFolderUri.uiPath(
                 default = stringResource(R.string.unspecified)
             ),
+            enabled = enabled,
             containerColor = takeColorFromScheme {
                 if (currentFolderUri != null) secondaryContainer.copy(0.7f)
                 else Color.Unspecified

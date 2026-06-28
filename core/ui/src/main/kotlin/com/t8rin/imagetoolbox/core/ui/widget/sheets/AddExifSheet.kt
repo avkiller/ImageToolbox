@@ -39,13 +39,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.AddCircleOutline
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -67,7 +61,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.image.model.MetadataTag
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AddCircle
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
 import com.t8rin.imagetoolbox.core.resources.icons.Exif
+import com.t8rin.imagetoolbox.core.resources.icons.RemoveCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Search
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.localizedName
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -160,7 +160,7 @@ fun AddExifSheet(
                                     modifier = Modifier.padding(start = 4.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit),
                                         tint = MaterialTheme.colorScheme.onSurface
                                     )
@@ -203,7 +203,7 @@ fun AddExifSheet(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Search,
+                                imageVector = Icons.Outlined.Search,
                                 contentDescription = stringResource(R.string.search_here)
                             )
                         }
@@ -238,8 +238,10 @@ fun AddExifSheet(
                             val endIcon by remember(isSelected) {
                                 derivedStateOf {
                                     if (isSelected) {
-                                        Icons.Rounded.RemoveCircleOutline
-                                    } else Icons.Rounded.AddCircleOutline
+                                        Icons.Outlined.RemoveCircle
+                                    } else {
+                                        Icons.Outlined.AddCircle
+                                    }
                                 }
                             }
                             PreferenceItem(
@@ -280,7 +282,7 @@ fun AddExifSheet(
                             )
                         )
                         Icon(
-                            imageVector = Icons.Rounded.SearchOff,
+                            imageVector = Icons.Outlined.SearchOff,
                             contentDescription = null,
                             modifier = Modifier
                                 .weight(2f)

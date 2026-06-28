@@ -26,7 +26,6 @@ import android.database.MergeCursor
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.t8rin.imagetoolbox.feature.media_picker.domain.model.FULL_DATE_FORMAT
 import com.t8rin.imagetoolbox.feature.media_picker.domain.model.Media
 import com.t8rin.imagetoolbox.feature.media_picker.domain.model.MediaOrder
 import com.t8rin.imagetoolbox.feature.media_picker.domain.model.OrderType
@@ -127,17 +126,14 @@ fun Cursor.getMediaFromCursor(): Media {
     }
     val modifiedTimestamp: Long =
         getLong(getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED))
-    val duration: String? = try {
-        getString(getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION))
-    } catch (_: Throwable) {
-        null
-    }
 
     val expiryTimestamp: Long? = try {
         getLong(getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_EXPIRES))
     } catch (_: Throwable) {
         null
     }
+    val width: Int? = getPositiveIntOrNull(MediaStore.MediaColumns.WIDTH)
+    val height: Int? = getPositiveIntOrNull(MediaStore.MediaColumns.HEIGHT)
 
     val (mimeType, contentUri) = SUPPORTED_FILES[Path(path).extension]?.let { (mimeType, _) ->
         Pair(mimeType, MediaStore.Files.getContentUri("external"))
@@ -154,7 +150,6 @@ fun Cursor.getMediaFromCursor(): Media {
     }
 
     val uri = ContentUris.withAppendedId(contentUri, id)
-    val formattedDate = modifiedTimestamp.getDate(FULL_DATE_FORMAT)
 
     return Media(
         id = id,
@@ -167,11 +162,16 @@ fun Cursor.getMediaFromCursor(): Media {
         timestamp = modifiedTimestamp,
         takenTimestamp = takenTimestamp,
         expiryTimestamp = expiryTimestamp,
-        fullDate = formattedDate,
-        duration = duration,
         mimeType = mimeType,
+        width = width,
+        height = height
     )
 }
+
+private fun Cursor.getPositiveIntOrNull(column: String): Int? = runCatching {
+    val index = getColumnIndex(column)
+    if (index != -1 && !isNull(index)) getInt(index).takeIf { it > 0 } else null
+}.getOrNull()
 
 suspend fun ContentResolver.query(
     mediaQuery: Query,

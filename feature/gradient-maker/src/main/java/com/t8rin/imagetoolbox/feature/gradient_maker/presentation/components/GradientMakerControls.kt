@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Build
-import androidx.compose.material.icons.rounded.DensitySmall
-import androidx.compose.material.icons.rounded.GridOn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,7 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Build
+import com.t8rin.imagetoolbox.core.resources.icons.DensitySmall
+import com.t8rin.imagetoolbox.core.resources.icons.GridOn
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.widget.controls.SaveExifWidget
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.AlphaSelector
@@ -109,14 +109,15 @@ internal fun GradientMakerControls(component: GradientMakerComponent) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    colorPickerBitmap = component.colorPickerBitmap
                 )
             }
             Spacer(Modifier.height(8.dp))
             EnhancedSliderItem(
                 value = component.meshGradientState.gridSize,
                 title = stringResource(R.string.grid_size),
-                icon = Icons.Rounded.GridOn,
+                icon = Icons.Outlined.GridOn,
                 valueRange = 2f..6f,
                 internalStateTransformation = { it.roundToInt() },
                 onValueChange = { value ->
@@ -158,7 +159,8 @@ internal fun GradientMakerControls(component: GradientMakerComponent) {
                 colorStops = component.colorStops,
                 onRemoveClick = component::removeColorStop,
                 onValueChange = component::updateColorStop,
-                onAddColorStop = component::addColorStop
+                onAddColorStop = component::addColorStop,
+                colorPickerBitmap = component.colorPickerBitmap
             )
             Spacer(Modifier.height(8.dp))
             TileModeSelector(

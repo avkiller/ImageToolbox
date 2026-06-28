@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,28 @@ sealed class ImageFormat(
             title = "PNG Lossless",
             compressionTypes = emptyList(),
             canChangeCompressionValue = false
-        )
+        ), LosslessMarker
 
         data object Lossy : Png(
             title = "PNG Lossy",
             compressionTypes = listOf(
                 CompressionType.Effort(0..9)
+            ),
+            canChangeCompressionValue = true
+        )
+
+        data object OxiPNG : Png(
+            title = "OxiPNG",
+            compressionTypes = listOf(
+                CompressionType.Effort(0..6)
+            ),
+            canChangeCompressionValue = true
+        )
+
+        data object ImageQuant : Png(
+            title = "ImageQuant",
+            compressionTypes = listOf(
+                CompressionType.Quality(0..100)
             ),
             canChangeCompressionValue = true
         )
@@ -101,7 +117,7 @@ sealed class ImageFormat(
         data object Lossless : Webp(
             title = "WEBP Lossless",
             compressionTypes = listOf(CompressionType.Effort(0..100))
-        )
+        ), LosslessMarker
 
         data object Lossy : Webp(
             title = "WEBP Lossy",
@@ -131,7 +147,7 @@ sealed class ImageFormat(
             compressionTypes = listOf(
                 CompressionType.Effort(0..10)
             )
-        )
+        ), LosslessMarker
 
         data object Lossy : Avif(
             title = "AVIF Lossy",
@@ -155,7 +171,7 @@ sealed class ImageFormat(
         data object Lossless : Heif(
             title = "HEIF Lossless",
             compressionTypes = listOf()
-        )
+        ), LosslessMarker
 
         data object Lossy : Heif(
             title = "HEIF Lossy",
@@ -178,7 +194,7 @@ sealed class ImageFormat(
         data object Lossless : Heic(
             title = "HEIC Lossless",
             compressionTypes = listOf()
-        )
+        ), LosslessMarker
 
         data object Lossy : Heic(
             title = "HEIC Lossy",
@@ -203,7 +219,7 @@ sealed class ImageFormat(
             compressionTypes = listOf(
                 CompressionType.Effort(1..10)
             )
-        )
+        ), LosslessMarker
 
         data object Lossy : Jxl(
             title = "JXL Lossy",
@@ -276,6 +292,8 @@ sealed class ImageFormat(
         canChangeCompressionValue = true
     )
 
+    interface LosslessMarker
+
     sealed class CompressionType(
         open val compressionRange: IntRange = 0..100
     ) {
@@ -313,17 +331,6 @@ sealed class ImageFormat(
             else -> Default
         }
 
-        val highLevelFormats by lazy {
-            listOf(
-                Avif.Lossy,
-                Avif.Lossless,
-                Heic.Lossy,
-                Heic.Lossless,
-                Heif.Lossy,
-                Heif.Lossless
-            )
-        }
-
         val entries by lazy {
             listOf(
                 Jpg,
@@ -332,6 +339,8 @@ sealed class ImageFormat(
                 Jpegli,
                 Png.Lossless,
                 Png.Lossy,
+                Png.OxiPNG,
+                Png.ImageQuant,
                 Bmp,
                 Webp.Lossless,
                 Webp.Lossy,
@@ -354,3 +363,5 @@ sealed class ImageFormat(
         }
     }
 }
+
+val ImageFormat.isLossless get() = this is ImageFormat.LosslessMarker

@@ -28,6 +28,7 @@ import com.t8rin.imagetoolbox.core.data.saving.io.FileWriteable
 import com.t8rin.imagetoolbox.core.data.saving.io.UriReadable
 import com.t8rin.imagetoolbox.core.domain.PDF
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
+import com.t8rin.imagetoolbox.core.domain.history.AppHistoryRepository
 import com.t8rin.imagetoolbox.core.domain.image.ImageCompressor
 import com.t8rin.imagetoolbox.core.domain.image.ImageGetter
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
@@ -42,7 +43,8 @@ import com.t8rin.imagetoolbox.core.domain.saving.io.use
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.utils.fileSize
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.withContext
@@ -55,6 +57,7 @@ internal class AndroidShareProvider @Inject constructor(
     private val imageGetter: ImageGetter<Bitmap>,
     private val imageCompressor: ImageCompressor<Bitmap>,
     private val filenameCreator: Lazy<FilenameCreator>,
+    private val appHistoryRepository: AppHistoryRepository,
     resourceManager: ResourceManager,
     dispatchersHolder: DispatchersHolder
 ) : DispatchersHolder by dispatchersHolder,
@@ -188,10 +191,12 @@ internal class AndroidShareProvider @Inject constructor(
             putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            type = MimeTypeMap.getSingleton()
+            val mimeType = MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(
                     imageGetter.getExtension(uris.first().toString())
                 ) ?: "*/*"
+
+            type = mimeType.makeLog("shareImageUris")
         }
         val shareIntent = Intent.createChooser(sendIntent, getString(R.string.share))
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -263,7 +268,14 @@ internal class AndroidShareProvider @Inject constructor(
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             }
-        }.toString()
+        }.toString().also { uri ->
+            if (filename.startsWith(PDF)) {
+                appHistoryRepository.registerSuccessfulSave(
+                    savedBytes = uri.toUri().fileSize() ?: 0,
+                    savedFormat = "PDF"
+                )
+            }
+        }
     }
 
     override suspend fun shareData(

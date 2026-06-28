@@ -73,6 +73,45 @@ data class CrashInfo(
     val exceptionName: String,
     val stackTrace: String
 ) {
+    val isOutOfMemory: Boolean = listOf(
+        title,
+        body,
+        exceptionName,
+        stackTrace
+    ).any { text ->
+        text.contains(
+            other = "OutOfMemoryError",
+            ignoreCase = true
+        ) || text.contains(
+            other = "Failed to allocate",
+            ignoreCase = true
+        )
+    }
+
+    val isForegroundServiceDidNotStartInTime: Boolean = listOf(
+        title,
+        body,
+        exceptionName,
+        stackTrace
+    ).any { text ->
+        text.contains(
+            other = "ForegroundServiceDidNotStartInTimeException",
+            ignoreCase = true
+        )
+    }
+
+    val isNonReportable: Boolean = isOutOfMemory || isForegroundServiceDidNotStartInTime
+
+    val emoji: String = if (isNonReportable) {
+        if (isOutOfMemory) {
+            "file:///android_asset/lottie/transportation/construction.lottie"
+        } else {
+            "file:///android_asset/lottie/objects/bomb.lottie"
+        }
+    } else {
+        "file:///android_asset/lottie/objects/siren.lottie"
+    }
+
     val textToSend = listOf(title, body).joinToString(DELIMITER)
 
     val githubLink =

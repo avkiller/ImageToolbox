@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,19 @@
 
 package com.t8rin.imagetoolbox.app.presentation.components.functions
 
-import androidx.compose.foundation.ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled
-import androidx.compose.material3.ComposeMaterial3Flags.isCheckboxStylingFixEnabled
-import com.arkivanov.decompose.DecomposeExperimentFlags.duplicateConfigurationsEnabled
+import androidx.compose.foundation.ComposeFoundationFlags
+import androidx.compose.material3.ComposeMaterial3Flags
+import androidx.compose.runtime.ComposeRuntimeFlags
+import androidx.compose.runtime.Composer
+import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.tooling.ComposeStackTraceMode
+import com.arkivanov.decompose.DecomposeSettings
 
+@OptIn(ExperimentalComposeApi::class)
 internal fun setupFlags() {
-    isCheckboxStylingFixEnabled = true
-    duplicateConfigurationsEnabled = true
-    isPausableCompositionInPrefetchEnabled = true
+    ComposeRuntimeFlags.isLinkBufferComposerEnabled = true
+    ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled = true
+    ComposeMaterial3Flags.isCheckboxStylingFixEnabled = true
+    Composer.setDiagnosticStackTraceMode(ComposeStackTraceMode.GroupKeys)
+    DecomposeSettings.update { it.copy(duplicateConfigurationsEnabled = true) }
 }

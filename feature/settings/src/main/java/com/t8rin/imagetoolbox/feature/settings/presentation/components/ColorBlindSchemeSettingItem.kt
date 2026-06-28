@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,11 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.RemoveRedEye
-import androidx.compose.material.icons.rounded.RadioButtonChecked
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
-import androidx.compose.material.icons.rounded.RemoveRedEye
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,8 +40,13 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.dynamic.theme.ColorBlindType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonChecked
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonUnchecked
+import com.t8rin.imagetoolbox.core.resources.icons.Visibility
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.provider.SafeLocalContainerColor
@@ -75,7 +74,7 @@ fun ColorBlindSchemeSettingItem(
         title = stringResource(R.string.color_blind_scheme),
         subtitle = settingsState.colorBlindType?.localizedTitle
             ?: stringResource(R.string.disabled),
-        startIcon = Icons.Outlined.RemoveRedEye,
+        startIcon = Icons.Outlined.Visibility,
         endIcon = Icons.Rounded.MiniEdit,
         modifier = modifier
     )
@@ -88,7 +87,7 @@ fun ColorBlindSchemeSettingItem(
         title = {
             TitleItem(
                 text = stringResource(R.string.color_blind_scheme),
-                icon = Icons.Rounded.RemoveRedEye
+                icon = Icons.Rounded.Visibility
             )
         },
         confirmButton = {
@@ -164,7 +163,7 @@ private val ColorBlindType.localizedTitle: String
             ColorBlindType.Deuteranomaly -> R.string.deutaromaly
             ColorBlindType.Tritanomaly -> R.string.tritonomaly
             ColorBlindType.Protanopia -> R.string.protanopia
-            ColorBlindType.Deuteranopia -> R.string.deutaronotopia
+            ColorBlindType.Deuteranopia -> R.string.deuteranopia
             ColorBlindType.Tritanopia -> R.string.tritanopia
             ColorBlindType.Achromatomaly -> R.string.achromatomaly
             ColorBlindType.Achromatopsia -> R.string.achromatopsia

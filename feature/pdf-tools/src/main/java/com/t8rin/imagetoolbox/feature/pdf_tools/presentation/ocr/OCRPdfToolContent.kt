@@ -20,16 +20,15 @@ package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilePresent
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FilePresent
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common.BasePdfToolContent
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common.PdfPreviewItem
@@ -39,24 +38,16 @@ import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.ocr.screenLogic.OCR
 fun OCRPdfToolContent(
     component: OCRPdfToolComponent
 ) {
-    val essentials = rememberLocalEssentials()
-
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
         isPickedAlready = component.initialUri != null,
         canShowScreenData = component.uri != null,
         title = stringResource(R.string.pdf_to_text),
-        actions = {},
-        imagePreview = {},
-        placeImagePreview = false,
-        showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -72,12 +63,8 @@ fun OCRPdfToolContent(
                 subtitle = stringResource(R.string.deep_ocr_sub),
                 startIcon = Icons.Outlined.FilePresent,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    component.navigateToOcr(essentials::showFailureToast)
-                }
+                onClick = component::navigateToOcr
             )
-
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

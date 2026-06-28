@@ -35,8 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
@@ -46,7 +44,6 @@ import coil3.request.crossfade
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedHorizontalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.utils.appContext
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -112,13 +109,8 @@ internal fun UrisCarousel(uris: List<Uri>) {
                     .aspectRatio(
                         ratio = aspectRatio,
                         matchHeightConstraintsFirst = true
-                    )
-                    .container(
-                        shape = MaterialTheme.shapes.medium,
-                        resultPadding = 0.dp
                     ),
-                filterQuality = FilterQuality.High,
-                shape = RectangleShape,
+                shape = MaterialTheme.shapes.medium,
                 contentScale = ContentScale.Fit
             )
         }

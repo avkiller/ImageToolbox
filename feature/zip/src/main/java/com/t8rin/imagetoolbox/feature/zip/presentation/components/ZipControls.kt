@@ -32,10 +32,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.FileDownload
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -55,14 +51,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Download
+import com.t8rin.imagetoolbox.core.resources.icons.NoteAdd
+import com.t8rin.imagetoolbox.core.resources.icons.Share
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.Green
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.image.UrisPreview
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -79,17 +79,9 @@ internal fun ColumnScope.ZipControls(
     val isPortrait by isPortraitOrientationAsState()
     val settingsState = LocalSettingsState.current
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val saveLauncher = rememberFileCreator(
         mimeType = MimeType.Zip,
-        onSuccess = { uri ->
-            component.saveResultTo(
-                uri = uri,
-                onResult = essentials::parseFileSaveResult
-            )
-        }
+        onSuccess = component::saveResultTo
     )
 
     val additionalFilePicker = rememberFilePicker(onSuccess = component::addUris)
@@ -186,7 +178,7 @@ internal fun ColumnScope.ZipControls(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.FileDownload,
+                            imageVector = Icons.Rounded.Download,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -197,11 +189,7 @@ internal fun ColumnScope.ZipControls(
                     }
                 }
                 EnhancedButton(
-                    onClick = {
-                        component.shareFile(
-                            onComplete = showConfetti
-                        )
-                    },
+                    onClick = component::shareFile,
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .fillMaxWidth()
@@ -231,6 +219,13 @@ internal fun ColumnScope.ZipControls(
         uris = component.uris,
         isPortrait = isPortrait,
         onRemoveUri = component::removeUri,
-        onAddUris = additionalFilePicker::pickFile
+        onAddUris = additionalFilePicker::pickFile,
+        addUrisContent = { width ->
+            Icon(
+                imageVector = Icons.Rounded.NoteAdd,
+                contentDescription = stringResource(R.string.add),
+                modifier = Modifier.size(width / 3f)
+            )
+        },
     )
 }

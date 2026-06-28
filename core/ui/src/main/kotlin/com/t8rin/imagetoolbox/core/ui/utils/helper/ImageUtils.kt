@@ -256,7 +256,7 @@ object ImageUtils {
 
         return remember(size, uri) {
             derivedStateOf {
-                humanFileSize(size, 2)
+                humanFileSize(size)
             }
         }.value
     }
@@ -283,14 +283,12 @@ object ImageUtils {
 
     @Composable
     fun rememberHumanFileSize(
-        byteCount: Long,
-        precision: Int = 1
+        byteCount: Long
     ): String {
-        return remember(byteCount, precision) {
+        return remember(byteCount) {
             derivedStateOf {
                 humanFileSize(
-                    bytes = byteCount,
-                    precision = precision
+                    bytes = byteCount
                 )
             }
         }.value
@@ -370,16 +368,19 @@ object ImageUtils {
         return if (this == null || isHardware) Bitmap.Config.ARGB_8888 else this
     }
 
-    fun Bitmap.flexibleScale(max: Int): Bitmap {
+    fun Bitmap.flexibleScale(
+        max: Int,
+        filter: Boolean = true
+    ): Bitmap {
         return runCatching {
             if (height >= width) {
                 val aspectRatio = aspectRatio
                 val targetWidth = (max * aspectRatio).toInt()
-                scale(targetWidth, max)
+                scale(targetWidth, max, filter)
             } else {
                 val aspectRatio = 1f / aspectRatio
                 val targetHeight = (max * aspectRatio).toInt()
-                scale(max, targetHeight)
+                scale(max, targetHeight, filter)
             }
         }.getOrNull() ?: this
     }

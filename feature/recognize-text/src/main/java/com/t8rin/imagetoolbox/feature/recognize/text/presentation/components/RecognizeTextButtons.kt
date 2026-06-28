@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,21 @@
 package com.t8rin.imagetoolbox.feature.recognize.text.presentation.components
 
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CopyAll
-import androidx.compose.material.icons.rounded.Save
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.resources.icons.CopyAll
+import com.t8rin.imagetoolbox.core.resources.icons.Save
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.ImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
+import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
@@ -42,7 +44,6 @@ internal fun RecognizeTextButtons(
     multipleImagePicker: ImagePicker,
     actions: @Composable RowScope.() -> Unit
 ) {
-    val essentials = rememberLocalEssentials()
     val isPortrait by isPortraitOrientationAsState()
     val type = component.type
     val isExtraction = type is Screen.RecognizeText.Type.Extraction
@@ -50,7 +51,7 @@ internal fun RecognizeTextButtons(
     val isHaveText = component.editedText.orEmpty().isNotEmpty()
 
     val copyText: () -> Unit = {
-        component.editedText?.let(essentials::copyToClipboard)
+        component.editedText?.let(Clipboard::copy)
     }
 
     var showOneTimeImagePickingDialog by rememberSaveable {
@@ -59,10 +60,13 @@ internal fun RecognizeTextButtons(
     var showFolderSelectionDialog by rememberSaveable {
         mutableStateOf(false)
     }
+    val saveSearchablePdfLauncher = rememberFileCreator(
+        mimeType = MimeType.Pdf,
+        onSuccess = component::saveSearchablePdfTo
+    )
     val save: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.save(
-            oneTimeSaveLocationUri = it,
-            onResult = essentials::parseSaveResults
+            oneTimeSaveLocationUri = it
         )
     }
     BottomButtonsBlock(
@@ -74,6 +78,8 @@ internal fun RecognizeTextButtons(
         onPrimaryButtonClick = {
             if (isExtraction) {
                 copyText()
+            } else if (type is Screen.RecognizeText.Type.WriteToSearchablePdf) {
+                saveSearchablePdfLauncher.make(component.generateSearchablePdfFilename())
             } else {
                 save(null)
             }
@@ -86,7 +92,7 @@ internal fun RecognizeTextButtons(
             }
         },
         primaryButtonIcon = if (isExtraction) {
-            Icons.Rounded.CopyAll
+            Icons.Outlined.CopyAll
         } else {
             Icons.Rounded.Save
         },

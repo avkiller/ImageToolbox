@@ -24,11 +24,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.rounded.DocumentScanner
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,13 +38,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.domain.utils.Flavor
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.AddPhotoAlt
+import com.t8rin.imagetoolbox.core.resources.icons.DocumentScanner
 import com.t8rin.imagetoolbox.core.resources.icons.Pdf
+import com.t8rin.imagetoolbox.core.resources.icons.Share
+import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
+import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
+import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberDocumentScanner
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
+import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ScanResult
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.helper.rememberDocumentScanner
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -56,12 +59,15 @@ import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ImageFormatSelec
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.QualitySelector
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
+import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
 import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.FileNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImagePager
 import com.t8rin.imagetoolbox.core.ui.widget.image.UrisPreview
+import com.t8rin.imagetoolbox.core.ui.widget.image.urisPreview
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.other.InfoContainer
@@ -75,9 +81,6 @@ import com.t8rin.imagetoolbox.feature.document_scanner.presentation.screenLogic.
 fun DocumentScannerContent(
     component: DocumentScannerComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
 
     val onBack = {
@@ -87,16 +90,15 @@ fun DocumentScannerContent(
 
     val savePdfLauncher = rememberFileCreator(
         mimeType = MimeType.Pdf,
-        onSuccess = { uri ->
-            component.savePdfTo(
-                uri = uri,
-                onResult = essentials::parseFileSaveResult
-            )
-        }
+        onSuccess = component::savePdfTo
     )
 
     val documentScanner = rememberDocumentScanner {
-        component.parseScanResult(it)
+        if (Flavor.isFoss()) {
+            component.addScanResult(it)
+        } else {
+            component.parseScanResult(it)
+        }
     }
 
     val additionalDocumentScanner = rememberDocumentScanner {
@@ -112,8 +114,33 @@ fun DocumentScannerContent(
 
     val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmaps(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResults
+            oneTimeSaveLocationUri = it
+        )
+    }
+
+    val addImagesPicker = rememberImagePicker { uris: List<Uri> ->
+        component.addScanResult(
+            ScanResult(
+                imageUris = uris
+            )
+        )
+    }
+
+    var selectedUriForPreview by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    val previewBlock = @Composable {
+        UrisPreview(
+            modifier = Modifier.urisPreview(isPortrait = isPortrait),
+            uris = component.uris,
+            isPortrait = true,
+            onRemoveUri = component::removeImageUri,
+            onAddUris = additionalDocumentScanner::scan,
+            isAddUrisVisible = !Flavor.isFoss(),
+            onClickUri = { uri ->
+                selectedUriForPreview = uri
+            }
         )
     }
 
@@ -130,9 +157,10 @@ fun DocumentScannerContent(
         },
         onGoBack = onBack,
         actions = {},
-        imagePreview = {},
+        imagePreview = {
+            if (!isPortrait) previewBlock()
+        },
         showImagePreviewAsStickyHeader = false,
-        placeImagePreview = false,
         addHorizontalCutoutPaddingIfNoPreview = false,
         noDataControls = {
             FileNotPickedWidget(
@@ -141,39 +169,11 @@ fun DocumentScannerContent(
             )
         },
         controls = {
-            var selectedUriForPreview by remember {
-                mutableStateOf<Uri?>(null)
+            if (isPortrait) {
+                Spacer(modifier = Modifier.height(24.dp))
+                previewBlock()
+                Spacer(modifier = Modifier.height(12.dp))
             }
-            ImagePager(
-                visible = selectedUriForPreview != null,
-                selectedUri = selectedUriForPreview,
-                uris = component.uris,
-                onNavigate = {
-                    selectedUriForPreview = null
-                    component.onNavigate(it)
-                },
-                onUriSelected = { selectedUriForPreview = it },
-                onShare = component::shareUri,
-                onDismiss = { selectedUriForPreview = null }
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            UrisPreview(
-                uris = component.uris,
-                isPortrait = isPortrait,
-                onRemoveUri = component::removeImageUri,
-                onAddUris = additionalDocumentScanner::scan,
-                addUrisContent = { width ->
-                    Icon(
-                        imageVector = Icons.Rounded.AddPhotoAlt,
-                        contentDescription = stringResource(R.string.add),
-                        modifier = Modifier.size(width / 3f)
-                    )
-                },
-                onClickUri = { uri ->
-                    selectedUriForPreview = uri
-                }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,9 +185,7 @@ fun DocumentScannerContent(
                     .padding(8.dp),
             ) {
                 EnhancedButton(
-                    onClick = {
-                        component.sharePdf(showConfetti)
-                    },
+                    onClick = component::sharePdf,
                     containerColor = MaterialTheme.colorScheme.secondary,
                     contentPadding = PaddingValues(
                         top = 8.dp,
@@ -257,6 +255,9 @@ fun DocumentScannerContent(
             var showFolderSelectionDialog by rememberSaveable {
                 mutableStateOf(false)
             }
+            var showOneTimeImagePickingDialog by rememberSaveable {
+                mutableStateOf(false)
+            }
             BottomButtonsBlock(
                 isNoData = component.uris.isEmpty(),
                 onSecondaryButtonClick = documentScanner::scan,
@@ -271,11 +272,29 @@ fun DocumentScannerContent(
                 actions = {
                     ShareButton(
                         enabled = component.uris.isNotEmpty(),
-                        onShare = {
-                            component.shareBitmaps(showConfetti)
-                        }
+                        onShare = component::shareBitmaps
                     )
-                }
+                },
+                showMiddleFabInRow = true,
+                middleFab = if (Flavor.isFoss()) {
+                    {
+                        EnhancedFloatingActionButton(
+                            onClick = addImagesPicker::pickImage,
+                            onLongClick = {
+                                showOneTimeImagePickingDialog = true
+                            },
+                            containerColor = takeColorFromScheme {
+                                if (component.uris.isEmpty()) tertiaryContainer
+                                else secondaryContainer
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.AddPhotoAlt,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                } else null
             )
             OneTimeSaveLocationSelectionDialog(
                 visible = showFolderSelectionDialog,
@@ -283,8 +302,27 @@ fun DocumentScannerContent(
                 onSaveRequest = saveBitmaps,
                 formatForFilenameSelection = component.getFormatForFilenameSelection()
             )
+            OneTimeImagePickingDialog(
+                onDismiss = { showOneTimeImagePickingDialog = false },
+                picker = Picker.Multiple,
+                imagePicker = addImagesPicker,
+                visible = showOneTimeImagePickingDialog
+            )
         },
         canShowScreenData = component.uris.isNotEmpty()
+    )
+
+    ImagePager(
+        visible = selectedUriForPreview != null,
+        selectedUri = selectedUriForPreview,
+        uris = component.uris,
+        onNavigate = {
+            selectedUriForPreview = null
+            component.onNavigate(it)
+        },
+        onUriSelected = { selectedUriForPreview = it },
+        onShare = component::shareUri,
+        onDismiss = { selectedUriForPreview = null }
     )
 
     ExitWithoutSavingDialog(

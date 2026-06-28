@@ -24,8 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,8 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.rememberHumanFileSize
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBar
@@ -54,9 +53,6 @@ import com.t8rin.imagetoolbox.feature.mesh_gradients.presentation.screenLogic.Me
 fun MeshGradientsContent(
     component: MeshGradientsComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val childScrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -77,7 +73,7 @@ fun MeshGradientsContent(
                         onClick = component.onGoBack
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = Icons.Rounded.ArrowBack,
                             contentDescription = null
                         )
                     }
@@ -101,7 +97,6 @@ fun MeshGradientsContent(
                     onShareImage = {
                         component.shareImages(
                             uriList = listOf(element = it),
-                            onComplete = showConfetti
                         )
                     },
                     onRemove = null,

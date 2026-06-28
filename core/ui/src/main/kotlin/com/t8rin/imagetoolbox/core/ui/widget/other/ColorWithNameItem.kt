@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.other
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,9 +32,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -55,10 +51,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.colordetector.parser.ColorNameParser
+import com.t8rin.colors.parser.ColorNameParser
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.toggle
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
 import com.t8rin.imagetoolbox.core.resources.icons.BookmarkRemove
+import com.t8rin.imagetoolbox.core.resources.icons.ContentCopy
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.theme.inverse
 import com.t8rin.imagetoolbox.core.ui.utils.animation.CombinedMutableInteractionSource
@@ -78,7 +78,7 @@ fun ColorWithNameItem(
     name: String? = null,
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
-    onCopy: () -> Unit,
+    onCopy: (name: String) -> Unit,
     modifier: Modifier = Modifier,
     containerShape: Shape = ShapeDefaults.default
 ) {
@@ -118,7 +118,9 @@ fun ColorWithNameItem(
                     Modifier.hapticsClickable(
                         indication = LocalIndication.current,
                         interactionSource = copyInteractionSource,
-                        onClick = onCopy
+                        onClick = {
+                            onCopy(colorName)
+                        }
                     )
                 } else {
                     Modifier
@@ -176,7 +178,9 @@ fun ColorWithNameItem(
                     .hapticsClickable(
                         indication = LocalIndication.current,
                         interactionSource = copyInteractionSource,
-                        onClick = onCopy
+                        onClick = {
+                            onCopy(colorName)
+                        }
                     )
                     .padding(4.dp)
             )
@@ -192,7 +196,7 @@ fun ColorWithNameItem(
                     imageVector = if (isFavorite) {
                         Icons.Rounded.BookmarkRemove
                     } else {
-                        Icons.Outlined.BookmarkBorder
+                        Icons.Outlined.Bookmark
                     },
                     contentDescription = stringResource(R.string.favorite),
                     tint = contentColor.copy(0.8f),

@@ -50,6 +50,7 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
@@ -118,6 +119,9 @@ class GradientMakerComponent @AssistedInject internal constructor(
     private val _selectedUri = mutableStateOf(Uri.EMPTY)
     val selectedUri: Uri by _selectedUri
 
+    private val _colorPickerBitmap: MutableState<Bitmap?> = mutableStateOf(null)
+    val colorPickerBitmap: Bitmap? by _colorPickerBitmap
+
     private val _uris = mutableStateOf(emptyList<Uri>())
     val uris by _uris
 
@@ -183,9 +187,7 @@ class GradientMakerComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onStandaloneGradientSaveResult: (SaveResult) -> Unit,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _left.value = -1
@@ -200,7 +202,7 @@ class GradientMakerComponent @AssistedInject internal constructor(
                         width = localBitmap.width,
                         height = localBitmap.height
                     )
-                    onStandaloneGradientSaveResult(
+                    parseSaveResult(
                         fileController.save(
                             saveTarget = ImageSaveTarget(
                                 imageInfo = imageInfo,
@@ -256,13 +258,13 @@ class GradientMakerComponent @AssistedInject internal constructor(
                         total = left
                     )
                 }
-                onResult(results.onSuccess(::registerSave))
+                parseSaveResults(results.onSuccess(::registerSave))
             }
             _isSaving.value = false
         }
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         savingJob = trackProgress {
             _left.value = -1
             _isSaving.value = true
@@ -278,7 +280,7 @@ class GradientMakerComponent @AssistedInject internal constructor(
                             width = it.width,
                             height = it.height
                         ),
-                        onComplete = onComplete
+                        onComplete = AppToastHost::showConfetti
                     )
                 }
             } else {
@@ -300,7 +302,7 @@ class GradientMakerComponent @AssistedInject internal constructor(
                     },
                     onProgressChange = {
                         if (it == -1) {
-                            onComplete()
+                            AppToastHost.showConfetti()
                             _isSaving.value = false
                             _done.value = 0
                         } else {
@@ -411,21 +413,23 @@ class GradientMakerComponent @AssistedInject internal constructor(
     fun updateSelectedUri(uri: Uri) {
         componentScope.launch {
             _selectedUri.value = uri
+            _colorPickerBitmap.value = null
             _isImageLoading.value = true
-            imageGetter.getImageAsync(
+            imageGetter.getImageData(
                 uri = uri.toString(),
-                originalSize = false,
-                onGetImage = { imageData ->
-                    _imageAspectRatio.update {
-                        imageData.image.safeAspectRatio
-                    }
-                    _isImageLoading.value = false
-                    setImageFormat(imageData.imageInfo.imageFormat)
-                },
+                size = 2000,
                 onFailure = {
                     _isImageLoading.value = false
+                    AppToastHost.showFailureToast(it)
                 }
-            )
+            )?.let { imageData ->
+                _colorPickerBitmap.value = imageData.image
+                _imageAspectRatio.update {
+                    imageData.image.safeAspectRatio
+                }
+                _isImageLoading.value = false
+                setImageFormat(imageData.imageInfo.imageFormat)
+            }
         }
     }
 
@@ -436,6 +440,7 @@ class GradientMakerComponent @AssistedInject internal constructor(
 
     override fun resetState() {
         _selectedUri.update { Uri.EMPTY }
+        _colorPickerBitmap.value = null
         _uris.update { emptyList() }
         _gradientAlpha.update { 1f }
         _gradientState = UiGradientState()
@@ -449,10 +454,16 @@ class GradientMakerComponent @AssistedInject internal constructor(
     ) = componentScope.launch {
         if (selectedUri == removedUri) {
             val index = uris.indexOf(removedUri)
-            if (index == 0) {
-                uris.getOrNull(1)?.let(::updateSelectedUri)
+            val replacementUri = if (index == 0) {
+                uris.getOrNull(1)
             } else {
-                uris.getOrNull(index - 1)?.let(::updateSelectedUri)
+                uris.getOrNull(index - 1)
+            }
+            if (replacementUri != null) {
+                updateSelectedUri(replacementUri)
+            } else {
+                _selectedUri.value = Uri.EMPTY
+                _colorPickerBitmap.value = null
             }
         }
         _uris.update {

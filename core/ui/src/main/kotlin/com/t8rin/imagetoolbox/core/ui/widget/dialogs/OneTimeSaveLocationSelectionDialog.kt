@@ -30,14 +30,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CreateNewFolder
-import androidx.compose.material.icons.outlined.DriveFileRenameOutline
-import androidx.compose.material.icons.outlined.SaveAs
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.FolderOpen
-import androidx.compose.material.icons.rounded.RadioButtonChecked
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,6 +38,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,9 +48,17 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.CreateNewFolder
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.FileRename
 import com.t8rin.imagetoolbox.core.resources.icons.FileReplace
+import com.t8rin.imagetoolbox.core.resources.icons.Folder
+import com.t8rin.imagetoolbox.core.resources.icons.FolderOpen
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonChecked
+import com.t8rin.imagetoolbox.core.resources.icons.RadioButtonUnchecked
+import com.t8rin.imagetoolbox.core.resources.icons.SaveAs
 import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.imagetoolbox.core.settings.domain.model.OneTimeSaveLocation
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
@@ -65,7 +66,6 @@ import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSimpleSet
 import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFileCreator
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFolderPicker
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedVerticalScroll
@@ -80,6 +80,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.other.rememberRevealState
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRowSwitch
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.core.utils.uiPath
 import kotlinx.coroutines.launch
 
@@ -93,7 +94,6 @@ fun OneTimeSaveLocationSelectionDialog(
 ) {
     val settingsState = LocalSettingsState.current
     val settingsInteractor = LocalSimpleSettingsInteractor.current
-    val essentials = rememberLocalEssentials()
     var tempSelectedSaveFolderUri by rememberSaveable(visible) {
         mutableStateOf(settingsState.saveFolderUri?.toString())
     }
@@ -156,6 +156,11 @@ fun OneTimeSaveLocationSelectionDialog(
                 }
             }
 
+            val scope = rememberCoroutineScope()
+            val canChooseSaveLocation =
+                settingsState.filenameBehavior !is FilenameBehavior.Overwrite &&
+                        !settingsState.saveToOriginalFolder
+
             val scrollState = rememberScrollState()
             Column(
                 modifier = Modifier
@@ -169,14 +174,14 @@ fun OneTimeSaveLocationSelectionDialog(
                 data.forEachIndexed { index, item ->
                     val title by remember(item) {
                         derivedStateOf {
-                            val default = essentials.getString(R.string.default_folder)
+                            val default = getString(R.string.default_folder)
                             item?.uri?.toUri()?.uiPath(default = default) ?: default
                         }
                     }
                     val subtitle by remember(item) {
                         derivedStateOf {
                             if (item?.uri == settingsState.saveFolderUri?.toString()) {
-                                essentials.getString(R.string.default_value)
+                                getString(R.string.default_value)
                             } else {
                                 val time = item?.date?.let {
                                     timestamp(
@@ -223,10 +228,10 @@ fun OneTimeSaveLocationSelectionDialog(
                                         resultPadding = 0.dp
                                     )
                                     .hapticsClickable {
-                                        essentials.launch {
+                                        scope.launch {
                                             state.animateTo(RevealValue.Default)
                                         }
-                                        essentials.launch {
+                                        scope.launch {
                                             settingsInteractor.setOneTimeSaveLocations((settingsState.oneTimeSaveLocations - item).filterNotNull())
                                             if (item?.uri == selectedSaveFolderUri) {
                                                 selectedSaveFolderUri = null
@@ -261,12 +266,12 @@ fun OneTimeSaveLocationSelectionDialog(
                                 },
                                 onLongClick = if (item != null) {
                                     {
-                                        essentials.launch {
+                                        scope.launch {
                                             state.animateTo(RevealValue.FullyRevealedStart)
                                         }
                                     }
                                 } else null,
-                                enabled = settingsState.filenameBehavior !is FilenameBehavior.Overwrite,
+                                enabled = canChooseSaveLocation,
                                 startIconTransitionSpec = {
                                     fadeIn() togetherWith fadeOut()
                                 },
@@ -282,7 +287,7 @@ fun OneTimeSaveLocationSelectionDialog(
                                 }
                             )
                         },
-                        enableSwipe = canDeleteItem && settingsState.filenameBehavior !is FilenameBehavior.Overwrite,
+                        enableSwipe = canDeleteItem && canChooseSaveLocation,
                         interactionSource = interactionSource,
                         modifier = Modifier
                             .fadingEdges(
@@ -308,7 +313,7 @@ fun OneTimeSaveLocationSelectionDialog(
                     onClick = {
                         launcher.pickFolder(currentFolderUri)
                     },
-                    enabled = settingsState.filenameBehavior !is FilenameBehavior.Overwrite,
+                    enabled = canChooseSaveLocation,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp, vertical = 2.dp),
@@ -328,10 +333,10 @@ fun OneTimeSaveLocationSelectionDialog(
                     PreferenceItem(
                         title = stringResource(id = R.string.custom_filename),
                         subtitle = stringResource(id = R.string.custom_filename_sub),
-                        startIcon = Icons.Outlined.DriveFileRenameOutline,
+                        startIcon = Icons.Outlined.FileRename,
                         shape = ShapeDefaults.default,
                         titleFontStyle = PreferenceItemDefaults.TitleFontStyleSmall,
-                        enabled = settingsState.filenameBehavior !is FilenameBehavior.Overwrite,
+                        enabled = canChooseSaveLocation,
                         onClick = {
                             createLauncher.make("$imageString.${formatForFilenameSelection.extension}")
                         },
@@ -346,12 +351,30 @@ fun OneTimeSaveLocationSelectionDialog(
                     title = stringResource(id = R.string.overwrite_files),
                     subtitle = stringResource(id = R.string.overwrite_files_sub_short),
                     startIcon = Icons.Outlined.FileReplace,
-                    enabled = settingsState.filenameBehavior is FilenameBehavior.Overwrite || settingsState.filenameBehavior is FilenameBehavior.None,
+                    enabled = !settingsState.saveToOriginalFolder &&
+                            (settingsState.filenameBehavior is FilenameBehavior.Overwrite || settingsState.filenameBehavior is FilenameBehavior.None),
                     shape = ShapeDefaults.default,
                     titleFontStyle = PreferenceItemDefaults.TitleFontStyleSmall,
                     checked = settingsState.filenameBehavior is FilenameBehavior.Overwrite,
                     onClick = {
-                        essentials.launch { settingsInteractor.toggleOverwriteFiles() }
+                        scope.launch { settingsInteractor.toggleOverwriteFiles() }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+
+                PreferenceRowSwitch(
+                    title = stringResource(id = R.string.save_to_original_folder),
+                    subtitle = stringResource(id = R.string.save_to_original_folder_sub),
+                    startIcon = Icons.Outlined.FolderOpen,
+                    enabled = settingsState.filenameBehavior !is FilenameBehavior.Overwrite,
+                    shape = ShapeDefaults.default,
+                    titleFontStyle = PreferenceItemDefaults.TitleFontStyleSmall,
+                    checked = settingsState.saveToOriginalFolder,
+                    onClick = {
+                        scope.launch { settingsInteractor.toggleSaveToOriginalFolder() }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

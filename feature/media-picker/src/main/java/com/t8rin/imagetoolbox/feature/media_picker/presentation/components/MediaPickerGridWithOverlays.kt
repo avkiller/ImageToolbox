@@ -21,7 +21,6 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -49,12 +48,6 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.TaskAlt
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
-import androidx.compose.material.icons.twotone.ImageNotSupported
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,9 +69,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
+import com.t8rin.imagetoolbox.core.resources.icons.Close
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.Deselect
+import com.t8rin.imagetoolbox.core.resources.icons.Search
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
+import com.t8rin.imagetoolbox.core.resources.icons.Verified
 import com.t8rin.imagetoolbox.core.resources.shapes.MaterialStarShape
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBadge
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
@@ -86,14 +87,19 @@ import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButt
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
 import com.t8rin.imagetoolbox.core.ui.widget.other.BoxAnimatedVisibility
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
+import com.t8rin.imagetoolbox.feature.media_picker.domain.model.AlbumState
 import com.t8rin.imagetoolbox.feature.media_picker.domain.model.AllowedMedia
+import com.t8rin.imagetoolbox.feature.media_picker.domain.model.MediaState
 import com.t8rin.imagetoolbox.feature.media_picker.presentation.screenLogic.MediaPickerComponent
 
 @Composable
 internal fun MediaPickerGridWithOverlays(
     component: MediaPickerComponent,
+    mediaState: MediaState,
+    albumsState: AlbumState,
     isSearching: Boolean,
     allowedMedia: AllowedMedia,
     allowMultiple: Boolean,
@@ -104,8 +110,6 @@ internal fun MediaPickerGridWithOverlays(
     onPicked: (List<Uri>) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val albumsState by component.albumsState.collectAsState()
-    val mediaState by component.mediaState.collectAsState()
     val selectedMedia = component.selectedMedia
 
     var searchKeyword by rememberSaveable(isSearching) {
@@ -170,7 +174,7 @@ internal fun MediaPickerGridWithOverlays(
                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             content = {
                                 Icon(
-                                    imageVector = Icons.Rounded.Close,
+                                    imageVector = Icons.Outlined.Deselect,
                                     contentDescription = stringResource(R.string.close)
                                 )
                             },
@@ -179,11 +183,24 @@ internal fun MediaPickerGridWithOverlays(
                     }
                     BadgedBox(
                         badge = {
-                            if (selectedMedia.isNotEmpty() && allowMultiple) {
+                            BoxAnimatedVisibility(selectedMedia.isNotEmpty() && allowMultiple) {
                                 EnhancedBadge(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 ) {
-                                    Text(selectedMedia.size.toString())
+                                    AnimatedContent(
+                                        targetState = selectedMedia.size,
+                                        transitionSpec = {
+                                            fadeIn() + scaleIn(initialScale = 0.85f) togetherWith fadeOut() + scaleOut(
+                                                targetScale = 0.85f
+                                            )
+                                        },
+                                        modifier = Modifier.animateContentSizeNoClip()
+                                    ) { size ->
+                                        Text(
+                                            text = size.toString(),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -195,7 +212,7 @@ internal fun MediaPickerGridWithOverlays(
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Outlined.TaskAlt,
+                                        imageVector = Icons.Outlined.Verified,
                                         contentDescription = null
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -223,7 +240,9 @@ internal fun MediaPickerGridWithOverlays(
         }
 
         val isHaveNoData = mediaState.media.isEmpty() && !mediaState.isLoading
-        val showLoading = (mediaState.isLoading || filteredMediaState.isLoading) && !isHaveNoData
+        val showLoading = (
+                (mediaState.isLoading && mediaState.media.isEmpty()) || filteredMediaState.isLoading
+                ) && !isHaveNoData
 
         val backgroundColor by animateColorAsState(
             MaterialTheme.colorScheme.scrim.copy(
@@ -278,7 +297,7 @@ internal fun MediaPickerGridWithOverlays(
                     )
                 )
                 Icon(
-                    imageVector = Icons.Rounded.SearchOff,
+                    imageVector = Icons.Outlined.SearchOff,
                     contentDescription = null,
                     modifier = Modifier
                         .weight(2f)
@@ -305,7 +324,7 @@ internal fun MediaPickerGridWithOverlays(
             ) {
                 Spacer(Modifier.weight(1f))
                 Icon(
-                    imageVector = Icons.TwoTone.ImageNotSupported,
+                    imageVector = Icons.Rounded.BrokenImageAlt,
                     contentDescription = null,
                     modifier = Modifier.size(108.dp)
                 )
@@ -417,7 +436,7 @@ internal fun MediaPickerGridWithOverlays(
                             pressedShape = MaterialStarShape
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Search,
+                                imageVector = Icons.Outlined.Search,
                                 contentDescription = null
                             )
                         }

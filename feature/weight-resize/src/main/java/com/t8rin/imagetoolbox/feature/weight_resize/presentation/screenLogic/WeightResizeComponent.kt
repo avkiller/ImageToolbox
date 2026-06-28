@@ -35,6 +35,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageScaleMode
 import com.t8rin.imagetoolbox.core.domain.image.model.Preset
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.FilenameCreator
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
@@ -45,10 +46,13 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.weight_resize.domain.WeightImageScaler
+import com.t8rin.imagetoolbox.feature.weight_resize.presentation.screenLogic.WeightResizeComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -66,17 +70,16 @@ class WeightResizeComponent @AssistedInject internal constructor(
     private val imageCompressor: ImageCompressor<Bitmap>,
     private val imageScaler: WeightImageScaler<Bitmap>,
     private val shareProvider: ImageShareProvider<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
-            initialUris?.let {
-                updateUris(
-                    uris = it,
-                    onFailure = {}
-                )
-            }
+            initialUris?.let(::setUris)
         }
     }
 
@@ -125,25 +128,25 @@ class WeightResizeComponent @AssistedInject internal constructor(
 
     fun setImageFormat(imageFormat: ImageFormat) {
         if (_imageFormat.value != imageFormat) {
-            _imageFormat.value = imageFormat
-            componentScope.launch {
-                _bitmap.value?.let {
-                    _isImageLoading.value = true
-                    _imageSize.value = imageCompressor.calculateImageSize(
-                        image = it,
-                        imageInfo = ImageInfo(imageFormat = imageFormat)
-                    )
-                    _isImageLoading.value = false
-                }
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
             }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
+            _imageFormat.value = imageFormat
+            updateImageSize()
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
-    fun updateUris(
-        uris: List<Uri>?,
-        onFailure: (Throwable) -> Unit
+    fun setUris(
+        uris: List<Uri>?
     ) {
+        clearHistory()
+        registerChangesCleared()
         _uris.value = null
         _uris.value = uris
         _selectedUri.value = uris?.firstOrNull()
@@ -155,7 +158,7 @@ class WeightResizeComponent @AssistedInject internal constructor(
                 onGetImage = ::setImageData,
                 onFailure = {
                     _isImageLoading.value = false
-                    onFailure(it)
+                    AppToastHost.showFailureToast(it)
                 }
             )
         }
@@ -196,8 +199,11 @@ class WeightResizeComponent @AssistedInject internal constructor(
     }
 
     fun setKeepExif(boolean: Boolean) {
+        if (_keepExif.value == boolean) return
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _keepExif.value = boolean
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     private var savingJob: Job? by smartJob {
@@ -205,9 +211,9 @@ class WeightResizeComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
+        finalizePendingHistoryTransaction()
         savingJob = trackProgress {
             _isSaving.value = true
             val results = mutableListOf<SaveResult>()
@@ -258,14 +264,13 @@ class WeightResizeComponent @AssistedInject internal constructor(
                     total = uris.orEmpty().size
                 )
             }
-            onResult(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
 
     fun updateSelectedUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit = {}
+        uri: Uri
     ) {
         runCatching {
             componentScope.launch {
@@ -277,33 +282,52 @@ class WeightResizeComponent @AssistedInject internal constructor(
                 )
                 _selectedUri.value = uri
             }
-        }.onFailure(onFailure)
+        }.onFailure(AppToastHost::showFailureToast)
     }
 
-    private fun updateCanSave() {
+    private fun updateCanSave(
+        register: Boolean = true
+    ) {
         _canSave.value =
             _bitmap.value != null && (_maxBytes.value != 0L && _handMode.value || !_handMode.value && _presetSelected.value != -1)
 
-        registerChanges()
+        if (register) {
+            registerChanges()
+        }
     }
 
     fun updateMaxBytes(newBytes: String) {
         val b = newBytes.toLongOrNull() ?: 0
-        _maxBytes.value = b * 1024
-        updateCanSave()
+        val maxBytes = b * 1024
+        if (_maxBytes.value != maxBytes) {
+            beginPendingHistoryTransaction()
+            _maxBytes.value = maxBytes
+            updateCanSave()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun selectPreset(preset: Preset) {
-        preset.value()?.let { _presetSelected.value = it }
-        updateCanSave()
+        preset.value()?.let {
+            if (_presetSelected.value != it) {
+                finalizePendingHistoryTransaction()
+                val beforeSnapshot = currentHistorySnapshot()
+                _presetSelected.value = it
+                updateCanSave(register = false)
+                commitHistoryFrom(beforeSnapshot)
+            }
+        }
     }
 
     fun updateHandMode() {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _handMode.value = !_handMode.value
-        updateCanSave()
+        updateCanSave(register = false)
+        commitHistoryFrom(beforeSnapshot)
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         savingJob = trackProgress {
             _isSaving.value = true
             shareProvider.shareImages(
@@ -333,7 +357,7 @@ class WeightResizeComponent @AssistedInject internal constructor(
                 },
                 onProgressChange = {
                     if (it == -1) {
-                        onComplete()
+                        AppToastHost.showConfetti()
                         _isSaving.value = false
                         _done.value = 0
                     } else {
@@ -368,6 +392,8 @@ class WeightResizeComponent @AssistedInject internal constructor(
                     )
                 )
             }
+            resetHistory()
+            registerChangesCleared()
             _isImageLoading.value = false
         }
     }
@@ -379,8 +405,13 @@ class WeightResizeComponent @AssistedInject internal constructor(
     }
 
     fun setImageScaleMode(imageScaleMode: ImageScaleMode) {
-        _imageScaleMode.update { imageScaleMode }
-        updateCanSave()
+        if (_imageScaleMode.value != imageScaleMode) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
+            _imageScaleMode.update { imageScaleMode }
+            updateCanSave(register = false)
+            commitHistoryFrom(beforeSnapshot)
+        }
     }
 
     fun cacheCurrentImage(onComplete: (Uri) -> Unit) {
@@ -504,6 +535,57 @@ class WeightResizeComponent @AssistedInject internal constructor(
     fun getFormatForFilenameSelection(): ImageFormat? =
         if (uris?.size == 1) imageFormat
         else null
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        imageScaleMode = imageScaleMode,
+        presetSelected = presetSelected,
+        handMode = handMode,
+        maxBytes = maxBytes,
+        imageFormat = imageFormat,
+        keepExif = keepExif,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _imageScaleMode.value = snapshot.imageScaleMode
+        _presetSelected.value = snapshot.presetSelected
+        _handMode.value = snapshot.handMode
+        _maxBytes.value = snapshot.maxBytes
+        _imageFormat.value = snapshot.imageFormat
+        _keepExif.value = snapshot.keepExif
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        updateCanSave(register = false)
+        updateImageSize()
+    }
+
+    private fun updateImageSize() {
+        componentScope.launch {
+            _bitmap.value?.let {
+                _isImageLoading.value = true
+                _imageSize.value = imageCompressor.calculateImageSize(
+                    image = it,
+                    imageInfo = ImageInfo(imageFormat = imageFormat)
+                )
+                _isImageLoading.value = false
+            }
+        }
+    }
+
+    data class HistorySnapshot(
+        val imageScaleMode: ImageScaleMode = ImageScaleMode.Default,
+        val presetSelected: Int = -1,
+        val handMode: Boolean = true,
+        val maxBytes: Long = 0L,
+        val imageFormat: ImageFormat = ImageFormat.Default,
+        val keepExif: Boolean = false,
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
 
     @AssistedFactory
     fun interface Factory {

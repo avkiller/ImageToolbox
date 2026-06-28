@@ -17,29 +17,34 @@
 
 package com.t8rin.imagetoolbox.feature.pdf_tools.domain
 
-import com.t8rin.imagetoolbox.core.domain.image.model.Preset
-import com.t8rin.imagetoolbox.core.domain.model.RectModel
-import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.ImagesToPdfParams
-import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PageNumbersParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.ExtractPagesAction
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCreationParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCropParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfExtractPagesParams
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfMetadata
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfPageNumbersParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfRemoveAnnotationParams
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfSignatureParams
-import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfToImagesAction
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfWatermarkParams
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PrintPdfParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.SearchablePdfPage
 import kotlinx.coroutines.flow.Flow
 
 interface PdfManager : PdfHelper {
 
-    fun convertPdfToImages(
+    fun extractPages(
         uri: String,
-        pages: List<Int>?,
-        preset: Preset.Percentage
-    ): Flow<PdfToImagesAction>
+        params: PdfExtractPagesParams
+    ): Flow<ExtractPagesAction>
 
-    suspend fun convertImagesToPdf(
+    suspend fun createPdf(
         imageUris: List<String>,
-        onProgressChange: suspend (Int) -> Unit,
-        params: ImagesToPdfParams
+        params: PdfCreationParams
+    ): String
+
+    suspend fun createSearchablePdf(
+        pages: List<SearchablePdfPage>,
+        params: PdfCreationParams = PdfCreationParams(quality = 100)
     ): String
 
     suspend fun mergePdfs(
@@ -68,18 +73,16 @@ interface PdfManager : PdfHelper {
 
     suspend fun addPageNumbers(
         uri: String,
-        params: PageNumbersParams
+        params: PdfPageNumbersParams
     ): String
 
     suspend fun addWatermark(
         uri: String,
-        watermarkText: String,
         params: PdfWatermarkParams
     ): String
 
     suspend fun addSignature(
         uri: String,
-        signatureImage: Any,
         params: PdfSignatureParams
     ): String
 
@@ -125,8 +128,7 @@ interface PdfManager : PdfHelper {
 
     suspend fun cropPdf(
         uri: String,
-        pages: List<Int>?,
-        rect: RectModel
+        params: PdfCropParams
     ): String
 
     suspend fun flattenPdf(
@@ -149,8 +151,12 @@ interface PdfManager : PdfHelper {
 
     suspend fun printPdf(
         uri: String,
-        quality: Float,
         params: PrintPdfParams
+    ): String
+
+    suspend fun removeAnnotations(
+        uri: String,
+        params: PdfRemoveAnnotationParams
     ): String
 
 }

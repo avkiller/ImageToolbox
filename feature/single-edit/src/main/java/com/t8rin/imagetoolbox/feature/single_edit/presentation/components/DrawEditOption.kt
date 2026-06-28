@@ -39,10 +39,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Redo
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -70,7 +66,11 @@ import com.t8rin.imagetoolbox.core.domain.utils.notNullAnd
 import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheetComponent
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheetComponent
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Done
+import com.t8rin.imagetoolbox.core.resources.icons.Redo
+import com.t8rin.imagetoolbox.core.resources.icons.Undo
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.EraseModeButton
@@ -94,12 +94,14 @@ import com.t8rin.imagetoolbox.feature.draw.domain.DrawPathMode
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.BitmapDrawer
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.BrushSoftnessSelector
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.DrawColorSelector
+import com.t8rin.imagetoolbox.feature.draw.presentation.components.DrawLineAngleSelector
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.DrawLineStyleSelector
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.DrawModeSelector
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.DrawPathModeSelector
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.LineWidthSelector
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.OpenColorPickerCard
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.UiPathPaint
+import com.t8rin.imagetoolbox.feature.draw.presentation.components.canShowLineAngle
 import com.t8rin.imagetoolbox.feature.pick_color.presentation.components.PickColorFromImageSheet
 
 @Composable
@@ -122,6 +124,8 @@ fun DrawEditOption(
     lastPaths: List<UiPathPaint>,
     undonePaths: List<UiPathPaint>,
     addPath: (UiPathPaint) -> Unit,
+    spotHealCache: Map<Int, Bitmap>,
+    onCacheSpotHealPathResult: (Int, Bitmap) -> Unit,
     helperGridParams: HelperGridParams,
     onUpdateHelperGridParams: (HelperGridParams) -> Unit,
     addFiltersSheetComponent: AddFiltersSheetComponent,
@@ -150,6 +154,7 @@ fun DrawEditOption(
         var alpha by rememberSaveable(drawMode) {
             mutableFloatStateOf(if (drawMode is DrawMode.Highlighter) 0.4f else 1f)
         }
+        var showLineAngle by rememberSaveable { mutableStateOf(false) }
         var brushSoftness by rememberSaveable(drawMode, stateSaver = PtSaver) {
             mutableStateOf(if (drawMode is DrawMode.Neon) 35.pt else 0.pt)
         }
@@ -183,7 +188,7 @@ fun DrawEditOption(
                     enabled = lastPaths.isNotEmpty() || paths.isNotEmpty()
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.Undo,
+                        imageVector = Icons.Rounded.Undo,
                         contentDescription = "Undo"
                     )
                 }
@@ -196,7 +201,7 @@ fun DrawEditOption(
                     enabled = undonePaths.isNotEmpty()
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.Redo,
+                        imageVector = Icons.Rounded.Redo,
                         contentDescription = "Redo"
                     )
                 }
@@ -366,6 +371,20 @@ fun DrawEditOption(
                         )
                     }
                     AnimatedVisibility(
+                        visible = drawPathMode.canShowLineAngle() && drawMode !is DrawMode.Warp,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically(),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        DrawLineAngleSelector(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            checked = showLineAngle,
+                            onCheckedChange = { showLineAngle = it }
+                        )
+                    }
+                    AnimatedVisibility(
                         visible = drawMode !is DrawMode.Warp,
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically(),
@@ -465,7 +484,10 @@ fun DrawEditOption(
                         drawPathMode = drawPathMode,
                         backgroundColor = Color.Transparent,
                         drawLineStyle = drawLineStyle,
-                        helperGridParams = helperGridParams
+                        helperGridParams = helperGridParams,
+                        showLineAngle = showLineAngle,
+                        spotHealCache = spotHealCache,
+                        onCacheSpotHealPathResult = onCacheSpotHealPathResult
                     )
                 }
             }

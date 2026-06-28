@@ -17,23 +17,25 @@
 
 package com.t8rin.imagetoolbox.core.utils
 
+import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.t8rin.imagetoolbox.core.domain.model.FileModel
 import com.t8rin.imagetoolbox.core.domain.model.ImageModel
+import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.model.SortType
-import com.t8rin.imagetoolbox.core.domain.utils.FileMode
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.sortedByKey
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.logger.makeLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -45,13 +47,17 @@ import kotlinx.coroutines.flow.map
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.LinkedList
+import java.util.Locale
 
 fun Uri?.uiPath(
-    default: String
+    default: String,
+    context: Context = appContext
 ): String = this?.let { uri ->
-    DocumentFile
-        .fromTreeUri(appContext, uri)
-        ?.uri?.path?.split(":")
+    if (DocumentFile.isDocumentUri(context, uri)) {
+        DocumentFile.fromSingleUri(context, uri)
+    } else {
+        DocumentFile.fromTreeUri(context, uri)
+    }?.uri?.path?.split(":")
         ?.lastOrNull()?.let { p ->
             val endPath = p.takeIf {
                 it.isNotEmpty()
@@ -60,11 +66,11 @@ fun Uri?.uiPath(
                 uri.toString()
                     .split("%")[0]
                     .contains("primary")
-            ) appContext.getString(R.string.device_storage)
-            else appContext.getString(R.string.external_storage)
+            ) context.getString(R.string.device_storage)
+            else context.getString(R.string.external_storage)
 
             startPath + endPath
-        }
+        }?.decodeEscaped()
 } ?: default
 
 fun Uri.lastModified(): Long? = tryExtractOriginal().run {
@@ -134,6 +140,22 @@ fun Uri.filename(
     }?.decodeEscaped()
 }
 
+fun Uri.extension(
+    context: Context = appContext
+): String? {
+    val filename = filename(context) ?: ""
+    if (filename.endsWith(".qoi")) return "qoi"
+    if (filename.endsWith(".jxl")) return "jxl"
+    return if (ContentResolver.SCHEME_CONTENT == scheme) {
+        MimeTypeMap.getSingleton()
+            .getExtensionFromMimeType(
+                context.contentResolver.getType(this)
+            )
+    } else {
+        MimeTypeMap.getFileExtensionFromUrl(this.toString()).lowercase(Locale.getDefault())
+    }?.replace(".", "")
+}
+
 fun Uri.fileSize(): Long? = tryExtractOriginal().run {
     if (this.scheme == "content") {
         runCatching {
@@ -156,7 +178,54 @@ fun Uri.fileSize(): Long? = tryExtractOriginal().run {
     return null
 }
 
+fun Uri.imageSize(): IntegerSize? = tryExtractOriginal().run {
+    val mediaStoreSize = if (scheme == ContentResolver.SCHEME_CONTENT) {
+        runCatching {
+            appContext.contentResolver.query(
+                this,
+                arrayOf(MediaStore.MediaColumns.WIDTH, MediaStore.MediaColumns.HEIGHT),
+                null,
+                null,
+                null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val widthIndex = cursor.getColumnIndex(MediaStore.MediaColumns.WIDTH)
+                    val heightIndex = cursor.getColumnIndex(MediaStore.MediaColumns.HEIGHT)
+                    val width = widthIndex
+                        .takeIf { it != -1 && !cursor.isNull(it) }
+                        ?.let(cursor::getInt)
+                    val height = heightIndex
+                        .takeIf { it != -1 && !cursor.isNull(it) }
+                        ?.let(cursor::getInt)
+
+                    IntegerSize(width ?: 0, height ?: 0).takeIf { it.isValidImageSize() }
+                } else null
+            }
+        }.getOrNull()
+    } else null
+
+    mediaStoreSize ?: runCatching {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        if (scheme == ContentResolver.SCHEME_CONTENT) {
+            appContext.contentResolver.openInputStream(this)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+        } else {
+            BitmapFactory.decodeFile(toFile().absolutePath, options)
+        }
+        IntegerSize(options.outWidth, options.outHeight).takeIf { it.isValidImageSize() }
+    }.getOrNull()
+}
+
+private fun IntegerSize.isValidImageSize(): Boolean = width > 0 && height > 0
+
 fun Uri.tryExtractOriginal(): Uri = try {
+    if ("com.android.externalstorage.documents" in this.toString()) {
+        return this.makeLog("tryExtractOriginal") { "already ok - $it" }
+    }
+
     val mimeType = getStringColumn(MediaStore.MediaColumns.MIME_TYPE).orEmpty()
 
     val contentUri = when {
@@ -172,7 +241,7 @@ fun Uri.tryExtractOriginal(): Uri = try {
     )
 } catch (e: Throwable) {
     e.makeLog("tryExtractOriginal")
-    this
+    this.makeLog("tryExtractOriginal") { "failed - $it" }
 }
 
 suspend fun List<Uri>.sortedByType(
@@ -255,17 +324,6 @@ fun String?.getPath(
 ) = this?.takeIf { it.isNotEmpty() }?.toUri().uiPath(
     default = context.getString(R.string.default_folder)
 )
-
-fun Uri.tryRequireOriginal(context: Context): Uri {
-    val tempUri = this
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        runCatching {
-            MediaStore.setRequireOriginal(this).also {
-                context.contentResolver.openFileDescriptor(it, FileMode.Read.mode)?.close()
-            }
-        }.getOrNull() ?: tempUri
-    } else this
-}
 
 private fun Uri.listFilesInDirectoryAsFlowImpl(): Flow<DirUri> = channelFlow {
     val rootUri = this@listFilesInDirectoryAsFlowImpl

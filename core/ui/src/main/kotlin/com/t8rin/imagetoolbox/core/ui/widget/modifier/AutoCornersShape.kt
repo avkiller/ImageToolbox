@@ -135,36 +135,61 @@ fun AutoCornersShape(
     bottomEnd: CornerSize,
     bottomStart: CornerSize,
     shapesType: ShapeType
-) = when (shapesType) {
-    is ShapeType.Cut -> CutCornerShape(
-        topStart = topStart.toAuto(shapesType),
-        topEnd = topEnd.toAuto(shapesType),
-        bottomEnd = bottomEnd.toAuto(shapesType),
-        bottomStart = bottomStart.toAuto(shapesType),
-    )
+): CornerBasedShape {
+    if (shapesType.strength <= 0f) return CornerBasedRectangleShape
 
-    is ShapeType.Rounded -> RoundedCornerShape(
-        topStart = topStart.toAuto(shapesType),
-        topEnd = topEnd.toAuto(shapesType),
-        bottomEnd = bottomEnd.toAuto(shapesType),
-        bottomStart = bottomStart.toAuto(shapesType),
-    )
+    return when (shapesType) {
+        is ShapeType.Cut -> CutCornerShape(
+            topStart = topStart.toAuto(shapesType),
+            topEnd = topEnd.toAuto(shapesType),
+            bottomEnd = bottomEnd.toAuto(shapesType),
+            bottomStart = bottomStart.toAuto(shapesType),
+        )
 
-    is ShapeType.Smooth -> ContinuousRoundedRectangle(
-        topStart = topStart.toAuto(shapesType),
-        topEnd = topEnd.toAuto(shapesType),
-        bottomEnd = bottomEnd.toAuto(shapesType),
-        bottomStart = bottomStart.toAuto(shapesType),
-        continuity = continuity
-    )
+        is ShapeType.Rounded -> RoundedCornerShape(
+            topStart = topStart.toAuto(shapesType),
+            topEnd = topEnd.toAuto(shapesType),
+            bottomEnd = bottomEnd.toAuto(shapesType),
+            bottomStart = bottomStart.toAuto(shapesType),
+        )
 
-    is ShapeType.Squircle -> SquircleShape(
-        topStartCorner = topStart.toAuto(shapesType),
-        topEndCorner = topEnd.toAuto(shapesType),
-        bottomEndCorner = bottomEnd.toAuto(shapesType),
-        bottomStartCorner = bottomStart.toAuto(shapesType),
-        smoothing = smoothing
-    )
+        is ShapeType.Smooth -> ContinuousRoundedRectangle(
+            topStart = topStart.toAuto(shapesType),
+            topEnd = topEnd.toAuto(shapesType),
+            bottomEnd = bottomEnd.toAuto(shapesType),
+            bottomStart = bottomStart.toAuto(shapesType),
+            continuity = continuity
+        )
+
+        is ShapeType.Squircle -> SquircleShape(
+            topStartCorner = topStart.toAuto(shapesType),
+            topEndCorner = topEnd.toAuto(shapesType),
+            bottomEndCorner = bottomEnd.toAuto(shapesType),
+            bottomStartCorner = bottomStart.toAuto(shapesType),
+            smoothing = smoothing
+        )
+
+        is ShapeType.Wavy -> WavyShape(
+            topStart = topStart.toAuto(shapesType),
+            topEnd = topEnd.toAuto(shapesType),
+            bottomEnd = bottomEnd.toAuto(shapesType),
+            bottomStart = bottomStart.toAuto(shapesType)
+        )
+
+        is ShapeType.Scoop -> ScoopShape(
+            topStart = topStart.toAuto(shapesType),
+            topEnd = topEnd.toAuto(shapesType),
+            bottomEnd = bottomEnd.toAuto(shapesType),
+            bottomStart = bottomStart.toAuto(shapesType),
+        )
+
+        is ShapeType.Notch -> NotchShape(
+            topStart = topStart.toAuto(shapesType),
+            topEnd = topEnd.toAuto(shapesType),
+            bottomEnd = bottomEnd.toAuto(shapesType),
+            bottomStart = bottomStart.toAuto(shapesType),
+        )
+    }
 }
 
 @Stable
@@ -173,11 +198,16 @@ fun AutoCircleShape(shapesType: ShapeType) = when (shapesType) {
     is ShapeType.Rounded -> CircleShape
     is ShapeType.Smooth -> SmoothCircleShape
     is ShapeType.Squircle -> SquircleCircleShape
+    is ShapeType.Wavy -> WavyCircleShape
+    is ShapeType.Scoop -> ScoopCircleShape
+    is ShapeType.Notch -> NotchCircleShape
 }.let { shape ->
-    if (shapesType.strength >= 1f) {
+    val strength = shapesType.effectiveStrength
+
+    if (strength >= 1f) {
         shape
     } else {
-        shape.copy(shape.topStart.toAuto(shapesType))
+        shape.copy(shape.topStart.toAuto(strength))
     }
 }
 
@@ -300,6 +330,18 @@ val SquircleCircleShape = SquircleShape(
 )
 
 @Stable
+val WavyCircleShape = WavyShape(percent = 50)
+
+@Stable
+val ScoopCircleShape = ScoopShape(percent = 50)
+
+@Stable
+val NotchCircleShape = NotchShape(percent = 50)
+
+@Stable
+val CornerBasedRectangleShape = RoundedCornerShape(0.dp)
+
+@Stable
 @Composable
 private fun rememberSettings(
     vararg keys: Any?,
@@ -313,7 +355,7 @@ private fun rememberSettings(
 }
 
 @Stable
-private fun CornerSize.toAuto(shapeType: ShapeType) = toAuto(shapeType.strength)
+private fun CornerSize.toAuto(shapeType: ShapeType) = toAuto(shapeType.effectiveStrength)
 
 @Stable
 private fun CornerSize.toAuto(strength: Float) =

@@ -63,9 +63,10 @@ import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.askUserTo
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.checkPermissions
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.hasPermissionAllowed
 import com.t8rin.imagetoolbox.core.ui.utils.permission.PermissionUtils.setPermissionsAllowed
+import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
 import com.t8rin.imagetoolbox.core.utils.appContext
 import com.t8rin.imagetoolbox.core.utils.filename
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -97,7 +98,10 @@ object ContextUtils {
 
             PermissionStatus.DENIED_PERMANENTLY -> {
                 askUserToRequestPermissionExplicitly()
-                Toast.makeText(this, R.string.grant_permission_manual, Toast.LENGTH_LONG).show()
+                AppToastHost.showToast(
+                    message = R.string.grant_permission_manual,
+                    duration = ToastDuration.Long
+                )
             }
 
             PermissionStatus.ALLOWED -> Unit
@@ -256,6 +260,11 @@ object ContextUtils {
     ): String = createConfigurationContext(
         Configuration(resources.configuration).apply { setLocale(locale) }
     ).getText(resId).toString()
+
+    fun Context.getStringEnglish(
+        @StringRes
+        resId: Int
+    ): String = getStringLocalized(resId, Locale.ENGLISH)
 
     fun Context.pasteColorFromClipboard(
         onPastedColor: (Color) -> Unit,

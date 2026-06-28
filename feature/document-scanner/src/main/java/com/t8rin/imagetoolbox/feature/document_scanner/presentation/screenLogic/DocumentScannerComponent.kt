@@ -41,12 +41,12 @@ import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.domain.utils.timestamp
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ScanResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.navigation.coroutineScope
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
-import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.ImagesToPdfParams
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfCreationParams
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -104,8 +104,7 @@ class DocumentScannerComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -149,14 +148,13 @@ class DocumentScannerComponent @AssistedInject internal constructor(
                     total = left
                 )
             }
-            onComplete(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
 
     fun savePdfTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -164,22 +162,19 @@ class DocumentScannerComponent @AssistedInject internal constructor(
                 fileController.transferBytes(
                     fromUri = pdfUri.toString(),
                     toUri = uri.toString(),
-                ).also(onResult).onSuccess(::registerSave)
+                ).also(::parseFileSaveResult).onSuccess(::registerSave)
                 _isSaving.value = false
             }
         }
     }
 
     private suspend fun createPdfUri(): Uri? {
-        _done.value = 0
-        _left.value = uris.size
+        _done.update { 0 }
+        _left.update { 0 }
         return runSuspendCatching {
-            pdfManager.convertImagesToPdf(
+            pdfManager.createPdf(
                 imageUris = uris.map { it.toString() },
-                onProgressChange = {
-                    _done.value = it
-                },
-                params = ImagesToPdfParams()
+                params = PdfCreationParams()
             )
         }.getOrNull()?.toUri()
     }
@@ -189,9 +184,7 @@ class DocumentScannerComponent @AssistedInject internal constructor(
         return "PDF_$timeStamp.pdf"
     }
 
-    fun sharePdf(
-        onComplete: () -> Unit
-    ) {
+    fun sharePdf() {
         savingJob = trackProgress {
             _isSaving.value = true
             getPdfUri()?.let { pdfUri ->
@@ -201,14 +194,14 @@ class DocumentScannerComponent @AssistedInject internal constructor(
                 runSuspendCatching {
                     shareProvider.shareUri(
                         uri = pdfUri.toString(),
-                        onComplete = onComplete
+                        onComplete = AppToastHost::showConfetti
                     )
                 }.onFailure {
                     val bytes = fileController.readBytes(pdfUri.toString())
                     shareProvider.shareByteArray(
                         byteArray = bytes,
                         filename = generatePdfFilename(),
-                        onComplete = onComplete
+                        onComplete = AppToastHost::showConfetti
                     )
                 }
             }
@@ -232,7 +225,7 @@ class DocumentScannerComponent @AssistedInject internal constructor(
         _pdfUris.update { (it + scanResult.pdfUri).distinct().filterNotNull() }
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         savingJob = trackProgress {
             _isSaving.value = true
             shareProvider.shareImages(
@@ -250,7 +243,7 @@ class DocumentScannerComponent @AssistedInject internal constructor(
                 },
                 onProgressChange = {
                     if (it == -1) {
-                        onComplete()
+                        AppToastHost.showConfetti()
                         _isSaving.value = false
                         _done.value = 0
                     } else {
@@ -276,7 +269,7 @@ class DocumentScannerComponent @AssistedInject internal constructor(
     fun getFormatForFilenameSelection(): ImageFormat = imageFormat
 
     fun shareUri(uri: Uri) {
-        coroutineScope.launch {
+        componentScope.launch {
             shareProvider.shareUri(
                 uri = uri.toString(),
                 onComplete = {}

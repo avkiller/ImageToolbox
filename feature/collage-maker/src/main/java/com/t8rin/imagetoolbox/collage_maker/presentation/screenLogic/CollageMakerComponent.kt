@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
 import com.t8rin.collages.CollageType
+import com.t8rin.collages.public.CollageConstants
 import com.t8rin.imagetoolbox.collage_maker.presentation.components.CollageParams
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageCompressor
@@ -36,10 +37,11 @@ import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.model.DomainAspectRatio
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.domain.utils.update
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.savable
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
@@ -56,12 +58,16 @@ class CollageMakerComponent @AssistedInject internal constructor(
     private val fileController: FileController,
     private val imageCompressor: ImageCompressor<Bitmap>,
     private val shareProvider: ImageShareProvider<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder,
 ) : BaseComponent(dispatchersHolder, componentContext) {
 
     init {
         debounce {
             initialUris?.let(::updateUris)
+
+            _imageFormat.value =
+                settingsManager.settingsState.value.defaultImageFormat ?: imageFormat
         }
     }
 
@@ -134,7 +140,7 @@ class CollageMakerComponent @AssistedInject internal constructor(
     fun addImage(uri: Uri) {
         _uris.update { current ->
             val list = current ?: emptyList()
-            if (list.size >= 10) list else list + uri
+            if (list.size >= CollageConstants.MAX_IMAGE_COUNT) list else list + uri
         }
         registerChanges()
     }
@@ -180,8 +186,7 @@ class CollageMakerComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmap(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (SaveResult) -> Unit,
+        oneTimeSaveLocationUri: String?
     ) {
         _isSaving.update { true }
         _collageCreationTrigger.update { true }
@@ -210,16 +215,14 @@ class CollageMakerComponent @AssistedInject internal constructor(
                         oneTimeSaveLocationUri = oneTimeSaveLocationUri
                     )
 
-                    onComplete(result.onSuccess(::registerSave))
+                    parseSaveResult(result.onSuccess(::registerSave))
                     _isSaving.update { false }
                 }
             }
         }
     }
 
-    fun performSharing(
-        onComplete: () -> Unit,
-    ) {
+    fun performSharing() {
         _isSaving.update { true }
         _collageCreationTrigger.update { true }
         requestedOperation = {
@@ -237,7 +240,7 @@ class CollageMakerComponent @AssistedInject internal constructor(
                     )?.let { uri ->
                         shareProvider.shareUri(
                             uri = uri,
-                            onComplete = onComplete
+                            onComplete = AppToastHost::showConfetti
                         )
                     }
                     _isSaving.update { false }

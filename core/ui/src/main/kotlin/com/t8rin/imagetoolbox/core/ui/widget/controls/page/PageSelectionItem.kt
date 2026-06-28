@@ -18,8 +18,7 @@
 package com.t8rin.imagetoolbox.core.ui.widget.controls.page
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Pages
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.icons.Pages
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.core.utils.getString
 
@@ -38,18 +38,18 @@ import com.t8rin.imagetoolbox.core.utils.getString
 fun PageSelectionItem(
     value: List<Int>?,
     onValueChange: (List<Int>) -> Unit,
-    pagesCount: Int
+    pageCount: Int
 ) {
     var showSelector by rememberSaveable {
         mutableStateOf(false)
     }
     PreferenceItem(
         title = stringResource(R.string.pages_selection),
-        subtitle = remember(value, pagesCount) {
+        subtitle = remember(value, pageCount) {
             derivedStateOf {
                 value?.takeIf { it.isNotEmpty() }
                     ?.let {
-                        if (it.size == pagesCount) {
+                        if (it.size == pageCount) {
                             getString(R.string.all)
                         } else {
                             PagesSelectionParser.formatPageOutput(it)
@@ -68,6 +68,7 @@ fun PageSelectionItem(
         visible = showSelector,
         onDismiss = { showSelector = false },
         value = value,
-        onValueChange = onValueChange
+        onValueChange = onValueChange,
+        pagesCount = pageCount
     )
 }

@@ -18,8 +18,6 @@
 package com.t8rin.imagetoolbox.feature.markup_layers.presentation.components
 
 import android.net.Uri
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SheetValue
@@ -27,11 +25,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.DeleteSweep
+import com.t8rin.imagetoolbox.core.resources.icons.Tune
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
@@ -46,16 +49,15 @@ internal fun MarkupLayersTopAppBarActions(
     scaffoldState: BottomSheetScaffoldState
 ) {
     val isPortrait by isPortraitOrientationAsState()
-
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
 
     if (component.backgroundBehavior == BackgroundBehavior.None) TopAppBarEmoji()
     else {
         if (isPortrait) {
             EnhancedIconButton(
                 onClick = {
-                    essentials.launch {
+                    scope.launch {
                         if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                             scaffoldState.bottomSheetState.partialExpand()
                         } else {
@@ -70,19 +72,37 @@ internal fun MarkupLayersTopAppBarActions(
                 )
             }
         }
+
+        EnhancedIconButton(
+            onClick = component::clearLayers,
+            enabled = component.layers.isNotEmpty()
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.DeleteSweep,
+                contentDescription = stringResource(R.string.clear)
+            )
+        }
+
         var editSheetData by remember {
             mutableStateOf(listOf<Uri>())
         }
         ShareButton(
             enabled = component.backgroundBehavior !is BackgroundBehavior.None,
             onShare = {
-                component.shareBitmap(showConfetti)
+                component.shareBitmap(
+                    fontScale = density.fontScale
+                )
             },
             onCopy = {
-                component.cacheCurrentImage(essentials::copyToClipboard)
+                component.cacheCurrentImage(
+                    fontScale = density.fontScale,
+                    onComplete = Clipboard::copy
+                )
             },
             onEdit = {
-                component.cacheCurrentImage { uri ->
+                component.cacheCurrentImage(
+                    fontScale = density.fontScale
+                ) { uri ->
                     editSheetData = listOf(uri)
                 }
             }

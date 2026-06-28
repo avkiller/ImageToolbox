@@ -40,10 +40,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Redo
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.Done
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -64,9 +62,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.model.pt
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Done
+import com.t8rin.imagetoolbox.core.resources.icons.Redo
+import com.t8rin.imagetoolbox.core.resources.icons.Undo
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.PanModeButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.HelperGridParamsSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.MagnifierEnabledSelector
@@ -116,7 +117,7 @@ fun EraseBackgroundEditOption(
     helperGridParams: HelperGridParams,
     onUpdateHelperGridParams: (HelperGridParams) -> Unit,
 ) {
-    val essentials = rememberLocalEssentials()
+    val scope = rememberCoroutineScope()
 
     bitmap?.let {
         var panEnabled by rememberSaveable { mutableStateOf(false) }
@@ -166,7 +167,7 @@ fun EraseBackgroundEditOption(
                     enabled = lastPaths.isNotEmpty() || paths.isNotEmpty()
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.Undo,
+                        imageVector = Icons.Rounded.Undo,
                         contentDescription = "Undo"
                     )
                 }
@@ -179,7 +180,7 @@ fun EraseBackgroundEditOption(
                     enabled = undonePaths.isNotEmpty()
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.Redo,
+                        imageVector = Icons.Rounded.Redo,
                         contentDescription = "Redo"
                     )
                 }
@@ -216,7 +217,7 @@ fun EraseBackgroundEditOption(
                     )
                     AutoEraseBackgroundCard(
                         onClick = { modelType ->
-                            essentials.launch {
+                            scope.launch {
                                 scaffoldState?.bottomSheetState?.partialExpand()
                             }
                             loading = true
@@ -228,11 +229,11 @@ fun EraseBackgroundEditOption(
                                     bitmapState = it
                                     clearErasing(false)
                                     autoErased = true
-                                    essentials.showConfetti()
+                                    AppToastHost.showConfetti()
                                 },
                                 onFailure = {
                                     loading = false
-                                    essentials.showFailureToast(it)
+                                    AppToastHost.showFailureToast(it)
                                 }
                             )
                         },
@@ -333,7 +334,7 @@ fun EraseBackgroundEditOption(
                             EnhancedIconButton(
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                 onClick = {
-                                    essentials.launch {
+                                    scope.launch {
                                         val trimmed = if (trimImage) {
                                             autoBackgroundRemover.trimEmptyParts(
                                                 erasedBitmap

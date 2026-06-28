@@ -20,6 +20,7 @@ package com.t8rin.imagetoolbox.core.data.saving
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.net.Uri
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -28,18 +29,25 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.documentfile.provider.DocumentFile
+import coil3.ImageLoader
+import com.t8rin.exif.ExifInterface
+import com.t8rin.imagetoolbox.core.data.coil.remove
 import com.t8rin.imagetoolbox.core.data.image.toMetadata
 import com.t8rin.imagetoolbox.core.data.saving.io.UriReadable
 import com.t8rin.imagetoolbox.core.data.saving.io.UriWriteable
 import com.t8rin.imagetoolbox.core.data.utils.cacheSize
 import com.t8rin.imagetoolbox.core.data.utils.clearCache
-import com.t8rin.imagetoolbox.core.data.utils.copyMetadata
 import com.t8rin.imagetoolbox.core.data.utils.isExternalStorageWritable
 import com.t8rin.imagetoolbox.core.data.utils.openFileDescriptor
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
+import com.t8rin.imagetoolbox.core.domain.history.AppHistoryRepository
 import com.t8rin.imagetoolbox.core.domain.image.Metadata
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
+import com.t8rin.imagetoolbox.core.domain.image.clearAllAttributes
+import com.t8rin.imagetoolbox.core.domain.image.copyTo
+import com.t8rin.imagetoolbox.core.domain.image.model.MetadataTag
+import com.t8rin.imagetoolbox.core.domain.image.readOnly
 import com.t8rin.imagetoolbox.core.domain.json.JsonParser
 import com.t8rin.imagetoolbox.core.domain.resource.ResourceManager
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
@@ -61,16 +69,16 @@ import com.t8rin.imagetoolbox.core.utils.filename
 import com.t8rin.imagetoolbox.core.utils.getPath
 import com.t8rin.imagetoolbox.core.utils.listFilesInDirectory
 import com.t8rin.imagetoolbox.core.utils.listFilesInDirectoryProgressive
-import com.t8rin.imagetoolbox.core.utils.tryRequireOriginal
+import com.t8rin.imagetoolbox.core.utils.makeLog
+import com.t8rin.imagetoolbox.core.utils.tryExtractOriginal
 import com.t8rin.imagetoolbox.core.utils.uiPath
-import com.t8rin.logger.makeLog
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okio.use
 import java.io.FileOutputStream
 import javax.inject.Inject
 import kotlin.reflect.KClass
@@ -82,8 +90,10 @@ internal class AndroidFileController @Inject constructor(
     private val shareProvider: ShareProvider,
     private val filenameCreator: FilenameCreator,
     private val jsonParser: JsonParser,
+    private val appHistoryRepository: AppHistoryRepository,
     private val appScope: AppScope,
     private val dataStore: DataStore<Preferences>,
+    private val imageLoader: ImageLoader,
     dispatchersHolder: DispatchersHolder,
     resourceManager: ResourceManager,
 ) : DispatchersHolder by dispatchersHolder,
@@ -115,6 +125,17 @@ internal class AndroidFileController @Inject constructor(
             third = oneTimeSaveLocationUri
         ).makeLog("File Controller save")
 
+        if (result is SaveResult.Success) {
+            appHistoryRepository.registerSuccessfulSave(
+                savedBytes = result.savedBytes,
+                savedFormat = if (saveTarget is ImageSaveTarget) {
+                    saveTarget.imageFormat.title
+                } else {
+                    saveTarget.extension
+                }
+            )
+        }
+
         return result
     }
 
@@ -127,6 +148,7 @@ internal class AndroidFileController @Inject constructor(
             return@withContext SaveResult.Error.MissingPermissions
         }
 
+        val shouldKeepMetadata = keepOriginalMetadata && !settingsState.isAlwaysClearExif
         val data = if (saveTarget is ImageSaveTarget && saveTarget.readFromUriInsteadOfData) {
             readBytes(saveTarget.originalUri)
         } else {
@@ -156,7 +178,8 @@ internal class AndroidFileController @Inject constructor(
             if (settingsState.copyToClipboardMode is CopyToClipboardMode.Enabled.WithoutSaving) {
                 return@withContext SaveResult.Success(
                     message = getString(R.string.copied),
-                    savingPath = savingPath
+                    savingPath = savingPath,
+                    savedBytes = data.size.toLong()
                 )
             }
 
@@ -167,11 +190,20 @@ internal class AndroidFileController @Inject constructor(
                 val newSize = data.size
 
                 if (originalSize != null && newSize > originalSize) {
-                    return@withContext SaveResult.Skipped
+                    return@withContext SaveResult.Skipped(saveTarget.originalUri)
                 }
             }
 
             if (settingsState.filenameBehavior is FilenameBehavior.Overwrite) {
+                val providedMetadata = (saveTarget as? ImageSaveTarget)
+                    ?.metadata
+                    ?.takeUnless { settingsState.isAlwaysClearExif }
+                val targetMetadata = if (shouldKeepMetadata) {
+                    readMetadata(originalUri.toString()) ?: providedMetadata
+                } else {
+                    providedMetadata
+                }
+
                 runCatching {
                     if (originalUri == Uri.EMPTY) throw IllegalStateException()
 
@@ -179,24 +211,21 @@ internal class AndroidFileController @Inject constructor(
                         uri = originalUri,
                         mode = FileMode.WriteTruncate
                     )
-                }.onFailure {
-                    settingsManager.setImagePickerMode(3)
-                    return@withContext SaveResult.Error.Exception(
-                        Exception(
-                            getString(
-                                R.string.overwrite_file_requirements
-                            )
-                        )
-                    )
                 }.getOrNull()?.use { parcel ->
                     FileOutputStream(parcel.fileDescriptor).use { out ->
                         out.write(data)
-                        context.copyMetadata(
-                            initialExif = (saveTarget as? ImageSaveTarget)?.metadata,
+
+                        copyMetadata(
+                            initialExif = targetMetadata,
                             fileUri = originalUri,
-                            keepOriginalMetadata = keepOriginalMetadata,
+                            keepOriginalMetadata = shouldKeepMetadata,
                             originalUri = originalUri
                         )
+                    }
+
+                    imageLoader.apply {
+                        memoryCache?.remove(originalUri.toString())
+                        diskCache?.remove(originalUri.toString())
                     }
 
                     return@withContext SaveResult.Success(
@@ -205,7 +234,8 @@ internal class AndroidFileController @Inject constructor(
                             originalUri.filename(context).toString()
                         ),
                         isOverwritten = true,
-                        savingPath = savingPath
+                        savingPath = savingPath,
+                        savedBytes = data.size.toLong()
                     )
                 }
             } else {
@@ -223,7 +253,7 @@ internal class AndroidFileController @Inject constructor(
                         }
                     }.getOrNull()
 
-                    if (documentFile?.exists() == false && documentFile.isDirectory || documentFile == null) {
+                    if (documentFile == null || !documentFile.exists()) {
                         if (oneTimeSaveLocationUri == null) {
                             settingsManager.setSaveFolderUri(null)
                         } else {
@@ -234,10 +264,10 @@ internal class AndroidFileController @Inject constructor(
                             )
                         }
                         return@withContext SaveResult.Error.Exception(
-                            Exception(
+                            Throwable(
                                 getString(
                                     R.string.no_such_directory,
-                                    treeUri.toUri().uiPath(treeUri)
+                                    treeUri.toUri().uiPath(treeUri, context)
                                 )
                             )
                         )
@@ -249,7 +279,7 @@ internal class AndroidFileController @Inject constructor(
                 var initialExif: Metadata? = null
 
                 val newSaveTarget = if (saveTarget is ImageSaveTarget) {
-                    initialExif = saveTarget.metadata
+                    initialExif = saveTarget.metadata.takeUnless { settingsState.isAlwaysClearExif }
 
                     saveTarget.copy(
                         filename = filenameCreator.constructImageFilename(
@@ -259,25 +289,39 @@ internal class AndroidFileController @Inject constructor(
                     )
                 } else saveTarget
 
+                val filename = newSaveTarget.filename
+                    ?: throw IllegalArgumentException(getString(R.string.filename_is_not_set))
+
                 val savingFolder = SavingFolder.getInstance(
                     context = context,
                     treeUri = treeUri?.toUri(),
-                    saveTarget = newSaveTarget
+                    saveTarget = newSaveTarget,
+                    saveToOriginalFolder = settingsState.saveToOriginalFolder
                 ) ?: throw IllegalArgumentException(getString(R.string.error_while_saving))
 
                 savingFolder.use {
                     it.writeBytes(data)
                 }
 
-                context.copyMetadata(
+                copyMetadata(
                     initialExif = initialExif,
                     fileUri = savingFolder.fileUri,
-                    keepOriginalMetadata = keepOriginalMetadata,
+                    keepOriginalMetadata = shouldKeepMetadata,
                     originalUri = saveTarget.originalUri.toUri()
                 )
 
-                val filename = newSaveTarget.filename
-                    ?: throw IllegalArgumentException(getString(R.string.filename_is_not_set))
+                savingFolder.fileUri.path?.takeIf {
+                    savingFolder.fileUri.scheme == "file"
+                }?.let { path ->
+                    MediaScannerConnection.scanFile(
+                        context,
+                        arrayOf(path),
+                        arrayOf(newSaveTarget.mimeType.entry),
+                        null
+                    )
+                }
+
+                val actualSavingPath = savingFolder.normalizedSavingPath ?: savingPath
 
                 oneTimeSaveLocationUri?.let {
                     if (documentFile?.isDirectory == true) {
@@ -308,7 +352,7 @@ internal class AndroidFileController @Inject constructor(
                 }
 
                 return@withContext SaveResult.Success(
-                    message = if (savingPath.isNotEmpty()) {
+                    message = if (actualSavingPath.isNotEmpty()) {
                         val isFile =
                             (documentFile?.isDirectory != true && oneTimeSaveLocationUri != null)
                         if (isFile) {
@@ -316,17 +360,18 @@ internal class AndroidFileController @Inject constructor(
                         } else if (filename.isNotEmpty()) {
                             getString(
                                 R.string.saved_to,
-                                savingPath,
+                                actualSavingPath,
                                 filename
                             )
                         } else {
                             getString(
                                 R.string.saved_to_without_filename,
-                                savingPath
+                                actualSavingPath
                             )
                         }
                     } else null,
-                    savingPath = savingPath
+                    savingPath = actualSavingPath,
+                    savedBytes = data.size.toLong()
                 )
             }
         }.onFailure {
@@ -377,9 +422,16 @@ internal class AndroidFileController @Inject constructor(
                 )
             )
         }.onSuccess {
+            val savedBytes = uri.toUri().fileSize() ?: 0
+
+            appHistoryRepository.registerSuccessfulSave(
+                savedBytes = savedBytes,
+                savedFormat = ""
+            )
             return@withContext SaveResult.Success(
                 message = null,
-                savingPath = ""
+                savingPath = "",
+                savedBytes = savedBytes
             )
         }.onFailure {
             uri.makeLog("File Controller write")
@@ -466,7 +518,7 @@ internal class AndroidFileController @Inject constructor(
         imageUri: String,
         metadata: Metadata?
     ) {
-        context.copyMetadata(
+        copyMetadata(
             initialExif = metadata,
             fileUri = imageUri.toUri(),
             keepOriginalMetadata = false,
@@ -476,9 +528,11 @@ internal class AndroidFileController @Inject constructor(
 
     override suspend fun readMetadata(
         imageUri: String
-    ): Metadata? = imageUri.toUri().tryRequireOriginal(context).let {
-        context.openFileDescriptor(it)?.fileDescriptor?.toMetadata()
-    }
+    ): Metadata? = runSuspendCatching {
+        context.contentResolver.openInputStream(imageUri.toUri().tryExtractOriginal())?.use {
+            ExifInterface(it).toMetadata().readOnly().makeLog("readMetadata")
+        }
+    }.getOrNull()
 
     override suspend fun listFilesInDirectory(
         treeUri: String
@@ -488,6 +542,54 @@ internal class AndroidFileController @Inject constructor(
 
     override fun listFilesInDirectoryAsFlow(
         treeUri: String
-    ): Flow<String> = treeUri.toUri().listFilesInDirectoryProgressive().map(Uri::toString)
+    ): Flow<String> = treeUri.toUri().listFilesInDirectoryProgressive().map {
+        it.toString()
+    }.flowOn(ioDispatcher)
 
+    private suspend fun copyMetadata(
+        initialExif: Metadata?,
+        fileUri: Uri,
+        keepOriginalMetadata: Boolean,
+        originalUri: Uri
+    ) = runSuspendCatching {
+        if (initialExif != null) {
+            openFileDescriptor(fileUri)?.use {
+                initialExif.makeLog("initialMetadata")
+                    .copyTo(it.fileDescriptor.toMetadata().makeLog("dstMetadata"))
+            }
+        } else if (keepOriginalMetadata) {
+            if (fileUri != originalUri) {
+                openFileDescriptor(fileUri)?.use {
+                    readMetadata(originalUri.toString()).makeLog("srcMetadata")?.copyTo(
+                        it.fileDescriptor.toMetadata().makeLog("dstMetadata")
+                    )
+                }
+            } else {
+                "Nothing, copying from self to self is pointless".makeLog("copyMetadata")
+            }
+        } else {
+            openFileDescriptor(fileUri)?.use {
+                it.fileDescriptor.toMetadata().apply {
+                    clearAllAttributes()
+
+                    if (settingsState.keepDateTime && !settingsState.isAlwaysClearExif) {
+                        readMetadata(originalUri.toString()).makeLog("srcMetadata")
+                            ?.copyTo(
+                                metadata = this,
+                                tags = MetadataTag.dateEntries
+                            )
+                    } else {
+                        saveAttributes()
+                    }
+                }
+            }.makeLog("metadataCleared")
+        }
+    }
+
+    private fun openFileDescriptor(
+        imageUri: Uri
+    ) = context.openFileDescriptor(
+        uri = imageUri.tryExtractOriginal(),
+        mode = FileMode.ReadWrite
+    )
 }

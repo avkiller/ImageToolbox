@@ -35,6 +35,7 @@ import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
@@ -45,11 +46,14 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.image_cutting.domain.CutParams
 import com.t8rin.imagetoolbox.image_cutting.domain.ImageCutter
+import com.t8rin.imagetoolbox.image_cutting.presentation.screenLogic.ImageCutterComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -66,8 +70,12 @@ class ImageCutterComponent @AssistedInject internal constructor(
     private val shareProvider: ImageShareProvider<Bitmap>,
     private val imageCutter: ImageCutter<Bitmap>,
     private val imagePreviewCreator: ImagePreviewCreator<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
@@ -97,14 +105,23 @@ class ImageCutterComponent @AssistedInject internal constructor(
     val params by _params
 
     fun updateParams(cutParams: CutParams) {
-        _params.update { cutParams }
-        registerChanges()
+        if (_params.value != cutParams) {
+            beginPendingHistoryTransaction()
+            _params.update { cutParams }
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun updateUris(uris: List<Uri>?) {
+        clearHistory()
+        registerChangesCleared()
         _uris.value = null
         _uris.value = uris
         _selectedUri.value = uris?.firstOrNull()
+        if (!uris.isNullOrEmpty()) {
+            resetHistory()
+        }
     }
 
     fun updateUrisSilently(removedUri: Uri) {
@@ -133,15 +150,25 @@ class ImageCutterComponent @AssistedInject internal constructor(
 
     fun setQuality(quality: Quality) {
         if (_quality.value != quality) {
+            beginPendingHistoryTransaction()
             _quality.value = quality
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
     fun setImageFormat(imageFormat: ImageFormat) {
         if (_imageFormat.value != imageFormat) {
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
             _imageFormat.value = imageFormat
             registerChanges()
+            schedulePendingHistoryCommit()
         }
     }
 
@@ -150,8 +177,7 @@ class ImageCutterComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onComplete: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.value = true
@@ -199,7 +225,7 @@ class ImageCutterComponent @AssistedInject internal constructor(
                     total = uris.orEmpty().size
                 )
             }
-            onComplete(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
@@ -208,7 +234,7 @@ class ImageCutterComponent @AssistedInject internal constructor(
         _selectedUri.value = uri
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         savingJob = trackProgress {
             _isSaving.value = true
             shareProvider.shareImages(
@@ -226,7 +252,7 @@ class ImageCutterComponent @AssistedInject internal constructor(
                 },
                 onProgressChange = {
                     if (it == -1) {
-                        onComplete()
+                        AppToastHost.showConfetti()
                         _isSaving.value = false
                         _done.value = 0
                     } else {
@@ -354,6 +380,33 @@ class ImageCutterComponent @AssistedInject internal constructor(
                 onGetByteCount = {}
             ) ?: image
         }.toCoil()
+    )
+
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        params = params,
+        imageFormat = imageFormat,
+        quality = quality,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _params.update { snapshot.params }
+        _imageFormat.update { snapshot.imageFormat }
+        _quality.update { snapshot.quality }
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+    }
+
+    data class HistorySnapshot(
+        val params: CutParams = CutParams.Default,
+        val imageFormat: ImageFormat = ImageFormat.Default,
+        val quality: Quality = Quality.Base(100),
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
     )
 
     @AssistedFactory

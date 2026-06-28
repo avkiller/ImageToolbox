@@ -19,6 +19,7 @@
 
 package com.t8rin.imagetoolbox.feature.erase_background.presentation.components
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BlurMaskFilter
 import android.graphics.PorterDuff
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
@@ -77,6 +79,7 @@ import com.t8rin.imagetoolbox.feature.draw.presentation.components.utils.remembe
 import kotlinx.coroutines.launch
 import net.engawapg.lib.zoomable.rememberZoomState
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun BitmapEraser(
     imageBitmap: ImageBitmap,
@@ -210,7 +213,7 @@ fun BitmapEraser(
                             strokeJoin = StrokeJoin.Round
                         }
                         isAntiAlias = true
-                    }.asFrameworkPaint().apply {
+                    }.nativePaint.apply {
                         if (brushSoftness.value > 0f) maskFilter =
                             BlurMaskFilter(
                                 brushSoftness.toPx(canvasSize),
@@ -236,7 +239,7 @@ fun BitmapEraser(
                         paint = imagePaint
                     )
 
-                    paths.forEach { (nonScaledPath, stroke, radius, _, isRecoveryOn, _, size, mode) ->
+                    paths.forEach { (nonScaledPath, stroke, radius, _, isRecoveryOn, _, size, drawPathMode) ->
                         val path by remember(nonScaledPath, size, canvasSize) {
                             derivedStateOf {
                                 nonScaledPath.scaleToFitCanvas(
@@ -246,7 +249,7 @@ fun BitmapEraser(
                             }
                         }
                         val paint by remember(
-                            mode,
+                            drawPathMode,
                             isRecoveryOn,
                             shaderBitmap,
                             stroke,
@@ -255,7 +258,7 @@ fun BitmapEraser(
                         ) {
                             derivedStateOf {
                                 Paint().apply {
-                                    style = if (mode.isFilled) {
+                                    style = if (drawPathMode.isFilled) {
                                         PaintingStyle.Fill
                                     } else PaintingStyle.Stroke
                                     blendMode = if (isRecoveryOn) blendMode else BlendMode.Clear
@@ -265,20 +268,19 @@ fun BitmapEraser(
                                         strokeWidth = stroke,
                                         canvasSize = canvasSize
                                     )
-                                    if (mode.isSharpEdge) {
+                                    if (drawPathMode.isSharpEdge) {
                                         strokeCap = StrokeCap.Square
                                     } else {
                                         strokeCap = StrokeCap.Round
                                         strokeJoin = StrokeJoin.Round
                                     }
                                     isAntiAlias = true
-                                }.asFrameworkPaint().apply {
+                                }.nativePaint.apply {
                                     if (radius.value > 0f) {
-                                        maskFilter =
-                                            BlurMaskFilter(
-                                                radius.toPx(canvasSize),
-                                                BlurMaskFilter.Blur.NORMAL
-                                            )
+                                        maskFilter = BlurMaskFilter(
+                                            radius.toPx(canvasSize),
+                                            BlurMaskFilter.Blur.NORMAL
+                                        )
                                     }
                                 }
                             }
@@ -390,6 +392,7 @@ fun BitmapEraser(
                 onUpdateDrawDownPosition = { drawDownPosition = it },
                 drawEnabled = !panEnabled,
                 helperGridParams = helperGridParams,
+                drawBitmapBorder = settingsState.drawBitmapBorder,
                 beforeHelperGridModifier = Modifier.drawBehind {
                     if (originalImagePreviewAlpha != 0f) {
                         drawContext.canvas.apply {

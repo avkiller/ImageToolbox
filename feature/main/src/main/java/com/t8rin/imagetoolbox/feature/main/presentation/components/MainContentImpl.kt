@@ -71,11 +71,14 @@ internal fun MainContentImpl(
     onToggleFavorite: (Screen) -> Unit,
     onShowFeaturesFall: () -> Unit,
     onTryGetUpdate: () -> Unit,
-    isUpdateAvailable: Boolean
+    isUpdateAvailable: Boolean,
+    lastUsedTools: List<UiLastUsedTool>
 ) {
     val settingsState = LocalSettingsState.current
 
     var selectedNavigationItem by rememberSaveable { mutableIntStateOf(0) }
+    val showFavoriteTabInGroupedMode =
+        settingsState.groupOptionsByTypes && settingsState.showFavoriteToolsInGroupedMode
     val canSearchScreens = settingsState.screensSearchEnabled
     var showScreenSearch by rememberSaveable(canSearchScreens) { mutableStateOf(false) }
     var screenSearchKeyword by rememberSaveable(canSearchScreens) { mutableStateOf("") }
@@ -84,6 +87,23 @@ internal fun MainContentImpl(
         selectedNavigationItem = selectedNavigationItem,
         showScreenSearch = showScreenSearch
     )
+
+    LaunchedEffect(
+        settingsState.groupOptionsByTypes,
+        showFavoriteTabInGroupedMode,
+        settingsState.showFavoriteAsLast,
+        selectedNavigationItem
+    ) {
+        val lastNavigationIndex = when {
+            showFavoriteTabInGroupedMode -> Screen.typedEntries.size
+            settingsState.groupOptionsByTypes -> Screen.typedEntries.lastIndex
+            else -> 1
+        }
+
+        if (selectedNavigationItem > lastNavigationIndex) {
+            selectedNavigationItem = lastNavigationIndex
+        }
+    }
 
     LocalLayoutDirection.ProvidesValue(layoutDirection) {
         val snowfallMode = settingsState.snowfallMode
@@ -124,6 +144,7 @@ internal fun MainContentImpl(
                     EnhancedTopAppBarType.Large
                 },
                 modifier = Modifier.realisticSnowfall(
+                    color = MaterialTheme.colorScheme.primary,
                     enabled = showSnowfall
                 )
             )
@@ -160,17 +181,29 @@ internal fun MainContentImpl(
                     exit = fadeOut() + shrinkVertically()
                 ) {
                     AnimatedContent(
-                        targetState = settingsState.groupOptionsByTypes to (showScreenSearch && canSearchScreens),
+                        targetState = Triple(
+                            first = settingsState.groupOptionsByTypes,
+                            second = showFavoriteTabInGroupedMode,
+                            third = Pair(
+                                settingsState.showFavoriteAsLast,
+                                showScreenSearch && canSearchScreens
+                            )
+                        ),
                         transitionSpec = { fadeIn() togetherWith fadeOut() }
-                    ) { (groupOptionsByTypes, searching) ->
+                    ) { (groupOptionsByTypes, showFavorite, favoriteState) ->
+                        val (showFavoriteAsLast, searching) = favoriteState
+
                         if (groupOptionsByTypes && !searching) {
                             MainNavigationBar(
                                 selectedIndex = selectedNavigationItem,
+                                showFavorite = showFavorite,
+                                showFavoriteAsLast = showFavoriteAsLast,
                                 onValueChange = { selectedNavigationItem = it }
                             )
                         } else if (!searching) {
                             MainNavigationBarForFavorites(
                                 selectedIndex = selectedNavigationItem,
+                                showFavoriteAsLast = showFavoriteAsLast,
                                 onValueChange = { selectedNavigationItem = it }
                             )
                         } else {
@@ -205,20 +238,32 @@ internal fun MainContentImpl(
                     enter = fadeIn() + expandHorizontally(),
                     exit = fadeOut() + shrinkHorizontally()
                 ) {
-                    if (settingsState.groupOptionsByTypes) {
-                        MainNavigationRail(
-                            selectedIndex = selectedNavigationItem,
-                            onValueChange = {
-                                selectedNavigationItem = it
-                            }
-                        )
-                    } else {
-                        MainNavigationRailForFavorites(
-                            selectedIndex = selectedNavigationItem,
-                            onValueChange = {
-                                selectedNavigationItem = it
-                            }
-                        )
+                    AnimatedContent(
+                        targetState = Triple(
+                            first = settingsState.groupOptionsByTypes,
+                            second = showFavoriteTabInGroupedMode,
+                            third = settingsState.showFavoriteAsLast
+                        ),
+                        transitionSpec = { fadeIn() togetherWith fadeOut() }
+                    ) { (groupOptionsByTypes, showFavorite, showFavoriteAsLast) ->
+                        if (groupOptionsByTypes) {
+                            MainNavigationRail(
+                                selectedIndex = selectedNavigationItem,
+                                showFavorite = showFavorite,
+                                showFavoriteAsLast = showFavoriteAsLast,
+                                onValueChange = {
+                                    selectedNavigationItem = it
+                                }
+                            )
+                        } else {
+                            MainNavigationRailForFavorites(
+                                selectedIndex = selectedNavigationItem,
+                                showFavoriteAsLast = showFavoriteAsLast,
+                                onValueChange = {
+                                    selectedNavigationItem = it
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -235,7 +280,8 @@ internal fun MainContentImpl(
                     onGetClipList = onGetClipList,
                     onNavigateToScreenWithPopUpTo = onNavigate,
                     onNavigationBarItemChange = { selectedNavigationItem = it },
-                    onToggleFavorite = onToggleFavorite
+                    onToggleFavorite = onToggleFavorite,
+                    lastUsedTools = lastUsedTools
                 )
             }
         }

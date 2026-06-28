@@ -30,7 +30,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ImageShareProvider
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
@@ -63,9 +62,12 @@ class WatermarkPdfToolComponent @AssistedInject internal constructor(
     private val _uri: MutableState<Uri?> = mutableStateOf(initialUri)
     val uri by _uri
 
-    private val _watermarkText: MutableState<String> =
-        mutableStateOf("Watermark")
-    val watermarkText by _watermarkText
+    init {
+        checkPdf(
+            uri = initialUri,
+            onDecrypted = { _uri.value = it }
+        )
+    }
 
     private val _params: MutableState<PdfWatermarkParams> =
         mutableStateOf(PdfWatermarkParams(color = Color.Gray.toArgb()))
@@ -96,35 +98,25 @@ class WatermarkPdfToolComponent @AssistedInject internal constructor(
         )
     }
 
-    fun updateWatermarkText(text: String) {
-        registerChanges()
-        _watermarkText.update { text }
-    }
-
     fun updateParams(params: PdfWatermarkParams) {
         registerChanges()
         _params.update { params }
     }
 
     override fun saveTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
+        uri: Uri
     ) {
-        doSaving(
-            action = {
-                val processed = pdfManager.addWatermark(
-                    uri = _uri.value.toString(),
-                    watermarkText = watermarkText,
-                    params = params
-                )
+        doSaving {
+            val processed = pdfManager.addWatermark(
+                uri = _uri.value.toString(),
+                params = params
+            )
 
-                fileController.transferBytes(
-                    fromUri = processed,
-                    toUri = uri.toString()
-                ).onSuccess(::registerSave)
-            },
-            onResult = onResult
-        )
+            fileController.transferBytes(
+                fromUri = processed,
+                toUri = uri.toString()
+            ).onSuccess(::registerSave)
+        }
     }
 
     override fun performSharing(
@@ -151,7 +143,6 @@ class WatermarkPdfToolComponent @AssistedInject internal constructor(
                     listOf(
                         pdfManager.addWatermark(
                             uri = _uri.value.toString(),
-                            watermarkText = watermarkText,
                             params = params
                         ).toUri()
                     )

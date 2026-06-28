@@ -17,6 +17,7 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.enhanced
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativePaint
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
@@ -49,6 +58,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ProvidesValue
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
 import kotlinx.coroutines.delay
@@ -62,7 +72,6 @@ fun EnhancedToggleButton(
     enabled: Boolean = true,
     shapes: ToggleButtonShapes = ToggleButtonDefaults.shapesFor(ButtonDefaults.MinHeight),
     colors: ToggleButtonColors = ToggleButtonDefaults.toggleButtonColors(),
-    elevation: Dp = 0.dp,
     border: BorderStroke? = null,
     contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
     interactionSource: MutableInteractionSource? = null,
@@ -80,8 +89,17 @@ fun EnhancedToggleButton(
 
     val haptics = LocalHapticFeedback.current
     val focus = LocalFocusManager.current
+    val settingsState = LocalSettingsState.current
 
     val scope = rememberCoroutineScope()
+
+    val shadowElevation = animateDpAsState(
+        if (settingsState.borderWidth > 0.dp || !enabled || !settingsState.drawButtonShadows) {
+            0.dp
+        } else {
+            0.5.dp
+        }
+    ).value
 
     LocalMinimumInteractiveComponentSize.ProvidesValue(Dp.Unspecified) {
         Surface(
@@ -95,12 +113,17 @@ fun EnhancedToggleButton(
                     focus.clearFocus()
                 }
             },
-            modifier = modifier.semantics { role = Role.Checkbox },
+            modifier = modifier
+                .toggleButtonShadow(
+                    shape = buttonShape,
+                    elevation = shadowElevation
+                )
+                .semantics { role = Role.Checkbox },
             enabled = enabled,
             shape = buttonShape,
             color = containerColor,
             contentColor = contentColor,
-            shadowElevation = elevation,
+            shadowElevation = 0.dp,
             border = border,
             interactionSource = realInteractionSource
         ) {
@@ -118,6 +141,42 @@ fun EnhancedToggleButton(
                     verticalAlignment = Alignment.CenterVertically,
                     content = content
                 )
+            }
+        }
+    }
+}
+
+private fun Modifier.toggleButtonShadow(
+    shape: Shape,
+    elevation: Dp
+) = this then if (elevation <= 0.dp) {
+    Modifier
+} else {
+    Modifier.drawWithCache {
+        val shadowColor = Color.Black.copy(alpha = 0.18f).toArgb()
+        val transparentColor = Color.Transparent.toArgb()
+        val outline = shape.createOutline(size, layoutDirection, this)
+        val path = Path().apply {
+            when (outline) {
+                is Outline.Rectangle -> addRect(outline.rect)
+                is Outline.Rounded -> addRoundRect(outline.roundRect)
+                is Outline.Generic -> addPath(outline.path)
+            }
+        }
+        val radius = elevation.toPx()
+        val paint = Paint().apply {
+            nativePaint.color = transparentColor
+            nativePaint.setShadowLayer(
+                radius * 1f,
+                0f,
+                radius * 0.9f,
+                shadowColor
+            )
+        }
+
+        onDrawBehind {
+            drawIntoCanvas {
+                it.drawPath(path, paint)
             }
         }
     }

@@ -18,17 +18,15 @@
 package com.t8rin.imagetoolbox.core.ui.widget.buttons
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
@@ -39,7 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Circle
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.theme.suggestContainerColorBy
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -51,14 +54,16 @@ fun MediaCheckBox(
     isChecked: Boolean,
     selectionIndex: Int = -1,
     onCheck: (() -> Unit)? = null,
-    checkedIcon: ImageVector = Icons.Filled.CheckCircle,
+    checkedIcon: ImageVector = Icons.Rounded.CheckCircle,
     checkedColor: Color = MaterialTheme.colorScheme.primary,
     uncheckedColor: Color = MaterialTheme.colorScheme.onSurface,
     addContainer: Boolean = false
 ) {
     val image = if (isChecked) {
         checkedIcon
-    } else Icons.Outlined.Circle
+    } else {
+        Icons.Outlined.Circle
+    }
     val color by animateColorAsState(
         if (isChecked) checkedColor
         else uncheckedColor
@@ -75,7 +80,7 @@ fun MediaCheckBox(
             AnimatedContent(
                 targetState = image,
                 transitionSpec = {
-                    fadeIn() togetherWith fadeOut()
+                    fadeIn() + scaleIn() togetherWith fadeOut() + scaleOut()
                 }
             ) { icon ->
                 Icon(
@@ -89,7 +94,13 @@ fun MediaCheckBox(
         AnimatedContent(
             targetState = Triple(isChecked, image, selectionIndex),
             transitionSpec = {
-                fadeIn() togetherWith fadeOut()
+                if (initialState.third >= 0 && targetState.third >= 0) {
+                    fadeIn() + scaleIn(initialScale = 0.85f) togetherWith fadeOut() + scaleOut(
+                        targetScale = 0.85f
+                    )
+                } else {
+                    fadeIn() + scaleIn() togetherWith fadeOut() + scaleOut()
+                }
             }
         ) { (isChecked, image, selectionIndex) ->
             if (selectionIndex >= 0) {
@@ -105,7 +116,8 @@ fun MediaCheckBox(
                         AutoSizeText(
                             text = (selectionIndex + 1).toString(),
                             color = contentColorFor(color),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 } else {

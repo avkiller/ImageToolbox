@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package com.t8rin.imagetoolbox.feature.markup_layers.presentation.components
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -38,10 +39,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -49,30 +49,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.utils.roundTo
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.Build
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.StackSticky
+import com.t8rin.imagetoolbox.core.resources.icons.StackStickyOff
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSlider
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.tappable
-import com.t8rin.imagetoolbox.feature.markup_layers.presentation.components.model.UiMarkupLayer
+import com.t8rin.imagetoolbox.feature.markup_layers.presentation.components.model.uiCornerRadiusPercent
+import com.t8rin.imagetoolbox.feature.markup_layers.presentation.screenLogic.MarkupLayersComponent
 import com.t8rin.modalsheet.FullscreenPopup
 
 @Composable
 internal fun MarkupLayersSideMenu(
+    component: MarkupLayersComponent,
     visible: Boolean,
     onDismiss: () -> Unit,
     isContextOptionsVisible: Boolean,
-    onContextOptionsVisibleChange: (Boolean) -> Unit,
-    onRemoveLayer: (UiMarkupLayer) -> Unit,
-    onReorderLayers: (List<UiMarkupLayer>) -> Unit,
-    onActivateLayer: (UiMarkupLayer) -> Unit,
-    onCopyLayer: (UiMarkupLayer) -> Unit,
-    layers: List<UiMarkupLayer>
+    onContextOptionsVisibleChange: (Boolean) -> Unit
 ) {
+    val layers = component.layers
+
     FullscreenPopup {
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
@@ -80,6 +84,7 @@ internal fun MarkupLayersSideMenu(
         ) {
             if (visible) {
                 BackHandler(onBack = onDismiss)
+
                 Box(
                     Modifier
                         .fillMaxSize()
@@ -120,82 +125,266 @@ internal fun MarkupLayersSideMenu(
                                 layers.find { it.state.isActive }
                             }
                         }
-                        Column(
-                            modifier = Modifier.container(
-                                shape = RectangleShape,
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh
-                            )
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                EnhancedIconButton(
-                                    onClick = {
-                                        activeLayer?.let(onRemoveLayer)
-                                    },
-                                    enabled = activeLayer != null
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Delete,
-                                        contentDescription = null
-                                    )
-                                }
-                                Spacer(Modifier.weight(1f))
-                                Box {
-                                    EnhancedIconButton(
-                                        onClick = {
-                                            onContextOptionsVisibleChange(true)
-                                        },
-                                        enabled = activeLayer != null
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Build,
-                                            contentDescription = null
-                                        )
-                                    }
-                                    MarkupLayersContextActions(
-                                        visible = isContextOptionsVisible && activeLayer != null,
-                                        onDismiss = { onContextOptionsVisibleChange(false) },
-                                        onCopyLayer = {
-                                            activeLayer?.let(onCopyLayer)
-                                        },
-                                        onToggleEditMode = {
-                                            activeLayer?.state?.isInEditMode = true
-                                        },
-                                        onRemoveLayer = {
-                                            activeLayer?.let(onRemoveLayer)
-                                        },
-                                        onActivateLayer = {
-                                            activeLayer?.state?.isActive = false
-                                        },
-                                        rotationDegrees = activeLayer?.state?.rotation?.roundTo(1),
-                                        onRotationDegreesChange = {
-                                            activeLayer?.state?.rotation = it.roundTo(1)
-                                        }
+                        val normalizedPosition by remember(activeLayer) {
+                            derivedStateOf {
+                                activeLayer?.let { layer ->
+                                    layer.state.normalizedPosition(
+                                        cornerRadiusPercent = layer.uiCornerRadiusPercent()
                                     )
                                 }
                             }
-                            EnhancedSlider(
-                                value = activeLayer?.state?.alpha ?: 1f,
-                                enabled = activeLayer != null,
-                                onValueChange = {
-                                    activeLayer?.state?.alpha = it
+                        }
+                        val scale by remember(activeLayer) {
+                            derivedStateOf {
+                                activeLayer?.state?.scale?.roundTo(3)
+                            }
+                        }
+                        val normalizedRotationDegrees by remember(activeLayer) {
+                            derivedStateOf {
+                                activeLayer?.state?.rotation
+                                    ?.normalizeForUi()
+                                    ?.roundTo(1)
+                            }
+                        }
+                        Scaffold(
+                            topBar = {
+                                Column(
+                                    modifier = Modifier.container(
+                                        shape = RectangleShape,
+                                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                    )
+                                ) {
+                                    val showContextActions =
+                                        isContextOptionsVisible && (activeLayer != null || component.isGroupingSelectionMode)
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        EnhancedIconButton(
+                                            onClick = {
+                                                activeLayer?.let(component::removeLayer)
+                                            },
+                                            enabled = activeLayer != null && !component.isGroupingSelectionMode && !showContextActions
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Delete,
+                                                contentDescription = null
+                                            )
+                                        }
+
+                                        Spacer(Modifier.weight(1f))
+
+                                        AnimatedContent(
+                                            targetState = (component.groupingSelectionCount >= 2) to (activeLayer?.isGroup == true && !component.isGroupingSelectionMode)
+                                        ) { (canGroupLayers, canUngroupLayer) ->
+                                            if (canGroupLayers) {
+                                                EnhancedIconButton(
+                                                    onClick = component::groupSelectedLayers,
+                                                    enabled = !showContextActions
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.StackSticky,
+                                                        contentDescription = null
+                                                    )
+                                                }
+                                            } else if (canUngroupLayer) {
+                                                EnhancedIconButton(
+                                                    onClick = {
+                                                        activeLayer?.let(component::ungroupLayer)
+                                                    },
+                                                    enabled = !showContextActions
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.StackStickyOff,
+                                                        contentDescription = null
+                                                    )
+                                                }
+                                            } else {
+                                                Spacer(Modifier.height(48.dp))
+                                            }
+                                        }
+                                        Box {
+                                            EnhancedIconButton(
+                                                onClick = {
+                                                    onContextOptionsVisibleChange(true)
+                                                },
+                                                enabled = activeLayer != null || component.isGroupingSelectionMode
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Build,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                            MarkupLayersContextActions(
+                                                visible = showContextActions,
+                                                onDismiss = { onContextOptionsVisibleChange(false) },
+                                                onCopyLayer = {
+                                                    activeLayer?.let(component::copyLayer)
+                                                },
+                                                onToggleEditMode = {
+                                                    activeLayer
+                                                        ?.takeIf { !it.isLocked }
+                                                        ?.state
+                                                        ?.isInEditMode = true
+                                                },
+                                                onRemoveLayer = {
+                                                    activeLayer?.let(component::removeLayer)
+                                                },
+                                                onActivateLayer = {
+                                                    component.clearSelections()
+                                                },
+                                                isLayerLocked = activeLayer?.isLocked == true,
+                                                onToggleLayerLock = {
+                                                    activeLayer?.let(component::toggleLayerLock)
+                                                },
+                                                isGroupingSelectionMode = component.isGroupingSelectionMode,
+                                                groupingSelectionCount = component.groupingSelectionCount,
+                                                onFlipLayerHorizontally = {
+                                                    activeLayer?.let { layer ->
+                                                        component.updateLayerState(layer) {
+                                                            isFlippedHorizontally =
+                                                                !isFlippedHorizontally
+                                                        }
+                                                    }
+                                                },
+                                                onFlipLayerVertically = {
+                                                    activeLayer?.let { layer ->
+                                                        component.updateLayerState(layer) {
+                                                            isFlippedVertically =
+                                                                !isFlippedVertically
+                                                        }
+                                                    }
+                                                },
+                                                onAlignLayer = { x, y ->
+                                                    activeLayer?.let { layer ->
+                                                        component.setLayerNormalizedPosition(
+                                                            layer = layer,
+                                                            x = x,
+                                                            y = y
+                                                        )
+                                                    }
+                                                },
+                                                onMoveLayerBy = { dx, dy ->
+                                                    activeLayer?.let { layer ->
+                                                        component.moveLayerBy(
+                                                            layer = layer,
+                                                            offsetChange = Offset(dx, dy)
+                                                        )
+                                                    }
+                                                },
+                                                onResetLayerPosition = {
+                                                    activeLayer?.let(component::resetLayerPosition)
+                                                },
+                                                onNormalizedPositionXChange = { x ->
+                                                    activeLayer?.let { layer ->
+                                                        component.setLayerNormalizedPosition(
+                                                            layer = layer,
+                                                            x = x
+                                                        )
+                                                    }
+                                                },
+                                                onNormalizedPositionYChange = { y ->
+                                                    activeLayer?.let { layer ->
+                                                        component.setLayerNormalizedPosition(
+                                                            layer = layer,
+                                                            y = y
+                                                        )
+                                                    }
+                                                },
+                                                normalizedPositionX = normalizedPosition?.x,
+                                                normalizedPositionY = normalizedPosition?.y,
+                                                scale = scale,
+                                                onScaleChange = {
+                                                    component.beginHistoryTransaction()
+                                                    activeLayer?.let { layer ->
+                                                        component.setLayerScale(
+                                                            layer = layer,
+                                                            scale = it,
+                                                            commitToHistory = false
+                                                        )
+                                                    }
+                                                },
+                                                onScaleChangeFinished = {
+                                                    component.commitHistoryTransaction()
+                                                },
+                                                rotationDegrees = normalizedRotationDegrees,
+                                                onRotationDegreesChange = {
+                                                    component.beginHistoryTransaction()
+                                                    activeLayer?.let { layer ->
+                                                        component.updateLayerState(
+                                                            layer = layer,
+                                                            commitToHistory = false
+                                                        ) {
+                                                            rotation = it.roundTo(1)
+                                                        }
+                                                    }
+                                                },
+                                                onRotationDegreesChangeFinished = {
+                                                    component.commitHistoryTransaction()
+                                                }
+                                            )
+                                        }
+                                    }
+                                    EnhancedSlider(
+                                        value = activeLayer?.state?.alpha ?: 1f,
+                                        enabled = activeLayer != null &&
+                                                activeLayer?.isLocked != true &&
+                                                !component.isGroupingSelectionMode,
+                                        onValueChange = {
+                                            component.beginHistoryTransaction()
+                                            activeLayer?.let { layer ->
+                                                component.updateLayerState(
+                                                    layer = layer,
+                                                    commitToHistory = false
+                                                ) {
+                                                    alpha = it
+                                                }
+                                            }
+                                        },
+                                        onValueChangeFinished = component::commitHistoryTransaction,
+                                        valueRange = 0f..1f,
+                                        drawContainer = false,
+                                        modifier = Modifier.padding(horizontal = 8.dp)
+                                    )
+                                }
+                            },
+                            contentWindowInsets = WindowInsets(0)
+                        ) { contentPadding ->
+                            MarkupLayersSideMenuColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = contentPadding,
+                                layers = layers,
+                                onReorderLayers = component::reorderLayers,
+                                onActivateLayer = component::activateLayer,
+                                isGroupingSelectionMode = component.isGroupingSelectionMode,
+                                groupingSelectionIds = component.groupingSelectionIds,
+                                onStartGroupingSelection = component::startGroupingSelection,
+                                onToggleGroupingSelection = component::toggleGroupingSelection,
+                                onToggleLayerVisibility = { layer ->
+                                    component.updateLayerState(
+                                        layer = layer,
+                                        allowLocked = true
+                                    ) {
+                                        isVisible = !isVisible
+                                    }
                                 },
-                                valueRange = 0f..1f,
-                                drawContainer = false,
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                onUnlockLayer = component::toggleLayerLock
                             )
                         }
-                        MarkupLayersSideMenuColumn(
-                            modifier = Modifier.weight(1f),
-                            layers = layers,
-                            onReorderLayers = onReorderLayers,
-                            onActivateLayer = onActivateLayer
-                        )
                     }
                 }
             }
         }
+    }
+}
+
+private fun Float.normalizeForUi(): Float {
+    val normalized = this % 360f
+
+    return when {
+        normalized < 0f -> normalized + 360f
+        normalized == 0f && this > 0f -> 360f
+        else -> normalized
     }
 }

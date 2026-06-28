@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,14 +34,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,8 +53,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.domain.utils.tryAll
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.appSettingsIntent
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.isInstalledFromPlayStore
@@ -138,6 +138,9 @@ fun MediaPickerRootContentEmbeddable(
         }
     }
 
+    val albumsState by component.albumsState.collectAsStateWithLifecycle()
+    val mediaState by component.mediaState.collectAsStateWithLifecycle()
+
     val content: @Composable (PaddingValues) -> Unit = {
         AnimatedContent(
             targetState = isPermissionAllowed,
@@ -155,7 +158,9 @@ fun MediaPickerRootContentEmbeddable(
                         component = component,
                         isManagePermissionAllowed = isManagePermissionAllowed,
                         onRequestManagePermission = requestManagePermission,
-                        onPicked = onPicked
+                        onPicked = onPicked,
+                        albumsState = albumsState,
+                        mediaState = mediaState
                     )
                     LaunchedEffect(Unit) {
                         component.init(allowedMedia = allowedMedia)
@@ -224,7 +229,7 @@ fun MediaPickerRootContentEmbeddable(
                                 containerColor = Color.Transparent
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                    imageVector = Icons.Rounded.ArrowBack,
                                     contentDescription = stringResource(R.string.close)
                                 )
                             }
@@ -232,7 +237,7 @@ fun MediaPickerRootContentEmbeddable(
                         actions = {
                             TopAppBarEmoji()
                         },
-                        drawHorizontalStroke = component.albumsState.collectAsState().value.albums.size <= 1
+                        drawHorizontalStroke = albumsState.albums.size <= 1 && !(mediaState.isLoading && mediaState.media.isNotEmpty())
                     )
                 },
                 content = content

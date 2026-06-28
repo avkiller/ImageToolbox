@@ -20,7 +20,11 @@ package com.t8rin.imagetoolbox.core.data.di
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.t8rin.imagetoolbox.core.data.json.ImageFormatJsonAdapter
+import com.t8rin.imagetoolbox.core.data.json.ImageScaleModeJsonAdapter
 import com.t8rin.imagetoolbox.core.data.json.MoshiParser
+import com.t8rin.imagetoolbox.core.data.json.PresetJsonAdapter
+import com.t8rin.imagetoolbox.core.data.json.ResizeTypeJsonAdapter
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.json.JsonParser
 import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
@@ -52,6 +56,7 @@ internal interface JsonModule {
                     .withSubtype(Quality.Jxl::class.java, "jxl")
                     .withSubtype(Quality.Avif::class.java, "avif")
                     .withSubtype(Quality.PngLossy::class.java, "png")
+                    .withSubtype(Quality.PngQuant::class.java, "pngquant")
                     .withSubtype(Quality.Tiff::class.java, "tiff")
                     .withSubtype(Quality.Base::class.java, "base")
                     .withDefaultValue(Quality.Base())
@@ -62,6 +67,9 @@ internal interface JsonModule {
                     .withSubtype(ShapeType.Cut::class.java, "cut")
                     .withSubtype(ShapeType.Squircle::class.java, "squircle")
                     .withSubtype(ShapeType.Smooth::class.java, "smooth")
+                    .withSubtype(ShapeType.Wavy::class.java, "wavy")
+                    .withSubtype(ShapeType.Scoop::class.java, "scoop")
+                    .withSubtype(ShapeType.Notch::class.java, "notch")
                     .withDefaultValue(ShapeType.Rounded())
             )
             .add(
@@ -72,6 +80,10 @@ internal interface JsonModule {
                     .withSubtype(FilenameBehavior.Random::class.java, "random")
                     .withDefaultValue(FilenameBehavior.None())
             )
+            .add(ImageFormatJsonAdapter())
+            .add(PresetJsonAdapter())
+            .add(ResizeTypeJsonAdapter())
+            .add(ImageScaleModeJsonAdapter())
             .addLast(KotlinJsonAdapterFactory())
             .build()
 

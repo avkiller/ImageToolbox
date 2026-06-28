@@ -26,9 +26,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.takePersistablePermission
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -55,8 +56,9 @@ private data class FolderPickerImpl(
 
 @Stable
 @Immutable
-interface FolderPicker {
+interface FolderPicker : ResultLauncher {
     fun pickFolder(initialLocation: Uri? = null)
+    override fun launch() = pickFolder()
 }
 
 @Composable
@@ -64,11 +66,11 @@ fun rememberFolderPicker(
     onFailure: () -> Unit = {},
     onSuccess: (Uri) -> Unit,
 ): FolderPicker {
-    val essentials = rememberLocalEssentials()
+    val scope = rememberCoroutineScope()
     val openDocumentTree = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree(),
         onResult = { uri ->
-            essentials.launch {
+            scope.launch {
                 delay(300)
                 uri?.takeIf {
                     it != Uri.EMPTY
@@ -85,7 +87,7 @@ fun rememberFolderPicker(
                 openDocumentTree = openDocumentTree,
                 onFailure = {
                     onFailure()
-                    essentials.handleFileSystemFailure(it)
+                    AppToastHost.handleFileSystemFailure(it)
                 }
             )
         }

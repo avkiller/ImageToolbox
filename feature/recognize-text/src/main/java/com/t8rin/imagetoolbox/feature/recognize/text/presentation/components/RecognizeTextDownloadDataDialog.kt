@@ -17,8 +17,6 @@
 
 package com.t8rin.imagetoolbox.feature.recognize.text.presentation.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.SignalCellularConnectedNoInternet0Bar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -26,25 +24,55 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.t8rin.imagetoolbox.core.domain.utils.humanFileSize
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.resources.icons.WifiTetheringError
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.other.ToastDuration
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionType
 import com.t8rin.imagetoolbox.feature.recognize.text.presentation.screenLogic.RecognizeTextComponent
 
 @Composable
 internal fun RecognizeTextDownloadDataDialog(component: RecognizeTextComponent) {
-    val essentials = rememberLocalEssentials()
+    val downloadDialogData = component.downloadDialogData
 
-    val showConfetti: () -> Unit = essentials::showConfetti
-
-    val startRecognition = {
-        component.startRecognition(
-            onFailure = essentials::showFailureToast
+    if (component.showPaddleDownloadDialog) {
+        var progress by rememberSaveable(Unit) {
+            mutableFloatStateOf(0f)
+        }
+        var dataRemaining by rememberSaveable(Unit) {
+            mutableStateOf("")
+        }
+        DownloadLanguageDialog(
+            title = R.string.paddle_ocr,
+            description = R.string.download_paddle_ocr_description,
+            descriptionArgs = arrayOf(component.paddleOCRModel.englishName),
+            onDownloadRequest = {
+                component.downloadPaddleData(
+                    onProgress = { (p, size) ->
+                        dataRemaining = humanFileSize(size)
+                        progress = p
+                    },
+                    onComplete = {
+                        AppToastHost.showConfetti()
+                        component.startRecognition()
+                    }
+                )
+            },
+            downloadProgress = progress,
+            dataRemaining = dataRemaining,
+            onNoConnection = {
+                component.clearPaddleDownloadDialog()
+                AppToastHost.showToast(
+                    message = getString(R.string.no_connection),
+                    icon = Icons.Rounded.WifiTetheringError,
+                    duration = ToastDuration.Long
+                )
+            },
+            onDismiss = component::clearPaddleDownloadDialog
         )
     }
-
-    val downloadDialogData = component.downloadDialogData
 
     if (downloadDialogData.isNotEmpty()) {
         var progress by rememberSaveable(downloadDialogData) {
@@ -66,8 +94,8 @@ internal fun RecognizeTextDownloadDataDialog(component: RecognizeTextComponent) 
                     },
                     onComplete = {
                         component.clearDownloadDialogData()
-                        showConfetti()
-                        startRecognition()
+                        AppToastHost.showConfetti()
+                        component.startRecognition()
                     }
                 )
             },
@@ -75,9 +103,9 @@ internal fun RecognizeTextDownloadDataDialog(component: RecognizeTextComponent) 
             dataRemaining = dataRemaining,
             onNoConnection = {
                 component.clearDownloadDialogData()
-                essentials.showToast(
-                    message = essentials.getString(R.string.no_connection),
-                    icon = Icons.Outlined.SignalCellularConnectedNoInternet0Bar,
+                AppToastHost.showToast(
+                    message = getString(R.string.no_connection),
+                    icon = Icons.Rounded.WifiTetheringError,
                     duration = ToastDuration.Long
                 )
             },

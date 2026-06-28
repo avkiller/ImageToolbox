@@ -52,12 +52,8 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ContentPasteOff
-import androidx.compose.material.icons.rounded.BookmarkBorder
-import androidx.compose.material.icons.rounded.ContentPaste
-import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -75,15 +71,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
 import com.t8rin.imagetoolbox.core.resources.icons.BookmarkOff
 import com.t8rin.imagetoolbox.core.resources.icons.BookmarkRemove
+import com.t8rin.imagetoolbox.core.resources.icons.ContentPaste
+import com.t8rin.imagetoolbox.core.resources.icons.ContentPasteOff
 import com.t8rin.imagetoolbox.core.resources.icons.LayersSearchOutline
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.clipList
 import com.t8rin.imagetoolbox.core.ui.utils.helper.rememberClipboardData
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBadge
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
@@ -93,6 +94,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.other.BoxAnimatedVisibility
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemOverload
+import com.t8rin.imagetoolbox.core.utils.getString
 
 @Composable
 internal fun RowScope.ScreenPreferenceSelection(
@@ -107,14 +109,16 @@ internal fun RowScope.ScreenPreferenceSelection(
     onChangeShowScreenSearch: (Boolean) -> Unit,
     onToggleFavorite: (Screen) -> Unit,
     showNavRail: Boolean,
+    lastUsedTools: List<UiLastUsedTool>
 ) {
-    val essentials = rememberLocalEssentials()
     val settingsState = LocalSettingsState.current
     val cutout = WindowInsets.displayCutout.asPaddingValues()
     val canSearchScreens = settingsState.screensSearchEnabled
     val isSearching =
         showScreenSearch && screenSearchKeyword.isNotEmpty() && canSearchScreens
     val isScreenSelectionLauncherMode = settingsState.isScreenSelectionLauncherMode
+    val showFavoriteControls =
+        !settingsState.groupOptionsByTypes || settingsState.showFavoriteToolsInGroupedMode
 
     AnimatedContent(
         modifier = Modifier
@@ -191,7 +195,8 @@ internal fun RowScope.ScreenPreferenceSelection(
                             screenList = currentScreenList,
                             onNavigateToScreenWithPopUpTo = onNavigateToScreenWithPopUpTo,
                             contentPadding = contentPadding,
-                            onToggleFavorite = onToggleFavorite
+                            onToggleFavorite = onToggleFavorite,
+                            lastUsedTools = lastUsedTools
                         )
                     } else {
                         LazyVerticalStaggeredGrid(
@@ -206,6 +211,18 @@ internal fun RowScope.ScreenPreferenceSelection(
                             contentPadding = contentPadding,
                             flingBehavior = enhancedFlingBehavior(),
                             content = {
+                                if (lastUsedTools.isNotEmpty()) {
+                                    item(
+                                        key = "lastUsedTools",
+                                        span = StaggeredGridItemSpan.FullLine
+                                    ) {
+                                        LastUsedToolsCard(
+                                            tools = lastUsedTools,
+                                            onNavigate = onNavigateToScreenWithPopUpTo,
+                                            modifier = Modifier.animateItem()
+                                        )
+                                    }
+                                }
                                 items(currentScreenList) { screen ->
                                     PreferenceItemOverload(
                                         onClick = {
@@ -236,8 +253,8 @@ internal fun RowScope.ScreenPreferenceSelection(
                                                     content = {
                                                         Text(stringResource(R.string.beta))
                                                     },
-                                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                                    contentColor = MaterialTheme.colorScheme.onTertiary
+                                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                                    contentColor = MaterialTheme.colorScheme.onSecondary
                                                 )
                                             }
                                         },
@@ -246,7 +263,7 @@ internal fun RowScope.ScreenPreferenceSelection(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
-                                                if (!settingsState.groupOptionsByTypes) {
+                                                if (showFavoriteControls) {
                                                     EnhancedIconButton(
                                                         onClick = {
                                                             onToggleFavorite(screen)
@@ -275,7 +292,7 @@ internal fun RowScope.ScreenPreferenceSelection(
                                                             val icon by remember(isInFavorite) {
                                                                 derivedStateOf {
                                                                     if (isInFavorite) Icons.Rounded.BookmarkRemove
-                                                                    else Icons.Rounded.BookmarkBorder
+                                                                    else Icons.Outlined.Bookmark
                                                                 }
                                                             }
                                                             Icon(
@@ -344,9 +361,9 @@ internal fun RowScope.ScreenPreferenceSelection(
                                 if (!allowAutoPaste) {
                                     val list = clipboardManager.clipList()
                                     if (list.isEmpty()) {
-                                        essentials.showToast(
-                                            message = essentials.getString(R.string.clipboard_paste_invalid_empty),
-                                            icon = Icons.Outlined.ContentPasteOff
+                                        AppToastHost.showToast(
+                                            message = getString(R.string.clipboard_paste_invalid_empty),
+                                            icon = Icons.Rounded.ContentPasteOff
                                         )
                                     } else onGetClipList(list)
                                 } else onGetClipList(clipboardData)
@@ -428,7 +445,14 @@ internal fun RowScope.ScreenPreferenceSelection(
                     Spacer(Modifier.height(16.dp))
                     EnhancedButton(
                         onClick = {
-                            onNavigationBarItemChange(1)
+                            onNavigationBarItemChange(
+                                when {
+                                    settingsState.groupOptionsByTypes && !settingsState.showFavoriteAsLast -> 1
+                                    settingsState.groupOptionsByTypes -> 0
+                                    settingsState.showFavoriteAsLast -> 0
+                                    else -> 1
+                                }
+                            )
                         }
                     ) {
                         Text(stringResource(R.string.add_favorites))
@@ -454,7 +478,7 @@ internal fun RowScope.ScreenPreferenceSelection(
                         )
                     )
                     Icon(
-                        imageVector = Icons.Rounded.SearchOff,
+                        imageVector = Icons.Outlined.SearchOff,
                         contentDescription = null,
                         modifier = Modifier
                             .weight(2f)

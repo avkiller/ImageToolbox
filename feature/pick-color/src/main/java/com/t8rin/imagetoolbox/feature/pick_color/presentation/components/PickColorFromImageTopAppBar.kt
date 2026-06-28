@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.t8rin.imagetoolbox.feature.pick_color.presentation.components
 
 import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -40,8 +39,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -59,12 +56,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.colordetector.parser.ColorNameParser
+import com.t8rin.colors.parser.ColorNameParser
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.toHex
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBar
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedTopAppBarType
@@ -83,10 +82,9 @@ internal fun PickColorFromImageTopAppBar(
     isPortrait: Boolean,
     magnifierButton: @Composable () -> Unit,
     color: Color,
+    onCopyColorRequest: () -> Unit,
 ) {
     val settingsState = LocalSettingsState.current
-
-    val essentials = rememberLocalEssentials()
 
     AnimatedContent(
         modifier = Modifier.drawHorizontalStroke(),
@@ -103,7 +101,7 @@ internal fun PickColorFromImageTopAppBar(
                         onClick = onGoBack
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = Icons.Rounded.ArrowBack,
                             contentDescription = stringResource(R.string.exit)
                         )
                     }
@@ -143,7 +141,7 @@ internal fun PickColorFromImageTopAppBar(
                                     modifier = Modifier.statusBarsPadding()
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit)
                                     )
                                 }
@@ -174,12 +172,7 @@ internal fun PickColorFromImageTopAppBar(
                                             modifier = Modifier
                                                 .padding(horizontal = 8.dp)
                                                 .clip(ShapeDefaults.mini)
-                                                .hapticsClickable {
-                                                    essentials.copyToClipboard(
-                                                        text = color.toHex(),
-                                                        message = R.string.color_copied
-                                                    )
-                                                }
+                                                .hapticsClickable(onClick = onCopyColorRequest)
                                                 .background(MaterialTheme.colorScheme.secondaryContainer)
                                                 .border(
                                                     width = settingsState.borderWidth,
@@ -227,12 +220,7 @@ internal fun PickColorFromImageTopAppBar(
                                                     shape = ShapeDefaults.small
                                                 )
                                                 .clip(ShapeDefaults.small)
-                                                .hapticsClickable {
-                                                    essentials.copyToClipboard(
-                                                        text = color.toHex(),
-                                                        message = R.string.color_copied
-                                                    )
-                                                }
+                                                .hapticsClickable(onClick = onCopyColorRequest)
                                         )
                                     }
                                 }
@@ -261,12 +249,7 @@ internal fun PickColorFromImageTopAppBar(
                                         modifier = Modifier
                                             .padding(horizontal = 8.dp)
                                             .clip(ShapeDefaults.mini)
-                                            .hapticsClickable {
-                                                essentials.copyToClipboard(
-                                                    text = color.toHex(),
-                                                    message = R.string.color_copied
-                                                )
-                                            }
+                                            .hapticsClickable(onClick = onCopyColorRequest)
                                             .background(MaterialTheme.colorScheme.secondaryContainer)
                                             .border(
                                                 width = settingsState.borderWidth,
@@ -306,12 +289,7 @@ internal fun PickColorFromImageTopAppBar(
                                                 shape = ShapeDefaults.small
                                             )
                                             .clip(ShapeDefaults.small)
-                                            .hapticsClickable {
-                                                essentials.copyToClipboard(
-                                                    text = color.toHex(),
-                                                    message = R.string.color_copied
-                                                )
-                                            }
+                                            .hapticsClickable(onClick = onCopyColorRequest)
                                     )
                                 }
                             }

@@ -29,8 +29,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExtensionOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,15 +42,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.toUiFilter
-import com.t8rin.imagetoolbox.core.filters.presentation.utils.collectAsUiState
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateAddingGroup
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheetComponent
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateInfoSheet
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.TemplateFilterSelectionItem
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.resources.icons.ExtensionOff
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedVerticalScroll
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -64,14 +63,14 @@ internal fun TemplatesContent(
     filterTemplateCreationSheetComponent: FilterTemplateCreationSheetComponent,
     onVisibleChange: (Boolean) -> Unit,
     onFilterPickedWithParams: (UiFilter<*>) -> Unit,
+    showPreviewImages: Boolean
 ) {
-    val templateFilters by component.templatesFlow.collectAsUiState()
+    val templateFilters by component.templatesFlow.collectAsStateWithLifecycle()
     val onRequestFilterMapping = component::filterToTransformation
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
 
     AnimatedContent(
-        targetState = templateFilters.isEmpty()
+        targetState = templateFilters.isEmpty(),
+        modifier = Modifier.fillMaxSize()
     ) { noTemplates ->
         if (noTemplates) {
             Column(
@@ -105,13 +104,13 @@ internal fun TemplatesContent(
             LazyColumn(
                 state = rememberRetainedLazyListState("templates"),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
                 contentPadding = PaddingValues(16.dp),
                 flingBehavior = enhancedFlingBehavior()
             ) {
                 itemsIndexed(
                     items = templateFilters,
-                    key = { _, f -> f.hashCode() }
+                    key = { index, f -> "$index-${f.hashCode()}" }
                 ) { index, templateFilter ->
                     var showFilterTemplateInfoSheet by rememberSaveable {
                         mutableStateOf(false)
@@ -131,6 +130,7 @@ internal fun TemplatesContent(
                             showFilterTemplateInfoSheet = true
                         },
                         onRequestFilterMapping = onRequestFilterMapping,
+                        showPreviewImage = showPreviewImages,
                         shape = ShapeDefaults.byIndex(
                             index = index,
                             size = templateFilters.size
@@ -144,36 +144,23 @@ internal fun TemplatesContent(
                         },
                         templateFilter = templateFilter,
                         onRequestFilterMapping = onRequestFilterMapping,
-                        onShareImage = {
-                            component.shareImage(it, showConfetti)
-                        },
-                        onSaveImage = {
-                            component.saveImage(
-                                bitmap = it,
-                                onComplete = essentials::parseSaveResult
-                            )
-                        },
+                        onShareImage = component::shareImage,
+                        onSaveImage = component::saveImage,
                         onSaveFile = { fileUri, content ->
                             component.saveContentTo(
                                 content = content,
-                                fileUri = fileUri,
-                                onResult = essentials::parseFileSaveResult
+                                fileUri = fileUri
                             )
                         },
                         onConvertTemplateFilterToString = component::convertTemplateFilterToString,
                         onRemoveTemplateFilter = component::removeTemplateFilter,
                         onRequestTemplateFilename = {
-                            component.createTemplateFilename(
-                                templateFilter
-                            )
+                            component.createTemplateFilename(templateFilter)
                         },
                         onShareFile = { content ->
                             component.shareContent(
                                 content = content,
-                                filename = component.createTemplateFilename(
-                                    templateFilter
-                                ),
-                                onComplete = showConfetti
+                                filename = component.createTemplateFilename(templateFilter)
                             )
                         },
                         component = filterTemplateCreationSheetComponent

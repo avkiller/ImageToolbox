@@ -23,11 +23,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
-import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -57,19 +56,17 @@ fun ImageToolboxTheme(
         colorBlindType = settingsState.colorBlindType,
         defaultColorTuple = settingsState.appColorTuple,
         dynamicColor = settingsState.isDynamicColors,
-        dynamicColorsOverride = { isNightMode ->
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.BAKLAVA && DeviceInfo.isPixel()) {
-                val colors = if (isNightMode) {
-                    dynamicDarkColorScheme(context)
-                } else {
-                    dynamicLightColorScheme(context)
-                }
+        dynamicColorsOverride = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA && DeviceInfo.isPixel()) {
+                val colors = dynamicLightColorScheme(context)
 
                 ColorTuple(
                     primary = colors.primary,
                     secondary = colors.secondary,
                     tertiary = colors.tertiary,
-                    surface = colors.surface
+                    surface = colors.surface,
+                    neutralVariant = colors.surfaceVariant,
+                    error = colors.error
                 )
             } else null
         },
@@ -83,9 +80,8 @@ fun ImageToolboxTheme(
             easing = FancyTransitionEasing
         ),
         content = {
-            MaterialTheme(
+            MaterialExpressiveTheme(
                 motionScheme = CustomMotionScheme,
-                colorScheme = modifiedColorScheme(),
                 shapes = modifiedShapes(),
                 content = content
             )
@@ -173,22 +169,6 @@ internal fun modifiedShapes(): Shapes {
                     bottomEnd = shapes.extraExtraLarge.bottomEnd,
                     bottomStart = shapes.extraExtraLarge.bottomStart,
                     shapesType = shapesType
-                )
-            )
-        }
-    }.value
-}
-
-@Composable
-internal fun modifiedColorScheme(): ColorScheme {
-    val scheme = MaterialTheme.colorScheme
-
-    return remember(scheme) {
-        derivedStateOf {
-            scheme.copy(
-                errorContainer = scheme.errorContainer.blend(
-                    color = scheme.primary,
-                    fraction = 0.15f
                 )
             )
         }

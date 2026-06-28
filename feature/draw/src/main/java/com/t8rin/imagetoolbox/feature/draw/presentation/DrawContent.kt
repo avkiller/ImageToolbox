@@ -18,7 +18,6 @@
 package com.t8rin.imagetoolbox.feature.draw.presentation
 
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -31,38 +30,36 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.dynamic.theme.LocalDynamicThemeState
 import com.t8rin.imagetoolbox.core.domain.model.coerceIn
 import com.t8rin.imagetoolbox.core.domain.model.pt
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.Tune
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.rememberAppColorTuple
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveBottomScaffoldLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -96,8 +93,7 @@ fun DrawContent(
 
     val appColorTuple = rememberAppColorTuple()
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
+    val scope = rememberCoroutineScope()
 
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -114,21 +110,17 @@ fun DrawContent(
         }
     }
 
-    AutoContentBasedColors(component.bitmap)
+    AutoContentBasedColors(component.imageBitmap)
 
     val imagePicker = rememberImagePicker { uri: Uri ->
-        component.setUri(
-            uri = uri,
-            onFailure = essentials::showFailureToast
-        )
+        component.setUri(uri)
     }
 
     val pickImage = imagePicker::pickImage
 
     val saveBitmap: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmap(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResult
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -148,6 +140,8 @@ fun DrawContent(
     ) { mutableStateOf(settingsState.defaultDrawColor) }
 
     var isEraserOn by rememberSaveable(component.drawBehavior) { mutableStateOf(false) }
+
+    var showLineAngle by rememberSaveable(component.drawBehavior) { mutableStateOf(false) }
 
     val drawMode = component.drawMode
 
@@ -181,13 +175,14 @@ fun DrawContent(
         )
     }
 
-    val bitmap = component.bitmap ?: (component.drawBehavior as? DrawBehavior.Background)?.run {
-        remember { ImageBitmap(width, height).asAndroidBitmap() }
+    val imageBitmap =
+        component.imageBitmap ?: (component.drawBehavior as? DrawBehavior.Background)?.run {
+            remember(width, height) { ImageBitmap(width, height) }
     } ?: remember {
         ImageBitmap(
             screenSize.widthPx,
             screenSize.heightPx
-        ).asAndroidBitmap()
+        )
     }
 
     var showOneTimeImagePickingDialog by rememberSaveable {
@@ -214,7 +209,7 @@ fun DrawContent(
                 if (isPortrait) {
                     EnhancedIconButton(
                         onClick = {
-                            essentials.launch {
+                            scope.launch {
                                 if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                                     scaffoldState.bottomSheetState.partialExpand()
                                 } else {
@@ -234,11 +229,9 @@ fun DrawContent(
                 }
                 ShareButton(
                     enabled = component.drawBehavior !is DrawBehavior.None,
-                    onShare = {
-                        component.shareBitmap(showConfetti)
-                    },
+                    onShare = component::shareBitmap,
                     onCopy = {
-                        component.cacheCurrentImage(essentials::copyToClipboard)
+                        component.cacheCurrentImage(Clipboard::copy)
                     },
                     onEdit = {
                         component.cacheCurrentImage { uri ->
@@ -267,11 +260,7 @@ fun DrawContent(
         },
         mainContent = {
             AnimatedContent(
-                targetState = remember(bitmap) {
-                    derivedStateOf {
-                        bitmap.copy(Bitmap.Config.ARGB_8888, true).asImageBitmap()
-                    }
-                }.value,
+                targetState = imageBitmap,
                 transitionSpec = { fadeIn() togetherWith fadeOut() }
             ) { imageBitmap ->
                 val direction = LocalLayoutDirection.current
@@ -300,7 +289,10 @@ fun DrawContent(
                     drawPathMode = drawPathMode,
                     backgroundColor = component.backgroundColor,
                     drawLineStyle = drawLineStyle,
-                    helperGridParams = component.helperGridParams
+                    helperGridParams = component.helperGridParams,
+                    showLineAngle = showLineAngle,
+                    spotHealCache = component.spotHealCache,
+                    onCacheSpotHealPathResult = component::cacheSpotHealPathResult
                 )
             }
         },
@@ -315,7 +307,9 @@ fun DrawContent(
                 brushSoftness = brushSoftness,
                 onBrushSoftnessChange = { brushSoftness = it },
                 alpha = alpha,
-                onAlphaChange = { alpha = it }
+                onAlphaChange = { alpha = it },
+                showLineAngle = showLineAngle,
+                onShowLineAngleChange = { showLineAngle = it }
             )
         },
         buttons = {
@@ -339,7 +333,8 @@ fun DrawContent(
                 actions = {
                     if (isPortrait) it()
                 },
-                showNullDataButtonAsContainer = true
+                showNullDataButtonAsContainer = true,
+                drawBothStrokes = true
             )
             OneTimeSaveLocationSelectionDialog(
                 visible = showFolderSelectionDialog,

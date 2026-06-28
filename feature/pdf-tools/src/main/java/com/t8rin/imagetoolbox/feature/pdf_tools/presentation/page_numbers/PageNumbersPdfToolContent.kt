@@ -17,10 +17,7 @@
 
 package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,33 +25,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
-import com.t8rin.imagetoolbox.core.domain.model.Position
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.rememberPdfPages
-import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ColorRowSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.PositionSelector
-import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSliderItem
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
-import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common.BasePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.components.PageNumbersPreview
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.page_numbers.screenLogic.PageNumbersPdfToolComponent
 
 @Composable
@@ -66,7 +55,7 @@ fun PageNumbersPdfToolContent(
 
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
@@ -75,71 +64,15 @@ fun PageNumbersPdfToolContent(
         title = stringResource(R.string.page_numbers),
         actions = {},
         imagePreview = {
-            Box(
-                modifier = Modifier
-                    .container()
-                    .padding(4.dp)
-                    .animateContentSizeNoClip(
-                        alignment = Alignment.Center
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                var aspectRatio by rememberSaveable {
-                    mutableFloatStateOf(1f)
-                }
-
-                val previewText = params.labelFormat
-                    .replace("{n}", "1")
-                    .replace("{total}", pageCount.toString())
-
-                val previewAlignment = when (params.position) {
-                    Position.TopLeft -> Alignment.TopStart
-                    Position.TopCenter -> Alignment.TopCenter
-                    Position.TopRight -> Alignment.TopEnd
-                    Position.CenterLeft -> Alignment.CenterStart
-                    Position.Center -> Alignment.Center
-                    Position.CenterRight -> Alignment.CenterEnd
-                    Position.BottomLeft -> Alignment.BottomStart
-                    Position.BottomCenter -> Alignment.BottomCenter
-                    Position.BottomRight -> Alignment.BottomEnd
-                }
-
-                Box(
-                    modifier = Modifier.aspectRatio(aspectRatio)
-                ) {
-                    Picture(
-                        model = component.uri,
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.matchParentSize(),
-                        onSuccess = {
-                            aspectRatio = it.result.image.safeAspectRatio
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        isLoadingFromDifferentPlace = component.isImageLoading
-                    )
-
-                    BoxWithConstraints(
-                        modifier = Modifier.matchParentSize()
-                    ) {
-                        AutoSizeText(
-                            key = { maxWidth },
-                            text = previewText,
-                            modifier = Modifier
-                                .align(previewAlignment)
-                                .padding(8.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            lineHeight = 11.sp,
-                            color = Color(params.color)
-                        )
-                    }
-                }
-            }
+            PageNumbersPreview(
+                uri = component.uri,
+                params = params,
+                pageCount = pageCount
+            )
         },
         placeImagePreview = true,
         showImagePreviewAsStickyHeader = true,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             RoundedTextField(
                 modifier = Modifier
                     .padding(top = 8.dp)
@@ -174,6 +107,23 @@ fun PageNumbersPdfToolContent(
                 color = Color.Unspecified
             )
             Spacer(Modifier.height(8.dp))
+            EnhancedSliderItem(
+                value = params.fontSize,
+                title = stringResource(R.string.just_size),
+                internalStateTransformation = {
+                    it.roundToTwoDigits()
+                },
+                onValueChange = {
+                    component.updateParams(
+                        params.copy(
+                            fontSize = it
+                        )
+                    )
+                },
+                valueRange = 5f..100f,
+                shape = ShapeDefaults.large
+            )
+            Spacer(Modifier.height(8.dp))
             ColorRowSelector(
                 value = Color(params.color),
                 onValueChange = {
@@ -188,8 +138,6 @@ fun PageNumbersPdfToolContent(
                     shape = ShapeDefaults.large
                 )
             )
-
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

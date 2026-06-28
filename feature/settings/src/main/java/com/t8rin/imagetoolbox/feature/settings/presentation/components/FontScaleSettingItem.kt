@@ -20,7 +20,7 @@ package com.t8rin.imagetoolbox.feature.settings.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.colordetector.util.ColorUtil.roundToTwoDigits
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.TextFields
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
@@ -60,7 +60,7 @@ fun FontScaleSettingItem(
         shape = shape,
         value = sliderValue,
         title = stringResource(R.string.font_scale),
-        icon = Icons.Outlined.TextFields,
+        icon = Icons.Rounded.TextFields,
         onValueChange = {
             sliderValue = it.roundToTwoDigits()
         },

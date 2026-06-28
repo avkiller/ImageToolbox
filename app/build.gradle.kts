@@ -17,8 +17,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-var isFoss = false
-
 plugins {
     alias(libs.plugins.image.toolbox.application)
     alias(libs.plugins.image.toolbox.hilt)
@@ -43,8 +41,6 @@ android {
             //noinspection ChromeOsAbiSupport
             abiFilters += supportedAbi.toSet()
         }
-
-        setProperty("archivesBaseName", "image-toolbox-$versionName${if (isFoss) "-foss" else ""}")
     }
 
     androidResources {
@@ -56,7 +52,7 @@ android {
     productFlavors {
         create("foss") {
             dimension = "app"
-            isFoss = true
+            versionNameSuffix = "-foss"
             extra.set("gmsEnabled", false)
         }
         create("market") {
@@ -85,8 +81,6 @@ android {
             initWith(buildTypes.getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
         }
     }
 
@@ -110,8 +104,14 @@ android {
             isUniversalApk = true
         }
     }
+
+    lint {
+        disable += "Instantiatable"
+    }
+
     packaging {
         jniLibs {
+            keepDebugSymbols.add("**/*.so")
             pickFirsts.add("lib/*/libcoder.so")
             pickFirsts.add("**/libc++_shared.so")
             pickFirsts.add("**/libdatstore_shared_counter.so")
@@ -127,13 +127,17 @@ android {
         }
     }
 
-    aboutLibraries {
-        export.excludeFields.addAll("generated")
-    }
-
     buildFeatures {
         resValues = true
     }
+}
+
+base {
+    archivesName = "image-toolbox-${android.defaultConfig.versionName}"
+}
+
+aboutLibraries {
+    export.excludeFields.addAll("generated")
 }
 
 dependencies {
@@ -141,8 +145,9 @@ dependencies {
     implementation(projects.feature.mediaPicker)
     implementation(projects.feature.quickTiles)
 
-    implementation(libs.toolbox.opencvTools)
-    implementation(libs.toolbox.neuralTools)
+    implementation(projects.lib.opencvTools)
+    implementation(projects.lib.neuralTools)
+    implementation(projects.lib.collages)
 
     implementation(libs.bouncycastle.pkix)
     implementation(libs.bouncycastle.provider)
@@ -159,18 +164,24 @@ dependencySubstitution {
     )
 }
 
-afterEvaluate {
-    android.productFlavors.forEach { flavor ->
-        tasks.matching { task ->
-            listOf("GoogleServices", "Crashlytics").any {
-                task.name.contains(it)
-            }.and(
-                task.name.contains(
-                    flavor.name.replaceFirstChar(Char::uppercase)
-                )
-            )
-        }.forEach { task ->
-            task.enabled = flavor.extra.get("gmsEnabled") == true
+androidComponents {
+    beforeVariants(selector().all()) { variantBuilder ->
+        val flavorName = variantBuilder.productFlavors.firstOrNull()?.second.orEmpty()
+        val flavorCap = flavorName.replaceFirstChar(Char::uppercase)
+
+        val gmsEnabled = android.productFlavors
+            .findByName(flavorName)
+            ?.extra
+            ?.get("gmsEnabled") == true
+
+        tasks.configureEach {
+            val isTargetTask = listOf("GoogleServices", "Crashlytics").any { marker ->
+                name.contains(marker)
+            } && name.contains(flavorCap)
+
+            if (isTargetTask) {
+                enabled = gmsEnabled
+            }
         }
     }
 }

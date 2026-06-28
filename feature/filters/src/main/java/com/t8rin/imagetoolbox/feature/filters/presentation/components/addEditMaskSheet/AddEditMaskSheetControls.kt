@@ -19,7 +19,6 @@ package com.t8rin.imagetoolbox.feature.filters.presentation.components.addEditMa
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,9 +35,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Redo
-import androidx.compose.material.icons.automirrored.rounded.Undo
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -52,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.domain.model.Pt
 import com.t8rin.imagetoolbox.core.domain.model.pt
 import com.t8rin.imagetoolbox.core.filters.domain.model.TemplateFilter
@@ -60,11 +57,14 @@ import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterItem
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterReorderSheet
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheet
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.addFilters.AddFiltersSheet
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.Preview
+import com.t8rin.imagetoolbox.core.resources.icons.Redo
+import com.t8rin.imagetoolbox.core.resources.icons.Undo
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.EraseModeButton
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.PanModeButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -77,6 +77,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.other.BoxAnimatedVisibility
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemOverload
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRowSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawMode
 import com.t8rin.imagetoolbox.feature.draw.domain.DrawPathMode
 import com.t8rin.imagetoolbox.feature.draw.presentation.components.BrushSoftnessSelector
@@ -100,9 +101,8 @@ internal fun AddEditMaskSheetControls(
 ) {
     var showAddFilterSheet by rememberSaveable { mutableStateOf(false) }
 
-    val essentials = rememberLocalEssentials()
-
     var showReorderSheet by rememberSaveable { mutableStateOf(false) }
+    val shaderPresets by component.addFiltersSheetComponent.shaderPresets.collectAsStateWithLifecycle()
 
     val isPortrait by isPortraitOrientationAsState()
     val canSave = component.paths.isNotEmpty() && component.filterList.isNotEmpty()
@@ -134,7 +134,7 @@ internal fun AddEditMaskSheetControls(
             enabled = (component.lastPaths.isNotEmpty() || component.paths.isNotEmpty())
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Undo,
+                imageVector = Icons.Rounded.Undo,
                 contentDescription = "Undo"
             )
         }
@@ -147,7 +147,7 @@ internal fun AddEditMaskSheetControls(
             enabled = component.undonePaths.isNotEmpty()
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Rounded.Redo,
+                imageVector = Icons.Rounded.Redo,
                 contentDescription = "Redo"
             )
         }
@@ -255,16 +255,23 @@ internal fun AddEditMaskSheetControls(
             onValueChange = component::setDrawPathMode,
             drawMode = DrawMode.Pen
         )
-        LineWidthSelector(
-            modifier = Modifier.padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 8.dp
-            ),
-            color = Color.Unspecified,
-            value = strokeWidth.value,
-            onValueChange = { onStrokeWidthChange(it.pt) }
-        )
+        AnimatedVisibility(
+            visible = component.drawPathMode.canChangeStrokeWidth,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            LineWidthSelector(
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp
+                ),
+                color = Color.Unspecified,
+                value = strokeWidth.value,
+                onValueChange = { onStrokeWidthChange(it.pt) }
+            )
+        }
         BrushSoftnessSelector(
             modifier = Modifier
                 .padding(top = 8.dp, end = 16.dp, start = 16.dp),
@@ -320,14 +327,15 @@ internal fun AddEditMaskSheetControls(
                             onFilterChange = { value ->
                                 component.updateFilter(
                                     value = value,
-                                    index = index,
-                                    showError = essentials::showFailureToast
+                                    index = index
                                 )
                             },
                             onLongPress = {
                                 showReorderSheet = true
                             },
                             showDragHandle = false,
+                            shaderPresets = shaderPresets,
+                            onImportShaderPreset = component.addFiltersSheetComponent::importShaderPreset,
                             onRemove = {
                                 component.removeFilterAtIndex(index)
                             },
@@ -335,7 +343,7 @@ internal fun AddEditMaskSheetControls(
                                 showTemplateCreationSheet = true
                                 component.filterTemplateCreationSheetComponent.setInitialTemplateFilter(
                                     TemplateFilter(
-                                        name = essentials.getString(filter.title),
+                                        name = getString(filter.title),
                                         filters = listOf(filter)
                                     )
                                 )
@@ -351,7 +359,7 @@ internal fun AddEditMaskSheetControls(
                             showTemplateCreationSheet = true
                             component.filterTemplateCreationSheetComponent.setInitialTemplateFilter(
                                 TemplateFilter(
-                                    name = essentials.getString(
+                                    name = getString(
                                         component.filterList.firstOrNull()?.title
                                             ?: R.string.template_filter
                                     ),

@@ -27,11 +27,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
-import com.smarttoolfactory.cropper.model.AspectRatio
-import com.smarttoolfactory.cropper.model.OutlineType
-import com.smarttoolfactory.cropper.model.RectCropShape
-import com.smarttoolfactory.cropper.settings.CropDefaults
-import com.smarttoolfactory.cropper.settings.CropOutlineProperty
+import com.t8rin.cropper.model.AspectRatio
+import com.t8rin.cropper.model.OutlineType
+import com.t8rin.cropper.model.RectCropShape
+import com.t8rin.cropper.settings.CropDefaults
+import com.t8rin.cropper.settings.CropOutlineProperty
 import com.t8rin.imagetoolbox.core.data.utils.asDomain
 import com.t8rin.imagetoolbox.core.data.utils.toCoil
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
@@ -61,17 +61,24 @@ import com.t8rin.imagetoolbox.core.filters.domain.model.Filter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiContrastFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiSharpenFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiThresholdFilter
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Language
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.PdfManager
+import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.SearchablePdfPage
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.DownloadData
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.ImageTextReader
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.OCRLanguage
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.OcrEngineMode
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.PaddleOCRModel
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionData
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionEngine
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionType
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.SegmentationMode
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.TessParams
@@ -99,10 +106,17 @@ class RecognizeTextComponent @AssistedInject internal constructor(
     private val imageScaler: ImageScaler<Bitmap>,
     private val shareProvider: ShareProvider,
     private val fileController: FileController,
+    private val pdfManager: PdfManager,
     private val filenameCreator: FilenameCreator,
     resourceManager: ResourceManager,
     dispatchersHolder: DispatchersHolder
 ) : BaseComponent(dispatchersHolder, componentContext), ResourceManager by resourceManager {
+
+    init {
+        debounce {
+            initialType?.let(::updateType)
+        }
+    }
 
     private val _segmentationMode: MutableState<SegmentationMode> =
         mutableStateOf(SegmentationMode.PSM_AUTO_OSD)
@@ -110,6 +124,23 @@ class RecognizeTextComponent @AssistedInject internal constructor(
 
     private val _ocrEngineMode: MutableState<OcrEngineMode> = mutableStateOf(OcrEngineMode.DEFAULT)
     val ocrEngineMode by _ocrEngineMode
+
+    private val _recognitionEngine: MutableState<RecognitionEngine> =
+        mutableStateOf(RecognitionEngine.Tesseract)
+    val recognitionEngine by _recognitionEngine
+
+    private val _paddleOCRModel: MutableState<PaddleOCRModel> =
+        mutableStateOf(PaddleOCRModel.CJK)
+
+    val paddleOCRModel: PaddleOCRModel
+        get() = if (recognitionEngine == RecognitionEngine.PaddleOCRv6) {
+            PaddleOCRModel.UniversalV6
+        } else {
+            _paddleOCRModel.value
+        }
+
+    private val _paddleOCRModelsUpdateKey = mutableIntStateOf(0)
+    val paddleOCRModelsUpdateKey by _paddleOCRModelsUpdateKey
 
     private val _params: MutableState<TessParams> = mutableStateOf(TessParams.Default)
     val params by _params
@@ -128,6 +159,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         get() = when (val target = type) {
             is Screen.RecognizeText.Type.WriteToFile -> target.uris ?: emptyList()
             is Screen.RecognizeText.Type.WriteToMetadata -> target.uris ?: emptyList()
+            is Screen.RecognizeText.Type.WriteToSearchablePdf -> target.uris ?: emptyList()
             else -> emptyList()
         }
 
@@ -222,8 +254,15 @@ class RecognizeTextComponent @AssistedInject internal constructor(
     private val _downloadDialogData = mutableStateOf<List<UiDownloadData>>(emptyList())
     val downloadDialogData by _downloadDialogData
 
+    private val _showPaddleDownloadDialog = mutableStateOf(false)
+    val showPaddleDownloadDialog by _showPaddleDownloadDialog
+
     fun clearDownloadDialogData() {
         _downloadDialogData.update { emptyList() }
+    }
+
+    fun clearPaddleDownloadDialog() {
+        _showPaddleDownloadDialog.update { false }
     }
 
     fun showSelectionTypeSheet(uris: List<Uri>) {
@@ -267,6 +306,20 @@ class RecognizeTextComponent @AssistedInject internal constructor(
     init {
         loadLanguages()
         componentScope.launch {
+            _recognitionEngine.update {
+                RecognitionEngine.entries.getOrElse(
+                    index = settingsManager.getSettingsState().initialOcrEngine
+                ) {
+                    RecognitionEngine.Tesseract
+                }
+            }
+            _paddleOCRModel.update {
+                PaddleOCRModel.entries.getOrElse(
+                    index = settingsManager.getSettingsState().initialPaddleOcrModel
+                ) {
+                    PaddleOCRModel.CJK
+                }
+            }
             val languageCodes = settingsManager
                 .getSettingsState()
                 .initialOcrCodes
@@ -285,8 +338,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
     }
 
     fun updateType(
-        type: Screen.RecognizeText.Type?,
-        onImageSet: () -> Unit
+        type: Screen.RecognizeText.Type?
     ) {
         type?.let {
             componentScope.launch {
@@ -297,7 +349,10 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                         data = type.uri ?: "",
                         originalSize = false
                     )?.let {
-                        updateBitmap(it, onImageSet)
+                        updateBitmap(
+                            bitmap = it,
+                            onComplete = ::startRecognition
+                        )
                     }
                 }
                 _isImageLoading.value = false
@@ -306,8 +361,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
     }
 
     fun save(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit,
+        oneTimeSaveLocationUri: String?
     ) {
         recognitionJob = componentScope.launch {
             delay(400)
@@ -319,18 +373,18 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                     _left.update { uris.size }
 
                     uris.forEach { uri ->
-                        uri.readText().appendToStringBuilder(
-                            builder = txtString,
-                            uri = uri,
-                            onRequestDownload = { data ->
-                                _downloadDialogData.update { data.map(DownloadData::toUi) }
-                                return@launch
-                            }
-                        )
+                        if (!uri.readText().appendToStringBuilder(
+                                builder = txtString,
+                                uri = uri,
+                                onRequestDownload = { data ->
+                                    _downloadDialogData.update { data.map(DownloadData::toUi) }
+                                }
+                            )
+                        ) return@launch
                         _done.update { it + 1 }
                     }
 
-                    onResult(
+                    parseSaveResults(
                         listOf(
                             fileController.save(
                                 saveTarget = TxtSaveTarget(
@@ -362,6 +416,11 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                                     return@launch
                                 }
 
+                                is TextRecognitionResult.NoPaddleData -> {
+                                    _showPaddleDownloadDialog.update { true }
+                                    return@launch
+                                }
+
                                 is TextRecognitionResult.Success -> {
                                     result.data.text.ifEmpty { getString(R.string.picture_has_no_text) }
                                 }
@@ -390,7 +449,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                         }
                     }
 
-                    onResult(results.onSuccess(::registerSave))
+                    parseSaveResults(results.onSuccess(::registerSave))
                 }
 
                 else -> return@launch
@@ -427,15 +486,19 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         when (type) {
             is Screen.RecognizeText.Type.WriteToFile -> {
                 updateType(
-                    type = Screen.RecognizeText.Type.WriteToFile(uris - uri),
-                    onImageSet = {}
+                    type = Screen.RecognizeText.Type.WriteToFile(uris - uri)
                 )
             }
 
             is Screen.RecognizeText.Type.WriteToMetadata -> {
                 updateType(
                     type = Screen.RecognizeText.Type.WriteToMetadata(uris - uri),
-                    onImageSet = {}
+                )
+            }
+
+            is Screen.RecognizeText.Type.WriteToSearchablePdf -> {
+                updateType(
+                    type = Screen.RecognizeText.Type.WriteToSearchablePdf(uris - uri),
                 )
             }
 
@@ -461,9 +524,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         _isSaving.update { false }
     }
 
-    fun startRecognition(
-        onFailure: (Throwable) -> Unit
-    ) {
+    fun startRecognition() {
         recognitionJob = componentScope.launch {
             val type = _type.value
             if (type !is Screen.RecognizeText.Type.Extraction) return@launch
@@ -472,11 +533,15 @@ class RecognizeTextComponent @AssistedInject internal constructor(
             (previewBitmap ?: type.uri)?.readText()?.also { result ->
                 when (result) {
                     is TextRecognitionResult.Error -> {
-                        onFailure(result.throwable)
+                        AppToastHost.showFailureToast(result.throwable)
                     }
 
                     is TextRecognitionResult.NoData -> {
                         _downloadDialogData.update { result.data.map(DownloadData::toUi) }
+                    }
+
+                    is TextRecognitionResult.NoPaddleData -> {
+                        _showPaddleDownloadDialog.update { true }
                     }
 
                     is TextRecognitionResult.Success -> {
@@ -495,6 +560,60 @@ class RecognizeTextComponent @AssistedInject internal constructor(
             settingsManager.setInitialOcrMode(recognitionType.ordinal)
         }
         loadLanguages()
+        startRecognition()
+    }
+
+    fun setRecognitionEngine(recognitionEngine: RecognitionEngine) {
+        if (_recognitionEngine.value == recognitionEngine) return
+
+        _recognitionEngine.update { recognitionEngine }
+        componentScope.launch {
+            settingsManager.setInitialOcrEngine(recognitionEngine.ordinal)
+        }
+        _recognitionData.update { null }
+        _editedText.update { null }
+        startRecognition()
+    }
+
+    fun setPaddleOCRModel(model: PaddleOCRModel) {
+        _paddleOCRModel.update { model }
+        componentScope.launch {
+            settingsManager.setInitialPaddleOcrModel(model.ordinal)
+        }
+        _recognitionData.update { null }
+        _editedText.update { null }
+        startRecognition()
+    }
+
+    fun isPaddleOCRModelDownloaded(model: PaddleOCRModel): Boolean =
+        imageTextReader.isPaddleOCRModelDownloaded(model)
+
+    fun deletePaddleOCRModel(model: PaddleOCRModel) {
+        imageTextReader.deletePaddleOCRModel(model)
+        _paddleOCRModelsUpdateKey.update { it + 1 }
+        if (model == paddleOCRModel) {
+            _recognitionData.update { null }
+            _editedText.update { null }
+        }
+    }
+
+    fun downloadPaddleData(
+        onProgress: (DownloadProgress) -> Unit,
+        onComplete: () -> Unit
+    ) {
+        componentScope.launch {
+            imageTextReader.downloadPaddleOCRModel(paddleOCRModel).collect { progress ->
+                onProgress(
+                    DownloadProgress(
+                        currentPercent = progress.currentPercent,
+                        currentTotalSize = progress.currentTotalSize
+                    )
+                )
+            }
+            _paddleOCRModelsUpdateKey.update { it + 1 }
+            clearPaddleDownloadDialog()
+            onComplete()
+        }
     }
 
     private val downloadMutex = Mutex()
@@ -548,19 +667,19 @@ class RecognizeTextComponent @AssistedInject internal constructor(
 
     fun setSegmentationMode(segmentationMode: SegmentationMode) {
         _segmentationMode.update { segmentationMode }
+        startRecognition()
     }
 
     fun deleteLanguage(
         language: OCRLanguage,
-        types: List<RecognitionType>,
-        onSuccess: () -> Unit
+        types: List<RecognitionType>
     ) {
         componentScope.launch {
             imageTextReader.deleteLanguage(language, types)
             onLanguagesSelected(selectedLanguages - language)
             val availableTypes = language.downloaded - types.toSet()
             availableTypes.firstOrNull()?.let(::setRecognitionType) ?: loadLanguages()
-            onSuccess()
+            startRecognition()
         }
     }
 
@@ -640,15 +759,14 @@ class RecognizeTextComponent @AssistedInject internal constructor(
 
     fun setOcrEngineMode(mode: OcrEngineMode) {
         _ocrEngineMode.update { mode }
+        startRecognition()
     }
 
-    fun shareEditedText(
-        onComplete: () -> Unit
-    ) {
+    fun shareEditedText() {
         editedText?.let {
             shareProvider.shareText(
                 value = it,
-                onComplete = onComplete
+                onComplete = AppToastHost::showConfetti
             )
         }
     }
@@ -657,9 +775,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         _editedText.update { text }
     }
 
-    fun shareData(
-        onComplete: () -> Unit
-    ) {
+    fun shareData() {
         recognitionJob = componentScope.launch {
             delay(400)
             _isSaving.update { true }
@@ -671,14 +787,14 @@ class RecognizeTextComponent @AssistedInject internal constructor(
 
                     uris.forEach { uri ->
                         uri.readText().also { result ->
-                            result.appendToStringBuilder(
-                                builder = txtString,
-                                uri = uri,
-                                onRequestDownload = { data ->
-                                    _downloadDialogData.update { data.map(DownloadData::toUi) }
-                                    return@launch
-                                }
-                            )
+                            if (!result.appendToStringBuilder(
+                                    builder = txtString,
+                                    uri = uri,
+                                    onRequestDownload = { data ->
+                                        _downloadDialogData.update { data.map(DownloadData::toUi) }
+                                    }
+                                )
+                            ) return@launch
                             _done.update { it + 1 }
                         }
                     }
@@ -690,7 +806,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                     shareProvider.shareByteArray(
                         byteArray = saveTarget.data,
                         filename = saveTarget.filename ?: "",
-                        onComplete = onComplete
+                        onComplete = AppToastHost::showConfetti
                     )
                 }
 
@@ -711,6 +827,11 @@ class RecognizeTextComponent @AssistedInject internal constructor(
 
                                     is TextRecognitionResult.NoData -> {
                                         _downloadDialogData.update { result.data.map(DownloadData::toUi) }
+                                        return@launch
+                                    }
+
+                                    is TextRecognitionResult.NoPaddleData -> {
+                                        _showPaddleDownloadDialog.update { true }
                                         return@launch
                                     }
 
@@ -758,6 +879,20 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                     shareProvider.shareUris(cachedUris)
                 }
 
+                is Screen.RecognizeText.Type.WriteToSearchablePdf -> {
+                    val pdfUri = createSearchablePdfUri(
+                        onRequestDownload = { data ->
+                            _downloadDialogData.update { data.map(DownloadData::toUi) }
+                        }
+                    ) ?: return@launch
+
+                    shareProvider.shareUri(
+                        uri = pdfUri,
+                        type = MimeType.Pdf,
+                        onComplete = AppToastHost::showConfetti
+                    )
+                }
+
                 else -> return@launch
             }
         }.apply {
@@ -771,7 +906,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         builder: StringBuilder,
         uri: Uri,
         onRequestDownload: (List<DownloadData>) -> Unit
-    ) {
+    ): Boolean {
         when (this) {
             is TextRecognitionResult.Error -> {
                 builder.apply {
@@ -781,9 +916,18 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                     append(throwable.message)
                     append("\n\n")
                 }
+                return true
             }
 
-            is TextRecognitionResult.NoData -> onRequestDownload(data)
+            is TextRecognitionResult.NoData -> {
+                onRequestDownload(data)
+                return false
+            }
+
+            is TextRecognitionResult.NoPaddleData -> {
+                _showPaddleDownloadDialog.update { true }
+                return false
+            }
 
             is TextRecognitionResult.Success -> {
                 builder.apply {
@@ -795,21 +939,19 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                     append(data.text.ifEmpty { getString(R.string.picture_has_no_text) })
                     append("\n\n")
                 }
+                return true
             }
         }
     }
 
-    fun exportLanguagesTo(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
-    ) {
+    fun exportLanguagesTo(uri: Uri) {
         languagesJob = componentScope.launch {
             _isExporting.value = true
             imageTextReader.exportLanguagesToZip()?.let { zipUri ->
                 fileController.writeBytes(
                     uri = uri.toString(),
                     block = { it.writeBytes(fileController.readBytes(zipUri)) }
-                ).also(onResult).onSuccess(::registerSave)
+                ).also(::parseFileSaveResult).onSuccess(::registerSave)
             }
             _isExporting.value = false
         }
@@ -819,9 +961,10 @@ class RecognizeTextComponent @AssistedInject internal constructor(
 
     fun generateTextFilename(): String = "OCR_${timestamp()}.txt"
 
+    fun generateSearchablePdfFilename(): String = "OCR_searchable_${timestamp()}.pdf"
+
     fun importLanguagesFrom(
         uri: Uri,
-        onSuccess: () -> Unit,
         onFailure: (Throwable) -> Unit
     ) {
         languagesJob = componentScope.launch {
@@ -829,7 +972,12 @@ class RecognizeTextComponent @AssistedInject internal constructor(
             imageTextReader.importLanguagesFromUri(uri.toString())
                 .onSuccess {
                     loadLanguages {
-                        onSuccess()
+                        AppToastHost.showConfetti()
+                        AppToastHost.showToast(
+                            message = getString(R.string.languages_imported),
+                            icon = Icons.Rounded.Language
+                        )
+                        startRecognition()
                     }
                 }
                 .onFailure(onFailure)
@@ -837,10 +985,7 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         }
     }
 
-    fun saveContentToTxt(
-        uri: Uri,
-        onResult: (SaveResult) -> Unit
-    ) {
+    fun saveContentToTxt(uri: Uri) {
         recognitionData?.text?.takeIf { it.isNotEmpty() }?.let { data ->
             componentScope.launch {
                 fileController.writeBytes(
@@ -848,13 +993,33 @@ class RecognizeTextComponent @AssistedInject internal constructor(
                     block = {
                         it.writeBytes(data.encodeToByteArray())
                     }
-                ).also(onResult).onSuccess(::registerSave)
+                ).also(::parseFileSaveResult).onSuccess(::registerSave)
+            }
+        }
+    }
+
+    fun saveSearchablePdfTo(uri: Uri) {
+        recognitionJob = componentScope.launch {
+            _isSaving.update { true }
+            val pdfUri = createSearchablePdfUri(
+                onRequestDownload = { data ->
+                    _downloadDialogData.update { data.map(DownloadData::toUi) }
+                }
+            ) ?: return@launch
+            fileController.transferBytes(
+                fromUri = pdfUri,
+                toUri = uri.toString()
+            ).also(::parseFileSaveResult).onSuccess(::registerSave)
+        }.apply {
+            invokeOnCompletion {
+                _isSaving.update { false }
             }
         }
     }
 
     fun updateParams(newParams: TessParams) {
         _params.update { newParams }
+        startRecognition()
     }
 
     fun cancelSaving() {
@@ -863,10 +1028,50 @@ class RecognizeTextComponent @AssistedInject internal constructor(
         _isSaving.update { false }
     }
 
+    private suspend fun createSearchablePdfUri(
+        onRequestDownload: (List<DownloadData>) -> Unit
+    ): String? {
+        val pages = mutableListOf<SearchablePdfPage>()
+        _left.update { uris.size }
+        _done.update { 0 }
+
+        uris.forEachIndexed { index, uri ->
+            val data = when (val result = uri.readText()) {
+                is TextRecognitionResult.Error -> return null
+
+                is TextRecognitionResult.NoData -> {
+                    onRequestDownload(result.data)
+                    return null
+                }
+
+                is TextRecognitionResult.NoPaddleData -> {
+                    _showPaddleDownloadDialog.update { true }
+                    return null
+                }
+
+                is TextRecognitionResult.Success -> result.data
+            }
+            pages.add(
+                SearchablePdfPage(
+                    imageUri = uri.toString(),
+                    text = data.text,
+                    hocr = data.hocr
+                )
+            )
+            _done.update { index + 1 }
+        }
+
+        return pdfManager.createSearchablePdf(
+            pages = pages
+        )
+    }
+
     private suspend fun Any.readText(): TextRecognitionResult {
         return imageTextReader.getTextFromImage(
             type = recognitionType,
             languageCode = selectedLanguages.joinToString("+") { it.code },
+            recognitionEngine = recognitionEngine,
+            paddleOCRModel = paddleOCRModel,
             segmentationMode = segmentationMode,
             model = imageGetter.getImage(this)?.let { bitmap ->
                 imageTransformer.transform(

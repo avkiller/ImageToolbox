@@ -33,11 +33,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Contrast
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.InvertColors
-import androidx.compose.material.icons.rounded.Palette
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,11 +51,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.smarttoolfactory.colordetector.util.ColorUtil.roundToTwoDigits
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.dynamic.theme.PaletteStyle
 import com.t8rin.dynamic.theme.extractPrimaryColor
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Contrast
+import com.t8rin.imagetoolbox.core.resources.icons.DarkMode
+import com.t8rin.imagetoolbox.core.resources.icons.InvertColors
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
+import com.t8rin.imagetoolbox.core.resources.icons.Palette
 import com.t8rin.imagetoolbox.core.resources.icons.Swatch
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.widget.color_picker.ColorInfo
@@ -187,7 +187,6 @@ internal fun MaterialYouPaletteControls(bitmap: Bitmap) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconShapeContainer(
-                enabled = true,
                 modifier = Modifier.padding(top = 16.dp, start = 16.dp)
             ) {
                 Icon(

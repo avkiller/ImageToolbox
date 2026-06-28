@@ -44,7 +44,7 @@ fun RemovePagesPdfToolContent(
 
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
@@ -52,13 +52,7 @@ fun RemovePagesPdfToolContent(
         canShowScreenData = component.uri != null,
         title = stringResource(R.string.remove_pages_pdf),
         canSave = component.pagesToDelete.size < pagesCount,
-        actions = {},
-        imagePreview = {},
-        placeImagePreview = false,
-        showImagePreviewAsStickyHeader = false,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             component.uri?.let {
                 PdfPreviewItem(
                     uri = it,
@@ -86,9 +80,9 @@ fun RemovePagesPdfToolContent(
                         component.pagesToDelete.toggle(it)
                     )
                 },
-                onUpdatePages = component::updatePages
+                onUpdatePages = component::updatePages,
+                pagesCount = pagesCount
             )
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

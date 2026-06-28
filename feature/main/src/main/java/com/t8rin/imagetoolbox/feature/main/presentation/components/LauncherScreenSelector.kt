@@ -19,7 +19,6 @@ package com.t8rin.imagetoolbox.feature.main.presentation.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -41,13 +40,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RichTooltip
@@ -68,7 +65,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.Bookmark
 import com.t8rin.imagetoolbox.core.resources.icons.BookmarkRemove
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.model.IconShape
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.blend
@@ -77,6 +77,7 @@ import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCircleShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shapeByInteraction
@@ -88,8 +89,11 @@ internal fun LauncherScreenSelector(
     onNavigateToScreenWithPopUpTo: (Screen) -> Unit,
     contentPadding: PaddingValues,
     onToggleFavorite: (Screen) -> Unit,
+    lastUsedTools: List<UiLastUsedTool>
 ) {
     val settingsState = LocalSettingsState.current
+    val showFavoriteControls =
+        !settingsState.groupOptionsByTypes || settingsState.showFavoriteToolsInGroupedMode
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(80.dp),
@@ -98,6 +102,18 @@ internal fun LauncherScreenSelector(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         flingBehavior = enhancedFlingBehavior()
     ) {
+        if (lastUsedTools.isNotEmpty()) {
+            item(
+                key = "lastUsedTools",
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                LastUsedToolsCard(
+                    tools = lastUsedTools,
+                    onNavigate = onNavigateToScreenWithPopUpTo,
+                    modifier = Modifier.animateItem()
+                )
+            }
+        }
         items(screenList) { screen ->
             val containerColor by animateColorAsState(
                 if (settingsState.isNightMode) {
@@ -146,14 +162,14 @@ internal fun LauncherScreenSelector(
                     BadgedBox(
                         badge = {
                             BoxAnimatedVisibility(
-                                visible = !settingsState.groupOptionsByTypes,
+                                visible = showFavoriteControls,
                                 modifier = Modifier
                                     .size(34.dp)
                                     .offset(x = (-8).dp, y = 8.dp),
                             ) {
                                 val interactionSource = remember { MutableInteractionSource() }
                                 val shape = shapeByInteraction(
-                                    shape = IconButtonDefaults.smallRoundShape,
+                                    shape = AutoCircleShape(),
                                     pressedShape = ShapeDefaults.smallMini,
                                     interactionSource = interactionSource
                                 )
@@ -196,7 +212,7 @@ internal fun LauncherScreenSelector(
                                         val icon by remember(isInFavorite) {
                                             derivedStateOf {
                                                 if (isInFavorite) Icons.Rounded.BookmarkRemove
-                                                else Icons.Rounded.BookmarkBorder
+                                                else Icons.Outlined.Bookmark
                                             }
                                         }
                                         Icon(

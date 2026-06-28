@@ -37,11 +37,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.EmojiEmotions
-import androidx.compose.material.icons.rounded.AddCircleOutline
-import androidx.compose.material.icons.rounded.Contrast
-import androidx.compose.material.icons.rounded.InvertColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -64,16 +59,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.colordetector.util.ColorUtil.roundToTwoDigits
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.dynamic.theme.ColorTuple
 import com.t8rin.dynamic.theme.ColorTupleItem
 import com.t8rin.dynamic.theme.PaletteStyle
 import com.t8rin.dynamic.theme.rememberColorScheme
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.nearestFor
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AddCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Contrast
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
 import com.t8rin.imagetoolbox.core.resources.icons.EditAlt
-import com.t8rin.imagetoolbox.core.resources.icons.Theme
+import com.t8rin.imagetoolbox.core.resources.icons.EmojiEmotions
+import com.t8rin.imagetoolbox.core.resources.icons.InvertColors
+import com.t8rin.imagetoolbox.core.resources.icons.PaletteBox
 import com.t8rin.imagetoolbox.core.resources.shapes.MaterialStarShape
 import com.t8rin.imagetoolbox.core.settings.presentation.model.defaultColorTuple
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
@@ -128,7 +128,7 @@ fun AvailableColorTuplesSheet(
                 ) {
                     TitleItem(
                         text = stringResource(R.string.color_scheme),
-                        icon = Icons.Outlined.Theme
+                        icon = Icons.Outlined.PaletteBox
                     )
                 }
             }
@@ -453,7 +453,7 @@ fun AvailableColorTuplesSheet(
                                 backgroundColor = Color.Transparent
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.AddCircleOutline,
+                                    imageVector = Icons.Outlined.AddCircle,
                                     contentDescription = stringResource(R.string.add),
                                     tint = MaterialTheme.colorScheme.onSecondary,
                                     modifier = Modifier.size(24.dp)
@@ -485,7 +485,9 @@ fun AvailableColorTuplesSheet(
     )
     colorPicker()
 
-    if (settingsState.isDynamicColors) onDismiss()
+    LaunchedEffect(settingsState.isDynamicColors, visible) {
+        if (settingsState.isDynamicColors && visible) onDismiss()
+    }
 }
 
 @Composable

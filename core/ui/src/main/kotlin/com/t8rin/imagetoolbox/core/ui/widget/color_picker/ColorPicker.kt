@@ -20,12 +20,17 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,17 +45,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import com.smarttoolfactory.colordetector.util.ColorUtil
-import com.smarttoolfactory.colorpicker.selector.SelectorRectSaturationValueHSV
+import com.t8rin.colors.util.ColorUtil
+import com.t8rin.gesture.detectMotionEvents
+import com.t8rin.imagetoolbox.core.resources.shapes.MaterialStarShape
+import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
@@ -132,7 +149,7 @@ fun ColorPicker(
 @Immutable
 data class HueSliderThumbConfig(
     val height: Dp = 12.dp,
-    val color: Color = Color.White,
+    val color: Color = Color.Unspecified,
     val borderSize: Dp = 2.dp,
     val borderRadius: Float = 100f,
     val withAlpha: Boolean = false
@@ -183,10 +200,43 @@ private fun HueSlider(
         }
 
         if (sliderSize.height > 0f) {
+            val colorScheme = MaterialTheme.colorScheme
+            val isDark = LocalSettingsState.current.isNightMode
+
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val thumbY = (hue / 359f) * (sliderSize.height - thumbHeightPx)
+
                 drawRoundRect(
-                    color = thumbConfig.color,
+                    color = thumbConfig.color.takeOrElse {
+                        if (isDark) {
+                            colorScheme.onPrimaryFixed
+                        } else {
+                            colorScheme.primaryFixed
+                        }
+                    },
+                    topLeft = Offset(
+                        x = thumbConfig.borderSize.toPx() / 2 + 4f,
+                        y = thumbY + 4f
+                    ),
+                    size = Size(
+                        width = sliderSize.width - thumbConfig.borderSize.toPx() - 8f,
+                        height = thumbHeightPx - 8f
+                    ),
+                    style = Stroke(width = thumbConfig.borderSize.toPx()),
+                    cornerRadius = CornerRadius(
+                        thumbConfig.borderRadius,
+                        thumbConfig.borderRadius
+                    )
+                )
+
+                drawRoundRect(
+                    color = thumbConfig.color.takeOrElse {
+                        if (isDark) {
+                            colorScheme.primaryFixed
+                        } else {
+                            colorScheme.onPrimaryFixed
+                        }
+                    },
                     topLeft = Offset(
                         x = thumbConfig.borderSize.toPx() / 2,
                         y = thumbY
@@ -270,13 +320,45 @@ private fun AlphaSlider(
             )
         }
 
-        if (!sliderSize.isEmpty()) {
+        if (sliderSize.height > 0f) {
+            val colorScheme = MaterialTheme.colorScheme
+            val isDark = LocalSettingsState.current.isNightMode
+
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val thumbY = (1f - alpha) * (sliderSize.height - thumbHeightPx)
                 drawRoundRect(
-                    color = thumbConfig.color,
+                    color = thumbConfig.color.takeOrElse {
+                        if (isDark) {
+                            colorScheme.onPrimaryFixed
+                        } else {
+                            colorScheme.primaryFixed
+                        }
+                    },
                     topLeft = Offset(
-                        x = thumbConfig.borderSize.toPx() / 2f,
+                        x = thumbConfig.borderSize.toPx() / 2 + 4f,
+                        y = thumbY + 4f
+                    ),
+                    size = Size(
+                        width = sliderSize.width - thumbConfig.borderSize.toPx() - 8f,
+                        height = thumbHeightPx - 8f
+                    ),
+                    style = Stroke(width = thumbConfig.borderSize.toPx()),
+                    cornerRadius = CornerRadius(
+                        thumbConfig.borderRadius,
+                        thumbConfig.borderRadius
+                    )
+                )
+
+                drawRoundRect(
+                    color = thumbConfig.color.takeOrElse {
+                        if (isDark) {
+                            colorScheme.primaryFixed
+                        } else {
+                            colorScheme.onPrimaryFixed
+                        }
+                    },
+                    topLeft = Offset(
+                        x = thumbConfig.borderSize.toPx() / 2,
                         y = thumbY
                     ),
                     size = Size(
@@ -284,7 +366,10 @@ private fun AlphaSlider(
                         height = thumbHeightPx
                     ),
                     style = Stroke(width = thumbConfig.borderSize.toPx()),
-                    cornerRadius = CornerRadius(thumbConfig.borderRadius, thumbConfig.borderRadius)
+                    cornerRadius = CornerRadius(
+                        thumbConfig.borderRadius,
+                        thumbConfig.borderRadius
+                    )
                 )
             }
         }
@@ -299,4 +384,244 @@ private val Color.Companion.colorList by lazy {
             value = 0.8f
         )
     }
+}
+
+/**
+ * Rectangle Saturation and Vale selector for
+ * [HSV](https://en.wikipedia.org/wiki/HSL_and_HSV) color model
+ * @param hue is in [0f..360f] of HSL color
+ * @param value is in [0f..1f] of HSL color
+ * @param selectionRadius radius of selection circle that moves based on touch position
+ * @param onChange callback that returns [hue] and [value]
+ *  when position of touch in this selector has changed.
+ */
+@Composable
+private fun SelectorRectSaturationValueHSV(
+    modifier: Modifier = Modifier,
+    hue: Float,
+    saturation: Float = 0.5f,
+    value: Float = 0.5f,
+    selectionRadius: Dp = Dp.Unspecified,
+    onChange: (Float, Float) -> Unit
+) {
+
+    val valueGradient = valueGradient(hue)
+    val hueSaturation = saturationHSVGradient(hue)
+
+    SelectorRect(
+        modifier = modifier,
+        saturation = saturation,
+        property = value,
+        brushSrc = hueSaturation,
+        brushDst = valueGradient,
+        selectionRadius = selectionRadius,
+        onChange = onChange
+    )
+}
+
+@Composable
+private fun SelectorRect(
+    modifier: Modifier = Modifier,
+    saturation: Float = 0.5f,
+    property: Float = 0.5f,
+    brushSrc: Brush,
+    brushDst: Brush,
+    selectionRadius: Dp = Dp.Unspecified,
+    onChange: (Float, Float) -> Unit
+) {
+
+    BoxWithConstraints(modifier) {
+
+        val density = LocalDensity.current.density
+        val width = constraints.maxWidth.toFloat()
+        val height = constraints.maxHeight.toFloat()
+
+        // Center position of color picker
+        val center = Offset(width / 2, height / 2)
+
+        /**
+         * Circle selector radius for setting [saturation] and [property] by gesture
+         */
+        val selectorRadius =
+            if (selectionRadius != Dp.Unspecified) selectionRadius.value * density
+            else width.coerceAtMost(height) * .04f
+
+        var currentPosition by remember {
+            mutableStateOf(center)
+        }
+
+        val posX = saturation * width
+        val posY = (1 - property) * height
+        currentPosition = Offset(posX, posY)
+
+
+        val canvasModifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectMotionEvents(
+                    onDown = {
+                        val position = it.position
+                        val saturationChange = (position.x / width).coerceIn(0f, 1f)
+                        val valueChange = (1 - (position.y / height)).coerceIn(0f, 1f)
+                        onChange(saturationChange, valueChange)
+                        it.consume()
+
+                    },
+                    onMove = {
+                        val position = it.position
+                        val saturationChange = (position.x / width).coerceIn(0f, 1f)
+                        val valueChange = (1 - (position.y / height)).coerceIn(0f, 1f)
+                        onChange(saturationChange, valueChange)
+                        it.consume()
+                    },
+                    delayAfterDownInMillis = 20
+                )
+            }
+
+        SelectorRectImpl(
+            modifier = canvasModifier,
+            brushSrc = brushSrc,
+            brushDst = brushDst,
+            selectorPosition = currentPosition,
+            selectorRadius = selectorRadius
+        )
+    }
+}
+
+@Composable
+private fun SelectorRectImpl(
+    modifier: Modifier,
+    brushSrc: Brush,
+    brushDst: Brush,
+    selectorPosition: Offset,
+    selectorRadius: Float
+) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Canvas(modifier = modifier) {
+        drawBlendingRectGradient(
+            dst = brushDst,
+            src = brushSrc,
+            blendMode = BlendMode.Multiply
+        )
+        drawHueSelectionCircle(
+            center = selectorPosition,
+            radius = selectorRadius * 2.25f,
+            colorScheme = colorScheme
+        )
+    }
+}
+
+private fun saturationHSVGradient(
+    hue: Float,
+    value: Float = 1f,
+    alpha: Float = 1f,
+    start: Offset = Offset.Zero,
+    end: Offset = Offset(Float.POSITIVE_INFINITY, 0f)
+): Brush {
+    return Brush.linearGradient(
+        colors = listOf(
+            Color.hsv(hue = hue, saturation = 0f, value = value, alpha = alpha),
+            Color.hsv(hue = hue, saturation = 1f, value = value, alpha = alpha)
+        ),
+        start = start,
+        end = end
+    )
+}
+
+/**
+ * Vertical gradient that goes from 1 value to 0 with 90 degree rotation by default.
+ */
+fun valueGradient(
+    hue: Float,
+    alpha: Float = 1f,
+    start: Offset = Offset.Zero,
+    end: Offset = Offset(0f, Float.POSITIVE_INFINITY)
+): Brush {
+    return Brush.linearGradient(
+        colors = listOf(
+            Color.hsv(hue = hue, saturation = 0f, value = 1f, alpha = alpha),
+            Color.hsv(hue = hue, saturation = 0f, value = 0f, alpha = alpha)
+        ),
+        start = start,
+        end = end
+    )
+}
+
+private fun DrawScope.drawBlendingRectGradient(
+    dst: Brush,
+    dstTopLeft: Offset = Offset.Zero,
+    dstSize: Size = this.size,
+    src: Brush,
+    srcTopLeft: Offset = Offset.Zero,
+    srcSize: Size = this.size,
+    blendMode: BlendMode = BlendMode.Multiply
+) {
+    with(drawContext.canvas.nativeCanvas) {
+        val checkPoint = saveLayer(null, null)
+        drawRect(dst, dstTopLeft, dstSize)
+        drawRect(src, srcTopLeft, srcSize, blendMode = blendMode)
+        restoreToCount(checkPoint)
+    }
+}
+
+private fun DrawScope.drawHueSelectionCircle(
+    center: Offset,
+    radius: Float,
+    colorScheme: ColorScheme
+) {
+    fun drawStarOutline(
+        starSize: Float,
+        color: Color,
+        style: DrawStyle = Fill,
+    ) {
+        val outline = MaterialStarShape.createOutline(
+            size = Size(starSize, starSize),
+            layoutDirection = layoutDirection,
+            density = this
+        )
+
+        withTransform(
+            transformBlock = {
+                translate(
+                    left = center.x - starSize / 2f,
+                    top = center.y - starSize / 2f
+                )
+            }
+        ) {
+            drawOutline(
+                outline = outline,
+                color = color,
+                style = style
+            )
+        }
+    }
+
+    drawStarOutline(
+        starSize = radius,
+        color = colorScheme.primaryFixedDim,
+        style = Stroke(width = radius / 4)
+    )
+
+    drawStarOutline(
+        starSize = radius + radius / 8,
+        color = colorScheme.onPrimaryFixed,
+        style = Stroke(width = radius / 8)
+    )
+}
+
+@Preview
+@Composable
+private fun Preview() = ImageToolboxThemeForPreview(true, keyColor = Color.Red) {
+    ColorPicker(
+        selectedColor = Color(0xFF438243),
+        onColorSelected = {},
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+            .height(200.dp),
+        hueSliderConfig = HueSliderThumbConfig(
+            withAlpha = true
+        )
+    )
 }

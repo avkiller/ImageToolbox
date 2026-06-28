@@ -74,6 +74,7 @@ fun PreferenceItemOverload(
     startIcon: (@Composable () -> Unit)? = null,
     endIcon: (@Composable () -> Unit)? = null,
     badge: (@Composable RowScope.() -> Unit)? = null,
+    badgeAlignment: Alignment.Vertical = Alignment.Top,
     shape: Shape = ShapeDefaults.default,
     pressedShape: Shape = ShapeDefaults.pressed,
     containerColor: Color = Color.Unspecified,
@@ -113,6 +114,7 @@ fun PreferenceItemOverload(
                     shape = animatedShape,
                     resultPadding = 0.dp,
                     color = containerColor,
+                    composeColorOnTopOfBackground = containerColor != Color.Transparent,
                     autoShadowElevation = autoShadowElevation
                 )
                 .alpha(animateFloatAsState(targetValue = if (enabled) 1f else 0.5f).value),
@@ -172,7 +174,9 @@ fun PreferenceItemOverload(
                             .weight(1f)
                             .padding(end = 16.dp)
                     ) {
-                        Row {
+                        Row(
+                            verticalAlignment = badgeAlignment
+                        ) {
                             AnimatedContent(
                                 targetState = title,
                                 transitionSpec = { fadeIn() togetherWith fadeOut() },

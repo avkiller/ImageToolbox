@@ -42,15 +42,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
-import androidx.compose.material.icons.rounded.TableChart
-import androidx.compose.material.icons.rounded.Update
-import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -81,7 +72,16 @@ import com.t8rin.imagetoolbox.core.domain.model.FileModel
 import com.t8rin.imagetoolbox.core.domain.remote.RemoteResources
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiCubeLutFilter
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Download
+import com.t8rin.imagetoolbox.core.resources.icons.Search
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
+import com.t8rin.imagetoolbox.core.resources.icons.TableChart
+import com.t8rin.imagetoolbox.core.resources.icons.Update
+import com.t8rin.imagetoolbox.core.resources.icons.Visibility
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.LocalFilterPreviewModelProvider
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
@@ -224,7 +224,7 @@ internal fun FilterSelectionCubeLutBottomContent(
                                         modifier = Modifier.padding(start = 4.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                            imageVector = Icons.Rounded.ArrowBack,
                                             contentDescription = stringResource(R.string.exit),
                                             tint = MaterialTheme.colorScheme.onSurface
                                         )
@@ -267,7 +267,7 @@ internal fun FilterSelectionCubeLutBottomContent(
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Search,
+                                    imageVector = Icons.Outlined.Search,
                                     contentDescription = stringResource(R.string.search_here)
                                 )
                             }
@@ -328,7 +328,7 @@ internal fun FilterSelectionCubeLutBottomContent(
                                                     )
                                                     .diskCacheKey(uri + previewModel.data.hashCode())
                                                     .memoryCacheKey(uri + previewModel.data.hashCode())
-                                                    .size(300, 300)
+                                                    .size(160, 160)
                                                     .build()
                                             },
                                             shape = MaterialTheme.shapes.medium,
@@ -383,7 +383,7 @@ internal fun FilterSelectionCubeLutBottomContent(
                             )
                         )
                         Icon(
-                            imageVector = Icons.Rounded.SearchOff,
+                            imageVector = Icons.Outlined.SearchOff,
                             contentDescription = null,
                             modifier = Modifier
                                 .weight(2f)

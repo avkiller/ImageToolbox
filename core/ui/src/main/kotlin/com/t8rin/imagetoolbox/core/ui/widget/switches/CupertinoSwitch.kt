@@ -20,7 +20,6 @@
 package com.t8rin.imagetoolbox.core.ui.widget.switches
 
 import android.os.Build
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -55,10 +54,12 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -198,13 +199,15 @@ fun LiquidGlassSwitch(
                 onCheckedChange = null,
                 modifier = internalModifier,
                 colors = CupertinoSwitchDefaults.transparentColors(),
-                interactionSource = realInteractionSource
+                interactionSource = remember { MutableInteractionSource() }
             )
 
             LiquidToggle(
                 checked = { checked },
                 onCheckedChange = onCheckedChange,
-                backdrop = rememberCanvasBackdrop { drawRect(backgroundColor) },
+                backdrop = rememberCanvasBackdrop {
+                    drawRect(backgroundColor.takeOrElse { Color.Transparent })
+                },
                 enabled = enabled,
                 colors = colors,
                 interactionSource = realInteractionSource,

@@ -22,12 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.data.saving.io.UriReadable
 import com.t8rin.imagetoolbox.core.data.utils.outputStream
+import com.t8rin.imagetoolbox.core.domain.model.RectModel
 import com.t8rin.imagetoolbox.core.domain.saving.io.Writeable
 import com.t8rin.imagetoolbox.core.domain.utils.applyUse
+import com.t8rin.imagetoolbox.core.domain.utils.safeCast
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.utils.appContext
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import com.t8rin.imagetoolbox.feature.pdf_tools.domain.model.PdfMetadata
-import com.t8rin.logger.makeLog
 import com.tom_roush.harmony.awt.AWTColor
 import com.tom_roush.pdfbox.io.MemoryUsageSetting
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -35,6 +37,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation
 import com.tom_roush.pdfbox.pdmodel.PDPage
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
 import com.tom_roush.pdfbox.pdmodel.PDResources
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
@@ -46,6 +49,10 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState
 import java.util.Calendar
 import kotlin.math.roundToInt
+
+private const val PDF_MAIN_MEMORY_LIMIT_BYTES = 16L * 1024L * 1024L
+
+internal val BaseMemoryConfig = MemoryUsageSetting.setupMixed(PDF_MAIN_MEMORY_LIMIT_BYTES)
 
 internal fun PDDocument.save(
     writeable: Writeable,
@@ -171,7 +178,8 @@ internal fun safeOpenPdf(
     return try {
         PDDocument.load(
             stream,
-            password.orEmpty()
+            password.orEmpty(),
+            BaseMemoryConfig,
         )
     } catch (t: Throwable) {
         if (t is InvalidPasswordException) throw t
@@ -198,9 +206,72 @@ internal fun Bitmap.asXObject(
 internal fun PDDocument.getAllImages(): List<PDImageXObject> =
     pages.flatMap { it.getResources().getImages() }
 
-internal inline fun <T> createPdf(action: (PDDocument) -> T) = PDDocument().use(action)
+internal inline fun <T> createPdf(action: (PDDocument) -> T) =
+    PDDocument(BaseMemoryConfig).use(action)
 
 internal fun List<Int>?.orAll(document: PDDocument) = orEmpty().ifEmpty { document.pageIndices }
+
+internal inline fun PDDocument.transformImages(
+    quality: Float,
+    transform: (Bitmap) -> Bitmap
+) {
+    pages.forEach { page ->
+        page.resources.apply {
+            for (name in xObjectNames) {
+                val image = getXObject(name)
+                    .safeCast<PDImageXObject>()
+                    ?.image
+                    ?.let(transform)
+                    ?.asXObject(
+                        document = this@transformImages,
+                        quality = quality
+                    ) ?: continue
+
+                put(name, image)
+            }
+        }
+    }
+}
+
+internal fun PDRectangle.crop(
+    rotation: Int,
+    rect: RectModel
+): PDRectangle {
+    val width = width
+    val height = height
+    val originX = lowerLeftX
+    val originY = lowerLeftY
+
+    return when (rotation) {
+        90 -> PDRectangle(
+            originX + rect.top * width,
+            originY + rect.left * height,
+            (rect.bottom - rect.top) * width,
+            (rect.right - rect.left) * height
+        )
+
+        180 -> PDRectangle(
+            originX + (1f - rect.right) * width,
+            originY + rect.top * height,
+            (rect.right - rect.left) * width,
+            (rect.bottom - rect.top) * height
+        )
+
+        270 -> PDRectangle(
+            originX + (1f - rect.bottom) * width,
+            originY + (1f - rect.right) * height,
+            (rect.bottom - rect.top) * width,
+            (rect.right - rect.left) * height
+        )
+
+        else -> PDRectangle(
+            originX + rect.left * width,
+            originY + (1f - rect.bottom) * height,
+            (rect.right - rect.left) * width,
+            (rect.bottom - rect.top) * height
+        )
+    }
+}
 
 private fun PDResources.getImages(): List<PDImageXObject> {
     val images: MutableList<PDImageXObject> = mutableListOf()

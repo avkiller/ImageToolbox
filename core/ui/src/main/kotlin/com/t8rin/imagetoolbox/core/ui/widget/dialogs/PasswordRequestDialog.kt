@@ -18,11 +18,7 @@
 package com.t8rin.imagetoolbox.core.ui.widget.dialogs
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Password
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +35,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Password
+import com.t8rin.imagetoolbox.core.resources.icons.Shield
+import com.t8rin.imagetoolbox.core.resources.icons.Visibility
+import com.t8rin.imagetoolbox.core.resources.icons.VisibilityOff
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -100,7 +100,7 @@ fun PasswordRequestDialog(
                 },
                 startIcon = {
                     Icon(
-                        imageVector = Icons.Filled.Password,
+                        imageVector = Icons.Rounded.Password,
                         contentDescription = null
                     )
                 },

@@ -17,10 +17,11 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.other
 
-import android.content.Context
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -32,6 +33,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -40,11 +42,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -54,56 +54,89 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.AccessibilityManager
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceIn
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.Error
+import com.t8rin.imagetoolbox.core.resources.icons.Folder
+import com.t8rin.imagetoolbox.core.resources.icons.Memory
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
+import com.t8rin.imagetoolbox.core.ui.theme.blend
 import com.t8rin.imagetoolbox.core.ui.theme.harmonizeWithPrimary
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
+import com.t8rin.imagetoolbox.core.ui.utils.animation.lessSpringySpec
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.requestStoragePermission
+import com.t8rin.imagetoolbox.core.ui.utils.helper.EnPreview
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalScreenSize
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
+import com.t8rin.imagetoolbox.core.ui.widget.icon_shape.IconShapeContainer
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.AutoCornersShape
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.autoElevatedBorder
+import com.t8rin.imagetoolbox.core.utils.extractMessage
 import com.t8rin.modalsheet.FullscreenPopup
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
+import kotlin.math.abs
 
 @Composable
 fun ToastHost(
-    hostState: ToastHostState = LocalToastHostState.current,
+    hostState: ToastHostState = AppToastHost.state,
     modifier: Modifier = Modifier.fillMaxSize(),
     alignment: Alignment = Alignment.BottomCenter,
     transitionSpec: AnimatedContentTransitionScope<ToastData?>.() -> ContentTransform = { ToastDefaults.transition },
-    toast: @Composable (ToastData) -> Unit = { Toast(it) }
+    toast: @Composable (ToastData) -> Unit = { Toast(it) },
+    enableSwipes: Boolean = true
 ) {
+    val screenSize = LocalScreenSize.current
+    val sizeMin = screenSize.width.coerceAtMost(screenSize.height)
+
     val currentToastData = hostState.currentToastData
     val accessibilityManager = LocalAccessibilityManager.current
+    val activity = LocalActivity.current
     LaunchedEffect(currentToastData) {
         if (currentToastData != null) {
+            if (currentToastData.visuals.message == AppToastHost.PERMISSION) {
+                activity?.requestStoragePermission()
+                return@LaunchedEffect
+            }
+
             val duration = currentToastData.visuals.duration.toMillis(accessibilityManager)
             delay(duration)
             currentToastData.dismiss()
         }
     }
 
+    val scope = rememberCoroutineScope()
+    val offsetX = remember { Animatable(0f) }
+    val alpha = remember { Animatable(1f) }
+    val threshold = 300f
 
     FullscreenPopup(
         placeAboveAll = true
@@ -112,10 +145,93 @@ fun ToastHost(
             modifier = Modifier.zIndex(100f),
             targetState = currentToastData,
             transitionSpec = transitionSpec
-        ) {
-            Box(modifier = modifier) {
-                Box(modifier = Modifier.align(alignment)) {
-                    it?.let { toast(it) }
+        ) { data ->
+            if (enableSwipes) {
+                val reset: CoroutineScope.() -> Unit = {
+                    launch {
+                        alpha.animateTo(
+                            targetValue = 1f,
+                            animationSpec = lessSpringySpec()
+                        )
+                    }
+                    launch {
+                        offsetX.animateTo(
+                            targetValue = 0f,
+                            animationSpec = lessSpringySpec()
+                        )
+                    }
+                }
+
+                LaunchedEffect(data) {
+                    reset()
+                }
+
+                Box(modifier = modifier) {
+                    data?.let { toastData ->
+                        Box(
+                            modifier = Modifier
+                                .align(alignment)
+                                .padding(
+                                    bottom = sizeMin * 0.2f,
+                                    top = 24.dp,
+                                    start = 12.dp,
+                                    end = 12.dp
+                                )
+                                .imePadding()
+                                .systemBarsPadding()
+                                .graphicsLayer {
+                                    compositingStrategy = CompositingStrategy.Offscreen
+                                    this.alpha = alpha.value
+                                    translationX = offsetX.value
+                                }
+                                .pointerInput(toastData) {
+                                    detectHorizontalDragGestures(
+                                        onHorizontalDrag = { _, drag ->
+                                            scope.launch {
+                                                val new = offsetX.value + drag
+
+                                                launch {
+                                                    offsetX.snapTo(
+                                                        targetValue = new
+                                                    )
+                                                }
+
+                                                launch {
+                                                    alpha.snapTo(
+                                                        targetValue = lerp(
+                                                            start = 1f,
+                                                            stop = 0.35f,
+                                                            fraction = (abs(new) / threshold).fastCoerceIn(
+                                                                0f,
+                                                                1f
+                                                            )
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            scope.launch {
+                                                if (abs(offsetX.value) > threshold) {
+                                                    toastData.dismiss()
+                                                    reset()
+                                                } else {
+                                                    reset()
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                        ) {
+                            toast(toastData)
+                        }
+                    }
+                }
+            } else {
+                Box(modifier = modifier) {
+                    Box(modifier = Modifier.align(alignment)) {
+                        data?.let { toast(it) }
+                    }
                 }
             }
         }
@@ -138,51 +254,74 @@ fun Toast(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        modifier = if (modifier != Modifier) modifier else
-            Modifier
-                .heightIn(min = 48.dp)
-                .widthIn(min = 0.dp, max = (sizeMin * 0.7f))
-                .padding(
-                    bottom = sizeMin * 0.2f,
-                    top = 24.dp,
-                    start = 12.dp,
-                    end = 12.dp
-                )
-                .imePadding()
-                .systemBarsPadding()
-                .autoElevatedBorder(
-                    color = MaterialTheme.colorScheme
-                        .outlineVariant(0.3f, contentColor)
-                        .copy(alpha = 0.92f),
-                    shape = shape,
-                    autoElevation = animateDpAsState(
-                        if (LocalSettingsState.current.drawContainerShadows) 6.dp
-                        else 0.dp
-                    ).value
-                )
-                .alpha(0.95f),
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .widthIn(min = 0.dp, max = (sizeMin * 0.7f))
+            .autoElevatedBorder(
+                color = MaterialTheme.colorScheme
+                    .outlineVariant(0.3f, contentColor)
+                    .copy(alpha = 0.92f),
+                shape = shape,
+                autoElevation = animateDpAsState(
+                    if (LocalSettingsState.current.drawContainerShadows) 6.dp
+                    else 0.dp
+                ).value
+            )
+            .alpha(0.95f),
         shape = shape
     ) {
         Row(
-            Modifier.padding(15.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            toastData.visuals.icon?.let {
-                Icon(
-                    imageVector = it,
-                    contentDescription = null
-                )
+            toastData.visuals.icon?.let { icon ->
+                IconShapeContainer(
+                    containerColor = containerColor
+                        .blend(MaterialTheme.colorScheme.secondary, 0.5f)
+                        .blend(MaterialTheme.colorScheme.primaryContainer, 0.05f),
+                    contentColor = contentColor
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
             }
-            Spacer(modifier = Modifier.size(8.dp))
             Text(
                 style = MaterialTheme.typography.bodySmall,
                 text = toastData.visuals.message,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(end = 5.dp)
+                textAlign = TextAlign.Center
             )
         }
     }
+}
+
+@EnPreview
+@Composable
+private fun Preview() = ImageToolboxThemeForPreview(
+    isDarkTheme = false,
+    keyColor = Color.Yellow,
+    mapSettings = {
+        it.copy(drawContainerShadows = false)
+    }
+) {
+    Toast(
+        object : ToastData {
+            override val visuals: ToastVisuals
+                get() = object : ToastVisuals {
+                    override val message: String
+                        get() = "File successfully saved to Documents/ImageToolbox"
+                    override val icon: ImageVector
+                        get() = Icons.Rounded.Folder
+                    override val duration: ToastDuration
+                        get() = ToastDuration.Long
+                }
+
+            override fun dismiss() = Unit
+        }
+    )
 }
 
 @Stable
@@ -315,7 +454,7 @@ object ToastDefaults {
         @Composable
         get() = MaterialTheme.colorScheme.inverseSurface.harmonizeWithPrimary()
 
-    val shape: Shape @Composable get() = ShapeDefaults.extremeLarge
+    val shape: Shape @Composable get() = AutoCornersShape(32.dp)
 }
 
 private fun ToastDuration.toMillis(
@@ -329,25 +468,22 @@ private fun ToastDuration.toMillis(
     ) ?: original
 }
 
-@Composable
-fun rememberToastHostState() = remember { ToastHostState() }
-
-val LocalToastHostState = compositionLocalOf { ToastHostState() }
-
 suspend fun ToastHostState.showFailureToast(
-    context: Context,
     throwable: Throwable
 ) = showFailureToast(
-    message = context.getString(
-        R.string.smth_went_wrong,
-        throwable.localizedMessage ?: ""
-    )
+    message = throwable.extractMessage(),
+    icon = if (throwable is OutOfMemoryError) {
+        Icons.Outlined.Memory
+    } else {
+        null
+    }
 )
 
 suspend fun ToastHostState.showFailureToast(
-    message: String
+    message: String,
+    icon: ImageVector? = null
 ) = showToast(
     message = message,
-    icon = Icons.Rounded.ErrorOutline,
+    icon = icon ?: Icons.Outlined.Error,
     duration = ToastDuration.Long
 )

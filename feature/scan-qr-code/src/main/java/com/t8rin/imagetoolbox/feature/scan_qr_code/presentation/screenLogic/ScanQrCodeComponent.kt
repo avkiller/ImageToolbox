@@ -34,15 +34,19 @@ import com.t8rin.imagetoolbox.core.domain.image.model.Quality
 import com.t8rin.imagetoolbox.core.domain.model.QrType
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.utils.onResult
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
 import com.t8rin.imagetoolbox.core.filters.domain.FilterParamsInteractor
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsProvider
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.settings.presentation.model.toUiFont
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.scan_qr_code.domain.ImageBarcodeReader
 import com.t8rin.imagetoolbox.feature.scan_qr_code.presentation.components.QrPreviewParams
 import dagger.assisted.Assisted
@@ -107,12 +111,11 @@ class ScanQrCodeComponent @AssistedInject internal constructor(
 
     fun saveBitmap(
         bitmap: Bitmap,
-        oneTimeSaveLocationUri: String?,
-        onComplete: (saveResult: SaveResult) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
         savingJob = trackProgress {
             _isSaving.update { true }
-            onComplete(
+            parseSaveResult(
                 fileController.save(
                     saveTarget = ImageSaveTarget(
                         imageInfo = ImageInfo(
@@ -136,8 +139,7 @@ class ScanQrCodeComponent @AssistedInject internal constructor(
     }
 
     fun shareImage(
-        bitmap: Bitmap,
-        onComplete: () -> Unit
+        bitmap: Bitmap
     ) {
         _isSaving.value = false
         savingJob?.cancel()
@@ -153,7 +155,7 @@ class ScanQrCodeComponent @AssistedInject internal constructor(
                     image = image,
                     onComplete = {
                         _isSaving.value = false
-                        onComplete()
+                        AppToastHost.showConfetti()
                     }
                 )
             }
@@ -190,14 +192,21 @@ class ScanQrCodeComponent @AssistedInject internal constructor(
         }
     }
 
-    fun processFilterTemplateFromQrContent(
-        onSuccess: (filterName: String, filtersCount: Int) -> Unit
-    ) {
+    fun processFilterTemplateFromQrContent() {
         componentScope.launch {
             if (filterParamsInteractor.isValidTemplateFilter(params.content.raw)) {
                 filterParamsInteractor.addTemplateFilterFromString(
                     string = params.content.raw,
-                    onSuccess = onSuccess,
+                    onSuccess = { filterName, filtersCount ->
+                        AppToastHost.showToast(
+                            message = getString(
+                                R.string.added_filter_template,
+                                filterName,
+                                filtersCount
+                            ),
+                            icon = Icons.Outlined.AutoFixHigh
+                        )
+                    },
                     onFailure = {}
                 )
             }
@@ -210,12 +219,14 @@ class ScanQrCodeComponent @AssistedInject internal constructor(
         _params.update { params }
     }
 
-    fun readBarcodeFromImage(
-        image: Any,
-        onFailure: (Throwable) -> Unit = {}
-    ) {
+    fun readBarcodeFromImage(image: Any) {
         componentScope.launch {
-            syncReadBarcodeFromImage(image).onFailure(onFailure)
+            syncReadBarcodeFromImage(image).onFailure {
+                AppToastHost.showFailureToast(
+                    Throwable(getString(R.string.no_barcode_found), it)
+                )
+            }
+            processFilterTemplateFromQrContent()
         }
     }
 

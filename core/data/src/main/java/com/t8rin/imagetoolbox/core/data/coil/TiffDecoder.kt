@@ -39,6 +39,7 @@ internal class TiffDecoder private constructor(
     private val options: Options
 ) : Decoder {
 
+    @Suppress("DEPRECATION")
     override suspend fun decode(): DecodeResult? {
         val config = options.bitmapConfig.takeIf {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -46,9 +47,11 @@ internal class TiffDecoder private constructor(
             } else true
         } ?: Bitmap.Config.ARGB_8888
 
-        val decoded = TiffBitmapFactory.decodeFile(
-            source.file().toFile()
-        ) ?: return null
+        val decoded = runCatching {
+            TiffBitmapFactory.decodeFile(
+                source.file().toFile()
+            )
+        }.getOrNull() ?: return null
 
         val image = decoded
             .createScaledBitmap(options.size)

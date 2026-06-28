@@ -35,14 +35,18 @@ import com.t8rin.imagetoolbox.feature.recognize.text.domain.DownloadData
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.ImageTextReader
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.OCRLanguage
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.OcrEngineMode
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.PaddleOCRModel
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionData
+import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionEngine
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.RecognitionType
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.SegmentationMode
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.TessConstants
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.TessParams
 import com.t8rin.imagetoolbox.feature.recognize.text.domain.TextRecognitionResult
+import com.t8rin.neural_tools.ocr.PaddleOCR
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -78,17 +82,38 @@ internal class AndroidImageTextReader @Inject constructor(
     override suspend fun getTextFromImage(
         type: RecognitionType,
         languageCode: String,
+        recognitionEngine: RecognitionEngine,
+        paddleOCRModel: PaddleOCRModel,
         segmentationMode: SegmentationMode,
         ocrEngineMode: OcrEngineMode,
         parameters: TessParams,
         model: Any?,
         onProgress: (Int) -> Unit
     ): TextRecognitionResult = withContext(defaultDispatcher) {
-        val empty = TextRecognitionResult.Success(RecognitionData("", 0))
+        val empty = TextRecognitionResult.Success(RecognitionData.Empty)
 
         if (model == null) return@withContext empty
 
         val image = model as? Bitmap ?: (imageGetter.getImage(model) ?: return@withContext empty)
+
+        if (recognitionEngine == RecognitionEngine.PaddleOCRv5 || recognitionEngine == RecognitionEngine.PaddleOCRv6) {
+            return@withContext runCatching {
+                PaddleOCR.recognize(
+                    image = image,
+                    model = recognitionEngine.toPaddleModel(paddleOCRModel)
+                )?.let { result ->
+                    TextRecognitionResult.Success(
+                        RecognitionData(
+                            text = result.text,
+                            accuracy = result.accuracy,
+                            hocr = result.hocr
+                        )
+                    )
+                } ?: TextRecognitionResult.NoPaddleData
+            }.getOrElse {
+                TextRecognitionResult.Error(it)
+            }
+        }
 
         val needToDownload = getNeedToDownloadLanguages(type, languageCode)
 
@@ -136,7 +161,7 @@ internal class AndroidImageTextReader @Inject constructor(
                 setImage(image.copy(Bitmap.Config.ARGB_8888, false))
             }
 
-            api.getHOCRText(0)
+            val hocr = api.getHOCRText(0)
 
             val text = api.utF8Text
 
@@ -145,7 +170,8 @@ internal class AndroidImageTextReader @Inject constructor(
             TextRecognitionResult.Success(
                 RecognitionData(
                     text = text,
-                    accuracy = if (text.isEmpty()) 0 else accuracy
+                    accuracy = if (text.isEmpty()) 0 else accuracy,
+                    hocr = hocr
                 )
             )
         }.let {
@@ -163,6 +189,23 @@ internal class AndroidImageTextReader @Inject constructor(
             }
         }
     }
+
+    override fun isPaddleOCRModelDownloaded(
+        model: PaddleOCRModel
+    ): Boolean = PaddleOCR.isModelDownloaded(model.toNeural())
+
+    override fun downloadPaddleOCRModel(
+        model: PaddleOCRModel
+    ) = PaddleOCR.startDownload(model.toNeural()).map {
+        DownloadProgress(
+            currentPercent = it.currentPercent,
+            currentTotalSize = it.currentTotalSize
+        )
+    }
+
+    override fun deletePaddleOCRModel(
+        model: PaddleOCRModel
+    ) = PaddleOCR.deleteModel(model.toNeural())
 
     private fun getNeedToDownloadLanguages(
         type: RecognitionType,
@@ -374,3 +417,25 @@ internal class AndroidImageTextReader @Inject constructor(
         }
     }
 }
+
+private fun PaddleOCRModel.toNeural(): PaddleOCR.Model = when (this) {
+    PaddleOCRModel.CJK -> PaddleOCR.Model.CJK
+    PaddleOCRModel.Korean -> PaddleOCR.Model.Korean
+    PaddleOCRModel.Latin -> PaddleOCR.Model.Latin
+    PaddleOCRModel.EastSlavic -> PaddleOCR.Model.EastSlavic
+    PaddleOCRModel.Thai -> PaddleOCR.Model.Thai
+    PaddleOCRModel.Greek -> PaddleOCR.Model.Greek
+    PaddleOCRModel.English -> PaddleOCR.Model.English
+    PaddleOCRModel.Cyrillic -> PaddleOCR.Model.Cyrillic
+    PaddleOCRModel.Arabic -> PaddleOCR.Model.Arabic
+    PaddleOCRModel.Devanagari -> PaddleOCR.Model.Devanagari
+    PaddleOCRModel.Tamil -> PaddleOCR.Model.Tamil
+    PaddleOCRModel.Telugu -> PaddleOCR.Model.Telugu
+    PaddleOCRModel.UniversalV6 -> PaddleOCR.Model.UniversalV6
+}
+
+private fun RecognitionEngine.toPaddleModel(paddleOCRModel: PaddleOCRModel): PaddleOCR.Model =
+    when (this) {
+        RecognitionEngine.PaddleOCRv6 -> PaddleOCR.Model.UniversalV6
+        else -> paddleOCRModel.toNeural()
+    }

@@ -25,8 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AddCircleOutline
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,10 +39,12 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AddCircle
 import com.t8rin.imagetoolbox.core.resources.icons.Signature
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.theme.outlineVariant
 import com.t8rin.imagetoolbox.core.ui.utils.helper.EnPreview
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.hapticsClickable
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
@@ -66,7 +67,7 @@ fun SignatureSelector(
         title = stringResource(R.string.draw_signature),
         subtitle = stringResource(R.string.draw_signature_sub),
         startIcon = Icons.Outlined.Signature,
-        endIcon = Icons.Rounded.AddCircleOutline,
+        endIcon = Icons.Outlined.AddCircle,
         modifier = Modifier.fillMaxWidth(),
         bottomContent = if (savedSignatures.isNotEmpty()) {
             {
@@ -77,7 +78,8 @@ fun SignatureSelector(
                         end = 16.dp,
                         bottom = 16.dp
                     ),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    flingBehavior = enhancedFlingBehavior()
                 ) {
                     items(savedSignatures) { signature ->
                         Picture(

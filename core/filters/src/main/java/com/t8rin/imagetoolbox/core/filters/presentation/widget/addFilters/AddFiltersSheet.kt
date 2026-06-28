@@ -21,7 +21,6 @@ import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -43,12 +42,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
@@ -58,10 +51,10 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,13 +67,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.t8rin.imagetoolbox.core.filters.presentation.model.UiFilter
-import com.t8rin.imagetoolbox.core.filters.presentation.utils.collectAsUiState
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterPreviewSheet
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterSelectionItem
 import com.t8rin.imagetoolbox.core.filters.presentation.widget.FilterTemplateCreationSheetComponent
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Search
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
+import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalResourceManager
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBottomSheetDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -96,6 +96,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
 import com.t8rin.imagetoolbox.core.ui.widget.utils.rememberRetainedLazyListState
+import com.t8rin.imagetoolbox.core.utils.getString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -113,29 +114,26 @@ fun AddFiltersSheet(
     onFilterPickedWithParams: (UiFilter<*>) -> Unit,
     canAddTemplates: Boolean = true
 ) {
-    val favoriteFilters by component.favoritesFlow.collectAsUiState()
+    val favoriteFilters by component.favoritesFlow.collectAsStateWithLifecycle()
 
-    val tabs: List<UiFilter.Group> by remember(canAddTemplates, favoriteFilters) {
-        derivedStateOf {
-            buildList {
-                if (canAddTemplates) {
-                    add(UiFilter.Group.Template)
-                }
-                add(UiFilter.Group.Favorite(favoriteFilters))
-                addAll(UiFilter.groups)
+    val tabs: List<UiFilter.Group> = remember(canAddTemplates, favoriteFilters) {
+        buildList {
+            if (canAddTemplates) {
+                add(UiFilter.Group.Template)
             }
+            add(UiFilter.Group.Favorite(favoriteFilters))
+            addAll(UiFilter.groups)
         }
+    }
+    val favoriteFilterKeys = remember(favoriteFilters) {
+        favoriteFilters.mapTo(HashSet()) { it::class.java.name }
     }
 
     val haptics = LocalHapticFeedback.current
     val pagerState = rememberPagerState(
         pageCount = { tabs.size },
-        initialPage = 2
+        initialPage = if (canAddTemplates) 2 else 1
     )
-
-    val onRequestFilterMapping = component::filterToTransformation
-
-    val essentials = rememberLocalEssentials()
 
     var isSearching by rememberSaveable {
         mutableStateOf(false)
@@ -143,34 +141,35 @@ fun AddFiltersSheet(
     var searchKeyword by rememberSaveable(isSearching) {
         mutableStateOf("")
     }
-    val allFilters = remember {
-        tabs.flatMap { group ->
-            group.filters(canAddTemplates).sortedBy { essentials.getString(it.title) }
+    val allFilters = remember(canAddTemplates) {
+        UiFilter.groups.flatMap { group ->
+            group.filters(canAddTemplates).sortedBy { getString(it.title) }
         }
     }
     var filtersForSearch by remember(allFilters) {
         mutableStateOf(allFilters)
     }
-    LaunchedEffect(searchKeyword) {
-        withContext(Dispatchers.Default) {
-            delay(400L) // Debounce calculations
-            if (searchKeyword.isEmpty()) {
-                filtersForSearch = allFilters
-                return@withContext
+    val resourceManager = LocalResourceManager.current
+    LaunchedEffect(searchKeyword, allFilters, resourceManager) {
+        delay(400L)
+        val keyword = searchKeyword.trim()
+        filtersForSearch = if (keyword.isEmpty()) {
+            allFilters
+        } else {
+            withContext(Dispatchers.Default) {
+                allFilters.filter {
+                    resourceManager.getString(it.title).contains(
+                        other = keyword,
+                        ignoreCase = true
+                    ) || resourceManager.getStringLocalized(
+                        resId = it.title,
+                        language = Locale.ENGLISH.language
+                    ).contains(
+                        other = keyword,
+                        ignoreCase = true
+                    )
+                }.sortedBy { getString(it.title) }
             }
-
-            filtersForSearch = allFilters.filter {
-                essentials.getString(it.title).contains(
-                    other = searchKeyword,
-                    ignoreCase = true
-                ) || essentials.getStringLocalized(
-                    resId = it.title,
-                    language = Locale.ENGLISH.language
-                ).contains(
-                    other = searchKeyword,
-                    ignoreCase = true
-                )
-            }.sortedBy { essentials.getString(it.title) }
         }
     }
 
@@ -202,6 +201,8 @@ fun AddFiltersSheet(
                                 )
                             }
                         ) {
+                            val scope = rememberCoroutineScope()
+
                             tabs.forEachIndexed { index, (icon, title) ->
                                 val selected = pagerState.currentPage == index
                                 val color by animateColorAsState(
@@ -225,7 +226,7 @@ fun AddFiltersSheet(
                                     selected = selected,
                                     onClick = {
                                         haptics.longPress()
-                                        essentials.launch {
+                                        scope.launch {
                                             pagerState.animateScrollToPage(index)
                                         }
                                     },
@@ -276,7 +277,8 @@ fun AddFiltersSheet(
                                         filter = filter,
                                         isFavoritePage = false,
                                         canOpenPreview = previewBitmap != null,
-                                        favoriteFilters = favoriteFilters,
+                                        showPreviewImage = true,
+                                        isInFavorite = filter::class.java.name in favoriteFilterKeys,
                                         onLongClick = {
                                             component.setPreviewData(filter)
                                         },
@@ -287,7 +289,7 @@ fun AddFiltersSheet(
                                             onVisibleChange(false)
                                             onFilterPicked(filter)
                                         },
-                                        onRequestFilterMapping = onRequestFilterMapping,
+                                        onRequestFilterMapping = component::filterToTransformation,
                                         shape = ShapeDefaults.byIndex(
                                             index = index,
                                             size = filtersForSearch.size
@@ -320,7 +322,7 @@ fun AddFiltersSheet(
                                     )
                                 )
                                 Icon(
-                                    imageVector = Icons.Rounded.SearchOff,
+                                    imageVector = Icons.Outlined.SearchOff,
                                     contentDescription = null,
                                     modifier = Modifier
                                         .weight(2f)
@@ -336,40 +338,46 @@ fun AddFiltersSheet(
                         state = pagerState,
                         beyondViewportPageCount = 2
                     ) { page ->
+                        val showPreviewImages = page == pagerState.settledPage
+
                         when (val group = tabs[page]) {
                             is UiFilter.Group.Template -> {
                                 TemplatesContent(
                                     component = component,
                                     filterTemplateCreationSheetComponent = filterTemplateCreationSheetComponent,
                                     onVisibleChange = onVisibleChange,
-                                    onFilterPickedWithParams = onFilterPickedWithParams
+                                    onFilterPickedWithParams = onFilterPickedWithParams,
+                                    showPreviewImages = showPreviewImages
                                 )
                             }
 
                             is UiFilter.Group.Favorite -> {
                                 FavoritesContent(
                                     component = component,
+                                    favoriteFilters = favoriteFilters,
+                                    favoriteFilterKeys = favoriteFilterKeys,
                                     onVisibleChange = onVisibleChange,
                                     onFilterPickedWithParams = onFilterPickedWithParams,
                                     onFilterPicked = onFilterPicked,
-                                    previewBitmap = previewBitmap
+                                    previewBitmap = previewBitmap,
+                                    showPreviewImages = showPreviewImages
                                 )
                             }
 
                             else -> {
-                                val filters by remember(group, canAddTemplates) {
-                                    derivedStateOf {
-                                        group.filters(canAddTemplates)
-                                    }
+                                val filters = remember(group, canAddTemplates) {
+                                    group.filters(canAddTemplates)
                                 }
                                 OtherContent(
                                     component = component,
                                     currentGroup = group,
                                     filters = filters,
+                                    favoriteFilterKeys = favoriteFilterKeys,
                                     onVisibleChange = onVisibleChange,
                                     onFilterPickedWithParams = onFilterPickedWithParams,
                                     onFilterPicked = onFilterPicked,
-                                    previewBitmap = previewBitmap
+                                    previewBitmap = previewBitmap,
+                                    showPreviewImages = showPreviewImages
                                 )
                             }
                         }
@@ -407,7 +415,7 @@ fun AddFiltersSheet(
                                     modifier = Modifier.padding(start = 4.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit),
                                         tint = MaterialTheme.colorScheme.onSurface
                                     )
@@ -450,7 +458,7 @@ fun AddFiltersSheet(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Search,
+                                imageVector = Icons.Outlined.Search,
                                 contentDescription = stringResource(R.string.search_here)
                             )
                         }

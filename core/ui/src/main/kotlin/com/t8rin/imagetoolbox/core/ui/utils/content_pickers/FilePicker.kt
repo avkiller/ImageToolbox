@@ -27,10 +27,11 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
-import com.t8rin.logger.makeLog
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -63,8 +64,9 @@ private data class FilePickerImpl(
 
 @Stable
 @Immutable
-interface FilePicker {
+interface FilePicker : ResultLauncher {
     fun pickFile()
+    override fun launch() = pickFile()
 }
 
 enum class FileType {
@@ -80,12 +82,12 @@ fun rememberFilePicker(
 ): FilePicker {
     val context = LocalContext.current
 
-    val essentials = rememberLocalEssentials()
+    val scope = rememberCoroutineScope()
 
     val openDocument = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri ->
-            essentials.launch {
+            scope.launch {
                 delay(300)
                 uri?.takeIf {
                     it != Uri.EMPTY
@@ -98,7 +100,7 @@ fun rememberFilePicker(
     val openDocumentMultiple = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
         onResult = { uris ->
-            essentials.launch {
+            scope.launch {
                 delay(300)
                 uris.takeIf { it.isNotEmpty() }?.let(onSuccess) ?: onFailure()
             }
@@ -120,7 +122,7 @@ fun rememberFilePicker(
                 openDocumentMultiple = openDocumentMultiple,
                 onFailure = {
                     onFailure()
-                    essentials.handleFileSystemFailure(it)
+                    AppToastHost.handleFileSystemFailure(it)
                 }
             )
         }
@@ -147,7 +149,7 @@ fun rememberFilePicker(
     onFailure: () -> Unit = {},
     onSuccess: (Uri) -> Unit,
 ): FilePicker = rememberFilePicker(
-    type = FileType.Multiple,
+    type = FileType.Single,
     mimeType = mimeType,
     onFailure = onFailure,
     onSuccess = {

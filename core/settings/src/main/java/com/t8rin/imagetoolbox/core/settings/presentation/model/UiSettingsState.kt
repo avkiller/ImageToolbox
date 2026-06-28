@@ -52,6 +52,7 @@ import com.t8rin.imagetoolbox.core.domain.model.SystemBarsVisibility
 import com.t8rin.imagetoolbox.core.resources.BuildConfig
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.emoji.Emoji
+import com.t8rin.imagetoolbox.core.resources.emoji.Emoji.initEmoji
 import com.t8rin.imagetoolbox.core.settings.domain.model.ColorHarmonizer
 import com.t8rin.imagetoolbox.core.settings.domain.model.CopyToClipboardMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.FastSettingsSide
@@ -83,10 +84,13 @@ data class UiSettingsState(
     val picturePickerMode: PicturePickerMode,
     val clearCacheOnLaunch: Boolean,
     val groupOptionsByTypes: Boolean,
+    val showFavoriteToolsInGroupedMode: Boolean,
+    val showFavoriteAsLast: Boolean,
     val screenList: List<Int>,
     val colorTupleList: List<ColorTuple>,
     val addSequenceNumber: Boolean,
     val saveFolderUri: Uri?,
+    val saveToOriginalFolder: Boolean,
     val filenamePrefix: String,
     val addSizeInFilename: Boolean,
     val addOriginalFilename: Boolean,
@@ -113,11 +117,13 @@ data class UiSettingsState(
     val filenameSuffix: String,
     val defaultImageScaleMode: ImageScaleMode,
     val magnifierEnabled: Boolean,
+    val drawBitmapBorder: Boolean,
     val exifWidgetInitialState: Boolean,
     val screenListWithMaxBrightnessEnforcement: List<Int>,
     val isConfettiEnabled: Boolean,
     val isSecureMode: Boolean,
     val useRandomEmojis: Boolean,
+    val useAnimatedEmojis: Boolean,
     val iconShape: IconShape?,
     val useEmojiAsPrimaryColor: Boolean,
     val dragHandleWidth: Dp,
@@ -166,10 +172,16 @@ data class UiSettingsState(
     val defaultImageFormat: ImageFormat?,
     val defaultQuality: Quality,
     val shapesType: ShapeType,
+    val shapeByInteractionThrottle: Long,
     val filenamePattern: String?,
     val filenameBehavior: FilenameBehavior,
     val flingType: FlingType,
-    val hiddenForShareScreens: List<Int>
+    val hiddenForShareScreens: List<Int>,
+    val keepDateTime: Boolean,
+    val isAlwaysClearExif: Boolean,
+    val enableBackgroundColorForAlphaFormats: Boolean,
+    val showToolsHistory: Boolean,
+    val motionDurationScale: Float,
 )
 
 fun UiSettingsState.isFirstLaunch(
@@ -182,17 +194,19 @@ fun UiSettingsState.isFirstLaunch(
 fun SettingsState.toUiState(
     randomEmojiKey: Any? = null,
 ): UiSettingsState {
-    val allEmojis = Emoji.allIcons()
+    val context = LocalContext.current
+    context.initEmoji()
+
+    val allEmojis = Emoji.allIcons
     val allIconShapes: ImmutableList<IconShape> = IconShape.entries
 
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val isNightMode = nightMode.isNightMode()
 
     val selectedEmojiIndex by remember(selectedEmoji, useRandomEmojis, randomEmojiKey) {
         derivedStateOf {
-            selectedEmoji?.takeIf { it != -1 }?.let {
+            selectedEmoji?.takeIf { it != -1 && allEmojis.isNotEmpty() }?.let {
                 if (useRandomEmojis) allEmojis.indices.random()
                 else it
             }
@@ -332,10 +346,13 @@ fun SettingsState.toUiState(
                 picturePickerMode = PicturePickerMode.fromInt(picturePickerModeInt),
                 clearCacheOnLaunch = clearCacheOnLaunch,
                 groupOptionsByTypes = groupOptionsByTypes,
+                showFavoriteToolsInGroupedMode = showFavoriteToolsInGroupedMode,
+                showFavoriteAsLast = showFavoriteAsLast,
                 screenList = screenList,
                 colorTupleList = colorTupleList,
                 addSequenceNumber = addSequenceNumber,
                 saveFolderUri = saveFolderUri,
+                saveToOriginalFolder = saveToOriginalFolder,
                 filenamePrefix = filenamePrefix,
                 addSizeInFilename = addSizeInFilename,
                 addOriginalFilename = addOriginalFilename,
@@ -362,11 +379,13 @@ fun SettingsState.toUiState(
                 filenameSuffix = filenameSuffix,
                 defaultImageScaleMode = defaultImageScaleMode,
                 magnifierEnabled = magnifierEnabled,
+                drawBitmapBorder = drawBitmapBorder,
                 exifWidgetInitialState = exifWidgetInitialState,
                 screenListWithMaxBrightnessEnforcement = screenListWithMaxBrightnessEnforcement,
                 isConfettiEnabled = isConfettiEnabled,
                 isSecureMode = isSecureMode,
                 useRandomEmojis = useRandomEmojis,
+                useAnimatedEmojis = useAnimatedEmojis,
                 iconShape = iconShape,
                 useEmojiAsPrimaryColor = useEmojiAsPrimaryColor,
                 dragHandleWidth = dragHandleWidth,
@@ -415,10 +434,16 @@ fun SettingsState.toUiState(
                 defaultImageFormat = defaultImageFormat,
                 defaultQuality = defaultQuality,
                 shapesType = shapesType,
+                shapeByInteractionThrottle = shapeByInteractionThrottle,
                 filenamePattern = filenamePattern,
                 filenameBehavior = filenameBehavior,
                 flingType = flingType,
-                hiddenForShareScreens = hiddenForShareScreens
+                hiddenForShareScreens = hiddenForShareScreens,
+                keepDateTime = keepDateTime,
+                isAlwaysClearExif = isAlwaysClearExif,
+                enableBackgroundColorForAlphaFormats = enableBackgroundColorForAlphaFormats,
+                showToolsHistory = showToolsHistory,
+                motionDurationScale = motionDurationScale,
             )
         }
     }.value
@@ -434,7 +459,9 @@ private fun String?.toColorTupleList(): List<ColorTuple> {
                     primary = it,
                     secondary = temp.getOrNull(1)?.toIntOrNull()?.toColor(),
                     tertiary = temp.getOrNull(2)?.toIntOrNull()?.toColor(),
-                    surface = temp.getOrNull(3)?.toIntOrNull()?.toColor()
+                    surface = temp.getOrNull(3)?.toIntOrNull()?.toColor(),
+                    neutralVariant = temp.getOrNull(4)?.toIntOrNull()?.toColor(),
+                    error = temp.getOrNull(5)?.toIntOrNull()?.toColor()
                 )
             )
         }
@@ -455,6 +482,8 @@ fun String.asColorTuple(): ColorTuple {
         secondary = colorTuple.getOrNull(1)?.toIntOrNull()?.let { Color(it) },
         tertiary = colorTuple.getOrNull(2)?.toIntOrNull()?.let { Color(it) },
         surface = colorTuple.getOrNull(3)?.toIntOrNull()?.let { Color(it) },
+        neutralVariant = colorTuple.getOrNull(4)?.toIntOrNull()?.let { Color(it) },
+        error = colorTuple.getOrNull(5)?.toIntOrNull()?.let { Color(it) },
     )
 }
 

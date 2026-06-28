@@ -21,9 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.BorderHorizontal
-import androidx.compose.material.icons.rounded.BorderVertical
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +33,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.utils.roundTo
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.BorderHorizontal
+import com.t8rin.imagetoolbox.core.resources.icons.BorderVertical
 import com.t8rin.imagetoolbox.core.resources.icons.SelectInverse
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedRangeSliderItem
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults

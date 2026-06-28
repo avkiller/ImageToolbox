@@ -23,10 +23,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
-import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getStringLocalized
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.utils.appContext
-import java.util.Locale
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.matchesSearchQuery
 
 @Composable
 internal fun filteredScreenListFor(
@@ -47,6 +45,8 @@ internal fun filteredScreenListFor(
 
     return remember(
         settingsState.groupOptionsByTypes,
+        settingsState.showFavoriteToolsInGroupedMode,
+        settingsState.showFavoriteAsLast,
         settingsState.favoriteScreenList,
         screenSearchKeyword,
         screenList,
@@ -56,11 +56,35 @@ internal fun filteredScreenListFor(
         derivedStateOf {
             when {
                 settingsState.groupOptionsByTypes && (screenSearchKeyword.isEmpty() && !showScreenSearch) -> {
-                    Screen.typedEntries[selectedNavigationItem].entries
+                    val favoriteIndex = if (settingsState.showFavoriteAsLast) {
+                        Screen.typedEntries.size
+                    } else {
+                        0
+                    }
+                    val screenGroupIndex = if (
+                        settingsState.showFavoriteToolsInGroupedMode &&
+                        !settingsState.showFavoriteAsLast
+                    ) {
+                        selectedNavigationItem - 1
+                    } else {
+                        selectedNavigationItem
+                    }
+
+                    if (
+                        settingsState.showFavoriteToolsInGroupedMode &&
+                        selectedNavigationItem == favoriteIndex
+                    ) {
+                        screenList.filter {
+                            it.id in settingsState.favoriteScreenList
+                        }
+                    } else {
+                        Screen.typedEntries.getOrNull(screenGroupIndex)?.entries.orEmpty()
+                    }
                 }
 
                 !settingsState.groupOptionsByTypes && (screenSearchKeyword.isEmpty() && !showScreenSearch) -> {
-                    if (selectedNavigationItem == 0) {
+                    val favoriteIndex = if (settingsState.showFavoriteAsLast) 1 else 0
+                    if (selectedNavigationItem == favoriteIndex) {
                         screenList.filter {
                             it.id in settingsState.favoriteScreenList
                         }
@@ -71,14 +95,7 @@ internal fun filteredScreenListFor(
             }.let { screens ->
                 if (screenSearchKeyword.isNotEmpty() && canSearchScreens) {
                     screens.filter {
-                        val string =
-                            appContext.getString(it.title) + " " + appContext.getString(it.subtitle)
-                        val stringEn = appContext.getStringLocalized(it.title, Locale.ENGLISH)
-                            .plus(" ")
-                            .plus(appContext.getStringLocalized(it.subtitle, Locale.ENGLISH))
-                        stringEn.contains(other = screenSearchKeyword, ignoreCase = true).or(
-                            string.contains(other = screenSearchKeyword, ignoreCase = true)
-                        )
+                        it.matchesSearchQuery(screenSearchKeyword)
                     }
                 } else screens
             }

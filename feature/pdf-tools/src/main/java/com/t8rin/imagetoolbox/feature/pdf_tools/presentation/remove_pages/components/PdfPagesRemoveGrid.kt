@@ -40,10 +40,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.rounded.Pages
-import androidx.compose.material.icons.rounded.Restore
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -67,6 +64,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.toggle
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.CheckCircle
+import com.t8rin.imagetoolbox.core.resources.icons.Pages
+import com.t8rin.imagetoolbox.core.resources.icons.Restore
 import com.t8rin.imagetoolbox.core.ui.theme.ImageToolboxThemeForPreview
 import com.t8rin.imagetoolbox.core.ui.theme.White
 import com.t8rin.imagetoolbox.core.ui.utils.helper.EnPreview
@@ -96,7 +96,8 @@ internal fun PdfPagesRemoveGrid(
     pagesToDelete: List<Int>,
     onClickPage: (Int) -> Unit,
     title: String = stringResource(R.string.pages_selection),
-    coerceHeight: Boolean = true
+    coerceHeight: Boolean = true,
+    pagesCount: Int
 ) {
     var showPageSelector by rememberSaveable {
         mutableStateOf(false)
@@ -290,7 +291,7 @@ internal fun PdfPagesRemoveGrid(
                                 isChecked = transition.targetState,
                                 uncheckedColor = White.copy(0.8f),
                                 checkedColor = MaterialTheme.colorScheme.error,
-                                checkedIcon = Icons.Filled.CheckCircle,
+                                checkedIcon = Icons.Rounded.CheckCircle,
                                 modifier = Modifier
                                     .clip(ShapeDefaults.circle)
                                     .background(
@@ -310,7 +311,8 @@ internal fun PdfPagesRemoveGrid(
         visible = showPageSelector,
         onDismiss = { showPageSelector = false },
         value = pagesToDelete,
-        onValueChange = onUpdatePages
+        onValueChange = onUpdatePages,
+        pagesCount = pagesCount
     )
 }
 
@@ -343,7 +345,8 @@ private fun Preview() = ImageToolboxThemeForPreview(true) {
                 },
                 onUpdatePages = {
                     rotations = it
-                }
+                },
+                pagesCount = 100
             )
         }
 

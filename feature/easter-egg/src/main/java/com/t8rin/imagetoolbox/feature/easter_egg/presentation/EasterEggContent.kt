@@ -37,8 +37,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -68,13 +66,16 @@ import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.t8rin.dynamic.theme.ColorTuple
 import com.t8rin.dynamic.theme.LocalDynamicThemeState
 import com.t8rin.imagetoolbox.core.resources.BuildConfig
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.emoji.Emoji
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.resources.shapes.MaterialStarShape
-import com.t8rin.imagetoolbox.core.ui.utils.confetti.LocalConfettiHostState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.helper.AppVersion
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
@@ -88,7 +89,6 @@ import com.t8rin.imagetoolbox.core.ui.widget.text.marquee
 import com.t8rin.imagetoolbox.feature.easter_egg.presentation.screenLogic.EasterEggComponent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -96,9 +96,8 @@ import kotlin.random.Random
 fun EasterEggContent(
     component: EasterEggComponent
 ) {
-    val confettiHostState = LocalConfettiHostState.current
     val themeState = LocalDynamicThemeState.current
-    val allEmojis = Emoji.allIcons()
+    val allEmojis = Emoji.allIcons
     val emojiData = remember {
         mutableStateListOf<String>().apply {
             addAll(
@@ -135,7 +134,9 @@ fun EasterEggContent(
                         emojiData.forEach { emoji ->
                             EmojiItem(
                                 emoji = emoji,
-                                fontScale = 1f
+                                animatedEmoji = remember(emoji) {
+                                    Emoji.animatedIconFor(emoji.toUri())
+                                }?.toString()
                             )
                         }
                     }
@@ -145,7 +146,7 @@ fun EasterEggContent(
                         onClick = component.onGoBack
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = Icons.Rounded.ArrowBack,
                             contentDescription = stringResource(R.string.exit)
                         )
                     }
@@ -263,7 +264,7 @@ fun EasterEggContent(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                val scope = rememberCoroutineScope()
+                rememberCoroutineScope()
                 Column(
                     modifier = Modifier
                         .container(
@@ -274,9 +275,7 @@ fun EasterEggContent(
                             speed = if (speed == 0.2f) {
                                 Random.nextFloat()
                             } else 0.2f
-                            scope.launch {
-                                confettiHostState.showConfetti()
-                            }
+                            AppToastHost.showConfetti()
                         }
                         .size(ballSize)
                         .graphicsLayer {

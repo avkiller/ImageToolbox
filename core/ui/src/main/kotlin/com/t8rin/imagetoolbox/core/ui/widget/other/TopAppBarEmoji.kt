@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,50 +22,70 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.emoji.Emoji
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
-import com.t8rin.imagetoolbox.core.ui.utils.confetti.LocalConfettiHostState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.scaleOnTap
-import kotlinx.coroutines.launch
 
 @Composable
-fun TopAppBarEmoji() {
+fun TopAppBarEmoji(
+    allowMultiple: Boolean = true,
+    containerColor: Color? = null,
+    shape: Shape? = null,
+    contentPadding: Dp? = null
+) {
     val settingsState = LocalSettingsState.current
-    val confettiHostState = LocalConfettiHostState.current
-    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .padding(end = 12.dp)
-            .scaleOnTap(
-                onRelease = {
-                    scope.launch {
-                        confettiHostState.showConfetti()
-                    }
-                }
-            )
+            .scaleOnTap {
+                AppToastHost.showConfetti()
+            }
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            repeat(5) {
+        Row {
+            val count = if (allowMultiple) 5 else 1
+
+            val emoji = remember(settingsState.selectedEmoji) {
+                settingsState.selectedEmoji?.toString()
+            }
+            val animatedEmoji =
+                remember(settingsState.selectedEmoji, settingsState.useAnimatedEmojis) {
+                    settingsState.selectedEmoji
+                        ?.takeIf { settingsState.useAnimatedEmojis }
+                        ?.let(Emoji::animatedIconFor)
+                        ?.toString()
+                }
+
+            repeat(count) { index ->
                 AnimatedVisibility(
-                    visible = settingsState.emojisCount > it,
+                    visible = settingsState.emojisCount > index,
                     enter = fadeIn() + slideInHorizontally(),
                     exit = fadeOut() + slideOutHorizontally()
                 ) {
                     EmojiItem(
-                        fontScale = LocalSettingsState.current.fontScale
-                            ?: LocalDensity.current.fontScale,
-                        emoji = settingsState.selectedEmoji?.toString(),
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                        emoji = emoji,
+                        animatedEmoji = animatedEmoji,
+                        fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                        modifier = if (index != count - 1) {
+                            Modifier.padding(end = 2.dp)
+                        } else {
+                            Modifier
+                        },
+                        containerColor = containerColor,
+                        shape = shape,
+                        contentPadding = contentPadding
                     )
                 }
             }

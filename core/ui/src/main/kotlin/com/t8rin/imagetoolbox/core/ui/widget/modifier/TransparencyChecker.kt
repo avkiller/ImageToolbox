@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,51 +18,145 @@
 package com.t8rin.imagetoolbox.core.ui.widget.modifier
 
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.LocalMaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.currentValueOf
+import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.ui.theme.blend
-
 
 fun Modifier.transparencyChecker(
     colorScheme: ColorScheme? = null,
     checkerWidth: Dp = 10.dp,
     checkerHeight: Dp = 10.dp,
-) = this.composed {
-    val scheme = colorScheme ?: MaterialTheme.colorScheme
+): Modifier = this.then(
+    TransparencyCheckerElement(
+        colorScheme = colorScheme,
+        checkerWidth = checkerWidth,
+        checkerHeight = checkerHeight
+    )
+)
 
-    Modifier.drawWithCache {
-        val width = this.size.width
-        val height = this.size.height
+private data class TransparencyCheckerElement(
+    val colorScheme: ColorScheme?,
+    val checkerWidth: Dp,
+    val checkerHeight: Dp,
+) : ModifierNodeElement<TransparencyCheckerNode>() {
 
+    override fun create(): TransparencyCheckerNode {
+        return TransparencyCheckerNode(
+            colorScheme = colorScheme,
+            checkerWidth = checkerWidth,
+            checkerHeight = checkerHeight
+        )
+    }
+
+    override fun update(node: TransparencyCheckerNode) {
+        node.colorScheme = colorScheme
+        node.checkerWidth = checkerWidth
+        node.checkerHeight = checkerHeight
+        node.invalidateCache()
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = "transparencyChecker"
+        properties["colorScheme"] = colorScheme
+        properties["checkerWidth"] = checkerWidth
+        properties["checkerHeight"] = checkerHeight
+    }
+}
+
+private class TransparencyCheckerNode(
+    var colorScheme: ColorScheme?,
+    var checkerWidth: Dp,
+    var checkerHeight: Dp,
+) : Modifier.Node(),
+    DrawModifierNode,
+    CompositionLocalConsumerModifierNode {
+
+    private var cache: CheckerCache? = null
+
+    override fun ContentDrawScope.draw() {
+        val scheme = colorScheme ?: currentValueOf(LocalMaterialTheme).colorScheme
         val checkerWidthPx = checkerWidth.toPx()
         val checkerHeightPx = checkerHeight.toPx()
 
-        val horizontalSteps = (width / checkerWidthPx).toInt()
-        val verticalSteps = (height / checkerHeightPx).toInt()
+        if (checkerWidthPx <= 0f || checkerHeightPx <= 0f) {
+            drawContent()
+            return
+        }
 
-        onDrawBehind {
-            drawRect(
-                scheme.surfaceColorAtElevation(20.dp).blend(scheme.surface, 0.5f)
-            )
-            for (y in 0..verticalSteps) {
-                for (x in 0..horizontalSteps) {
-                    val isGrayTile = ((x + y) % 2 == 1)
-                    drawRect(
-                        color = if (isGrayTile) {
-                            scheme.surfaceColorAtElevation(20.dp)
-                        } else scheme.surface,
-                        topLeft = Offset(x * checkerWidthPx, y * checkerHeightPx),
-                        size = Size(checkerWidthPx, checkerHeightPx)
+        val surface = scheme.surface
+        val elevatedSurface = scheme.surfaceColorAtElevation(20.dp)
+        val background = elevatedSurface.blend(surface, 0.5f)
+        val currentCache = cache?.takeIf {
+            it.size == size &&
+                    it.checkerWidthPx == checkerWidthPx &&
+                    it.checkerHeightPx == checkerHeightPx &&
+                    it.surface == surface &&
+                    it.elevatedSurface == elevatedSurface &&
+                    it.background == background
+        } ?: CheckerCache(
+            size = size,
+            checkerWidthPx = checkerWidthPx,
+            checkerHeightPx = checkerHeightPx,
+            horizontalSteps = (size.width / checkerWidthPx).toInt(),
+            verticalSteps = (size.height / checkerHeightPx).toInt(),
+            surface = surface,
+            elevatedSurface = elevatedSurface,
+            background = background
+        ).also {
+            cache = it
+        }
+
+        drawRect(currentCache.background)
+
+        for (y in 0..currentCache.verticalSteps) {
+            for (x in 0..currentCache.horizontalSteps) {
+                drawRect(
+                    color = if ((x + y) % 2 == 1) {
+                        currentCache.elevatedSurface
+                    } else {
+                        currentCache.surface
+                    },
+                    topLeft = Offset(
+                        x = x * currentCache.checkerWidthPx,
+                        y = y * currentCache.checkerHeightPx
+                    ),
+                    size = Size(
+                        width = currentCache.checkerWidthPx,
+                        height = currentCache.checkerHeightPx
                     )
-                }
+                )
             }
         }
+
+        drawContent()
+    }
+
+    fun invalidateCache() {
+        cache = null
+        invalidateDraw()
     }
 }
+
+private data class CheckerCache(
+    val size: Size,
+    val checkerWidthPx: Float,
+    val checkerHeightPx: Float,
+    val horizontalSteps: Int,
+    val verticalSteps: Int,
+    val surface: Color,
+    val elevatedSurface: Color,
+    val background: Color
+)

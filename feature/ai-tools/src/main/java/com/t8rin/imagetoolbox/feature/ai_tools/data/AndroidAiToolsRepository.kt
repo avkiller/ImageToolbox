@@ -44,15 +44,18 @@ import com.t8rin.imagetoolbox.core.domain.saving.KeepAliveService
 import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
 import com.t8rin.imagetoolbox.core.domain.saving.track
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.utils.extractMessage
 import com.t8rin.imagetoolbox.core.utils.filename
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.AiProgressListener
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.AiToolsRepository
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralConstants
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralModel
 import com.t8rin.imagetoolbox.feature.ai_tools.domain.model.NeuralParams
-import com.t8rin.logger.makeLog
 import com.t8rin.neural_tools.bgremover.BgRemover
 import com.t8rin.neural_tools.bgremover.GenericBackgroundRemover
+import com.t8rin.neural_tools.inpaint.WatermarkRemoverProcessor
+import com.t8rin.neural_tools.scans.UvDocUnwarper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
@@ -68,6 +71,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -108,7 +113,8 @@ internal class AndroidAiToolsRepository @Inject constructor(
     override val downloadedModels: StateFlow<List<NeuralModel>> =
         merge(
             modelsDir.observeHasChanges().debounce(100),
-            updateFlow
+            updateFlow,
+            WatermarkRemoverProcessor.isDownloaded
         ).map {
             fetchDownloadedModels { files ->
                 occupiedStorageSize.update { files.sumOf { it.length() } }
@@ -142,7 +148,29 @@ internal class AndroidAiToolsRepository @Inject constructor(
     ): Flow<DownloadProgress> = channelFlow {
         ensureActive()
 
-        if (model.name.contains("u2netp")) {
+        if (model.isWatermarkRemover) {
+            WatermarkRemoverProcessor.startDownload()
+                .onStart {
+                    trySend(
+                        DownloadProgress(
+                            currentPercent = 0f,
+                            currentTotalSize = model.downloadSize
+                        )
+                    )
+                }
+                .onCompletion {
+                    selectModelForced(model)
+                    close()
+                }
+                .collect {
+                    trySend(
+                        DownloadProgress(
+                            currentPercent = it.currentPercent,
+                            currentTotalSize = it.currentTotalSize
+                        )
+                    )
+                }
+        } else if (model.name.contains("u2netp")) {
             extractU2NetP()
             selectModelForced(model)
             close()
@@ -203,7 +231,7 @@ internal class AndroidAiToolsRepository @Inject constructor(
 
         if (alreadyDownloaded != null) {
             selectModelForced(alreadyDownloaded)
-            return@withContext SaveResult.Skipped
+            return@withContext SaveResult.Skipped()
         }
 
         fileController.transferBytes(
@@ -244,6 +272,51 @@ internal class AndroidAiToolsRepository @Inject constructor(
                 }
             }
 
+            model.isWatermarkRemover -> {
+                processImage {
+                    withClosedSession(listener) {
+                        listener.onProgress(0, 2)
+                        WatermarkRemoverProcessor.removeWatermark(
+                            image = image,
+                            onMaskFound = {
+                                listener.onProgress(1, 2)
+                            }
+                        ) ?: run {
+                            listener.onError(getString(R.string.processing_failed))
+                            null
+                        }
+                    }
+                }
+            }
+
+            model.isUvDocUnwarper -> {
+                processImage {
+                    val ortSession = session.makeLog("Held session")
+                        ?: createSession(selectedModel.value).makeLog("New session")
+                        ?: return@withContext null.also {
+                            listener.onError(getString(R.string.failed_to_open_session))
+                        }
+
+                    keepAliveService.track(
+                        onFailure = {
+                            listener.onError(it.extractMessage())
+                        },
+                        action = {
+                            listener.onProgress(0, 1)
+                            UvDocUnwarper.unwarp(
+                                image = image,
+                                session = ortSession
+                            )?.also {
+                                listener.onProgress(1, 1)
+                            } ?: run {
+                                listener.onError(getString(R.string.processing_failed))
+                                null
+                            }
+                        }
+                    )
+                }
+            }
+
             else -> {
                 processImage {
                     val ortSession = session.makeLog("Held session")
@@ -272,7 +345,7 @@ internal class AndroidAiToolsRepository @Inject constructor(
 
         return keepAliveService.track(
             onFailure = {
-                listener.onError(it.message ?: it::class.simpleName.orEmpty())
+                listener.onError(it.extractMessage())
             },
             action = {
                 function()
@@ -285,13 +358,19 @@ internal class AndroidAiToolsRepository @Inject constructor(
     }
 
     override suspend fun deleteModel(model: NeuralModel) = withContext(ioDispatcher) {
-        model.file.delete()
+        if (model.isWatermarkRemover) {
+            WatermarkRemoverProcessor.deleteDownloadedModels()
+        } else {
+            model.file.delete()
+            model.asBgRemover()?.checkModel()
+        }
         if (selectedModel.value?.name == model.name) selectModel(null)
         updateFlow.emit(Unit)
     }
 
     override fun cleanup() {
         BgRemover.closeAll()
+        WatermarkRemoverProcessor.close()
         closeSession()
         System.gc()
     }
@@ -369,8 +448,16 @@ internal class AndroidAiToolsRepository @Inject constructor(
         onGetFiles: (List<File>) -> Unit
     ) = withContext(ioDispatcher) {
         modelsDir.listFiles().orEmpty().toList().filter {
-            !it.name.orEmpty().endsWith(".tmp") && !it.name.isNullOrEmpty() && it.length() > 0
-        }.also(onGetFiles).mapNotNull {
+            it.isFile && !it.name.orEmpty()
+                .endsWith(".tmp") && !it.name.isNullOrEmpty() && it.length() > 0
+        }.also { files ->
+            val watermarkFile =
+                WatermarkRemoverProcessor.modelFile.takeIf { it.exists() && it.length() > 0 }
+
+            onGetFiles(
+                if (watermarkFile != null) files + watermarkFile else files
+            )
+        }.mapNotNull {
             val name = it.name
 
             if (name.isNullOrEmpty() || it.length() <= 0) return@mapNotNull null
@@ -379,6 +466,19 @@ internal class AndroidAiToolsRepository @Inject constructor(
                 name = name,
                 checksum = HashingType.SHA_256.computeFromReadable(FileReadable(it))
             )
+        }.let { fromDir ->
+            if (WatermarkRemoverProcessor.isDownloaded.value) {
+                val watermarkModel = NeuralModel.entries.find { it.isWatermarkRemover }
+                    ?: return@let fromDir
+
+                if (fromDir.none { it.name == watermarkModel.name }) {
+                    fromDir + watermarkModel
+                } else {
+                    fromDir
+                }
+            } else {
+                fromDir.filter { !it.isWatermarkRemover }
+            }
         }
     }
 
@@ -392,7 +492,9 @@ internal class AndroidAiToolsRepository @Inject constructor(
                 name.startsWith("inspyrenet") -> BgRemover.Type.InSPyReNet
                 name.startsWith("RMBG_1.4") -> BgRemover.Type.RMBG1_4
                 name.startsWith("birefnet_swin_tiny") -> BgRemover.Type.BiRefNetTiny
+                name.startsWith("modnet_portrait_matting") -> BgRemover.Type.MODNet
                 name.startsWith("isnet") -> BgRemover.Type.ISNet
+                name.startsWith("yolo") -> BgRemover.Type.YOLO
                 else -> return null
             }
         )

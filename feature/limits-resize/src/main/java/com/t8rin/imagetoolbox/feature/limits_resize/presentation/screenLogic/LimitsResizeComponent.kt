@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.feature.limits_resize.presentation.screenLogic
 
-
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.MutableState
@@ -34,6 +33,7 @@ import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormat
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageScaleMode
 import com.t8rin.imagetoolbox.core.domain.image.model.Quality
+import com.t8rin.imagetoolbox.core.domain.model.ColorModel
 import com.t8rin.imagetoolbox.core.domain.model.IntegerSize
 import com.t8rin.imagetoolbox.core.domain.saving.FileController
 import com.t8rin.imagetoolbox.core.domain.saving.model.ImageSaveTarget
@@ -44,11 +44,14 @@ import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.leftFrom
 import com.t8rin.imagetoolbox.core.domain.utils.ListUtils.rightFrom
 import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.domain.utils.smartJob
-import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
+import com.t8rin.imagetoolbox.core.ui.utils.BaseHistoryComponent
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.state.update
 import com.t8rin.imagetoolbox.feature.limits_resize.domain.LimitsImageScaler
 import com.t8rin.imagetoolbox.feature.limits_resize.domain.LimitsResizeType
+import com.t8rin.imagetoolbox.feature.limits_resize.presentation.screenLogic.LimitsResizeComponent.HistorySnapshot
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -64,17 +67,16 @@ class LimitsResizeComponent @AssistedInject internal constructor(
     private val imageGetter: ImageGetter<Bitmap>,
     private val imageScaler: LimitsImageScaler<Bitmap>,
     private val shareProvider: ImageShareProvider<Bitmap>,
+    private val settingsManager: SettingsManager,
     dispatchersHolder: DispatchersHolder
-) : BaseComponent(dispatchersHolder, componentContext) {
+) : BaseHistoryComponent<HistorySnapshot>(
+    dispatchersHolder = dispatchersHolder,
+    componentContext = componentContext
+) {
 
     init {
         debounce {
-            initialUris?.let {
-                updateUris(
-                    uris = it,
-                    onFailure = {}
-                )
-            }
+            initialUris?.let(::setUris)
         }
     }
 
@@ -113,13 +115,28 @@ class LimitsResizeComponent @AssistedInject internal constructor(
     val resizeType by _resizeType
 
     fun setImageFormat(imageFormat: ImageFormat) {
-        _imageInfo.value = _imageInfo.value.copy(imageFormat = imageFormat)
+        if (_imageInfo.value.imageFormat != imageFormat) {
+            if (pendingHistoryMode != PendingHistoryMode.FormatChange) {
+                finalizePendingHistoryTransaction()
+            }
+            beginPendingHistoryTransaction(
+                mode = PendingHistoryMode.FormatChange,
+                commitDelayMillis = formatHistoryTransactionDebounce
+            )
+            _imageInfo.value = _imageInfo.value.copy(
+                imageFormat = imageFormat,
+                quality = imageInfo.quality.coerceIn(imageFormat)
+            )
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
-    fun updateUris(
-        uris: List<Uri>?,
-        onFailure: (Throwable) -> Unit
+    fun setUris(
+        uris: List<Uri>?
     ) {
+        clearHistory()
+        registerChangesCleared()
         _uris.value = null
         _uris.value = uris
         _selectedUri.value = uris?.firstOrNull()
@@ -129,10 +146,15 @@ class LimitsResizeComponent @AssistedInject internal constructor(
                     uri = uris[0].toString(),
                     originalSize = true,
                     onGetImage = {
+                        _imageInfo.value = _imageInfo.value.copy(
+                            imageFormat = it.imageInfo.imageFormat,
+                            quality = imageInfo.quality.coerceIn(it.imageInfo.imageFormat)
+                        )
                         updateBitmap(it.image)
-                        setImageFormat(it.imageInfo.imageFormat)
+                        resetHistory()
+                        registerChangesCleared()
                     },
-                    onFailure = onFailure
+                    onFailure = AppToastHost::showFailureToast
                 )
             }
         }
@@ -177,8 +199,11 @@ class LimitsResizeComponent @AssistedInject internal constructor(
     }
 
     fun setKeepExif(boolean: Boolean) {
+        if (_keepExif.value == boolean) return
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _keepExif.value = boolean
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     private var savingJob: Job? by smartJob {
@@ -186,9 +211,9 @@ class LimitsResizeComponent @AssistedInject internal constructor(
     }
 
     fun saveBitmaps(
-        oneTimeSaveLocationUri: String?,
-        onResult: (List<SaveResult>) -> Unit
+        oneTimeSaveLocationUri: String?
     ) {
+        finalizePendingHistoryTransaction()
         savingJob = trackProgress {
             _isSaving.value = true
             val results = mutableListOf<SaveResult>()
@@ -236,14 +261,13 @@ class LimitsResizeComponent @AssistedInject internal constructor(
                     total = uris.orEmpty().size
                 )
             }
-            onResult(results.onSuccess(::registerSave))
+            parseSaveResults(results.onSuccess(::registerSave))
             _isSaving.value = false
         }
     }
 
     fun updateSelectedUri(
-        uri: Uri,
-        onFailure: (Throwable) -> Unit = {} //TODO: Remove unnecessary callbacks
+        uri: Uri
     ) {
         runCatching {
             componentScope.launch {
@@ -252,29 +276,41 @@ class LimitsResizeComponent @AssistedInject internal constructor(
                 _selectedUri.value = uri
                 _isImageLoading.value = false
             }
-        }.onFailure(onFailure)
+        }.onFailure(AppToastHost::showFailureToast)
     }
 
 
-    private fun updateCanSave() {
+    private fun updateCanSave(
+        register: Boolean = true
+    ) {
         _canSave.update {
             _bitmap.value != null && (_imageInfo.value.height != 0 || _imageInfo.value.width != 0)
         }
 
-        registerChanges()
+        if (register) {
+            registerChanges()
+        }
     }
 
     fun updateWidth(i: Int) {
-        _imageInfo.value = _imageInfo.value.copy(width = i)
-        updateCanSave()
+        if (_imageInfo.value.width != i) {
+            beginPendingHistoryTransaction()
+            _imageInfo.value = _imageInfo.value.copy(width = i)
+            updateCanSave()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun updateHeight(i: Int) {
-        _imageInfo.value = _imageInfo.value.copy(height = i)
-        updateCanSave()
+        if (_imageInfo.value.height != i) {
+            beginPendingHistoryTransaction()
+            _imageInfo.value = _imageInfo.value.copy(height = i)
+            updateCanSave()
+            schedulePendingHistoryCommit()
+        }
     }
 
-    fun shareBitmaps(onComplete: () -> Unit) {
+    fun shareBitmaps() {
         _isSaving.value = false
         savingJob = trackProgress {
             _isSaving.value = true
@@ -298,7 +334,7 @@ class LimitsResizeComponent @AssistedInject internal constructor(
                 },
                 onProgressChange = {
                     if (it == -1) {
-                        onComplete()
+                        AppToastHost.showConfetti()
                         _done.value = 0
                         _isSaving.value = false
                     } else {
@@ -314,13 +350,22 @@ class LimitsResizeComponent @AssistedInject internal constructor(
     }
 
     fun setQuality(quality: Quality) {
-        _imageInfo.value = _imageInfo.value.copy(quality = quality)
-        registerChanges()
+        val coercedQuality = quality.coerceIn(imageInfo.imageFormat)
+        if (_imageInfo.value.quality != coercedQuality) {
+            beginPendingHistoryTransaction()
+            _imageInfo.value = _imageInfo.value.copy(quality = coercedQuality)
+            registerChanges()
+            schedulePendingHistoryCommit()
+        }
     }
 
     fun setResizeType(resizeType: LimitsResizeType) {
-        _resizeType.value = resizeType
-        registerChanges()
+        if (!_resizeType.value.isSameType(resizeType)) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
+            _resizeType.value = resizeType
+            commitHistoryFrom(beforeSnapshot)
+        }
     }
 
     fun cancelSaving() {
@@ -330,17 +375,23 @@ class LimitsResizeComponent @AssistedInject internal constructor(
     }
 
     fun toggleAutoRotateLimitBox() {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
         _resizeType.update { it.copy(!it.autoRotateLimitBox) }
-        registerChanges()
+        commitHistoryFrom(beforeSnapshot)
     }
 
     fun setImageScaleMode(imageScaleMode: ImageScaleMode) {
-        _imageInfo.update {
-            it.copy(
-                imageScaleMode = imageScaleMode
-            )
+        if (_imageInfo.value.imageScaleMode != imageScaleMode) {
+            finalizePendingHistoryTransaction()
+            val beforeSnapshot = currentHistorySnapshot()
+            _imageInfo.update {
+                it.copy(
+                    imageScaleMode = imageScaleMode
+                )
+            }
+            commitHistoryFrom(beforeSnapshot)
         }
-        registerChanges()
     }
 
     fun cacheCurrentImage(onComplete: (Uri) -> Unit) {
@@ -439,6 +490,51 @@ class LimitsResizeComponent @AssistedInject internal constructor(
         if (uris?.size == 1) imageInfo.imageFormat
         else null
 
+    override fun currentHistorySnapshot(): HistorySnapshot = HistorySnapshot(
+        imageInfo = imageInfo.asHistoryImageInfo(),
+        resizeType = resizeType,
+        keepExif = keepExif,
+        backgroundColorForNoAlphaFormats = settingsManager
+            .settingsState
+            .value
+            .backgroundForNoAlphaImageFormats
+    )
+
+    override fun applyHistorySnapshot(snapshot: HistorySnapshot) {
+        _imageInfo.value = snapshot.imageInfo
+        _resizeType.value = snapshot.resizeType
+        _keepExif.value = snapshot.keepExif
+        restoreBackgroundColorForNoAlphaFormats(
+            settingsManager = settingsManager,
+            backgroundColorForNoAlphaFormats = snapshot.backgroundColorForNoAlphaFormats
+        )
+        updateCanSave(register = false)
+    }
+
+    override fun hasSameUndoState(
+        first: HistorySnapshot,
+        second: HistorySnapshot
+    ): Boolean = first.imageInfo == second.imageInfo &&
+            first.keepExif == second.keepExif &&
+            first.backgroundColorForNoAlphaFormats == second.backgroundColorForNoAlphaFormats &&
+            first.resizeType.isSameType(second.resizeType)
+
+    private fun ImageInfo.asHistoryImageInfo(): ImageInfo = copy(
+        sizeInBytes = 0,
+        originalUri = selectedUri?.toString()
+    )
+
+    private fun LimitsResizeType.isSameType(
+        other: LimitsResizeType
+    ): Boolean = this::class == other::class &&
+            autoRotateLimitBox == other.autoRotateLimitBox
+
+    data class HistorySnapshot(
+        val imageInfo: ImageInfo = ImageInfo(),
+        val resizeType: LimitsResizeType = LimitsResizeType.Recode(),
+        val keepExif: Boolean = false,
+        val backgroundColorForNoAlphaFormats: ColorModel = ColorModel(-0x1000000)
+    )
 
     @AssistedFactory
     fun interface Factory {

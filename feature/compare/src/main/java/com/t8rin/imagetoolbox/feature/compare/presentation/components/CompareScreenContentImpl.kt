@@ -48,7 +48,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.transform.Transformation
-import com.smarttoolfactory.beforeafter.BeforeAfterLayout
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
@@ -58,6 +57,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.only
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.tappable
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
+import com.t8rin.imagetoolbox.feature.compare.presentation.components.beforeafter.BeforeAfterLayout
 import com.t8rin.imagetoolbox.feature.compare.presentation.components.model.CompareData
 import com.t8rin.imagetoolbox.feature.compare.presentation.components.model.ifNotEmpty
 import kotlinx.coroutines.delay
@@ -94,7 +94,6 @@ internal fun CompareScreenContentImpl(
                             modifier = modifier,
                             progress = animateFloatAsState(targetValue = compareProgress).value,
                             onProgressChange = onCompareProgressChange,
-                            enableZoom = false,
                             beforeContent = {
                                 Picture(
                                     model = before,
@@ -115,7 +114,7 @@ internal fun CompareScreenContentImpl(
                                         uri = beforeData.uri,
                                         alignment = Alignment.TopStart,
                                         enabled = isLabelsEnabled,
-                                        shape = ShapeDefaults.default.only(
+                                        shape = ShapeDefaults.small.only(
                                             CornerSides.BottomEnd
                                         )
                                     )
@@ -129,7 +128,7 @@ internal fun CompareScreenContentImpl(
                                         uri = afterData.uri,
                                         alignment = Alignment.BottomEnd,
                                         enabled = isLabelsEnabled,
-                                        shape = ShapeDefaults.default.only(
+                                        shape = ShapeDefaults.small.only(
                                             CornerSides.TopStart
                                         )
                                     )
@@ -162,6 +161,7 @@ internal fun CompareScreenContentImpl(
                                 Picture(
                                     model = first,
                                     contentDescription = null,
+                                    contentScale = ContentScale.Fit,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .weight(1f)
@@ -173,6 +173,7 @@ internal fun CompareScreenContentImpl(
                                 Picture(
                                     model = second,
                                     contentDescription = null,
+                                    contentScale = ContentScale.Fit,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .weight(1f)
@@ -184,7 +185,7 @@ internal fun CompareScreenContentImpl(
                             uri = bitmapPair.first?.uri,
                             alignment = Alignment.TopStart,
                             enabled = isLabelsEnabled,
-                            shape = ShapeDefaults.default.only(
+                            shape = ShapeDefaults.small.only(
                                 CornerSides.BottomEnd
                             )
                         )
@@ -192,7 +193,7 @@ internal fun CompareScreenContentImpl(
                             uri = bitmapPair.second?.uri,
                             alignment = Alignment.BottomStart,
                             enabled = isLabelsEnabled,
-                            shape = ShapeDefaults.default.only(
+                            shape = ShapeDefaults.small.only(
                                 CornerSides.TopEnd
                             )
                         )
@@ -205,6 +206,7 @@ internal fun CompareScreenContentImpl(
                                 Picture(
                                     model = first,
                                     contentDescription = null,
+                                    contentScale = ContentScale.Fit,
                                     modifier = Modifier
                                         .fillMaxHeight()
                                         .weight(1f)
@@ -216,6 +218,7 @@ internal fun CompareScreenContentImpl(
                                 Picture(
                                     model = second,
                                     contentDescription = null,
+                                    contentScale = ContentScale.Fit,
                                     modifier = Modifier
                                         .fillMaxHeight()
                                         .weight(1f)
@@ -227,7 +230,7 @@ internal fun CompareScreenContentImpl(
                             uri = bitmapPair.first?.uri,
                             alignment = Alignment.TopStart,
                             enabled = isLabelsEnabled,
-                            shape = ShapeDefaults.default.only(
+                            shape = ShapeDefaults.small.only(
                                 CornerSides.BottomEnd
                             )
                         )
@@ -235,7 +238,7 @@ internal fun CompareScreenContentImpl(
                             uri = bitmapPair.second?.uri,
                             alignment = Alignment.TopEnd,
                             enabled = isLabelsEnabled,
-                            shape = ShapeDefaults.default.only(
+                            shape = ShapeDefaults.small.only(
                                 CornerSides.BottomStart
                             )
                         )
@@ -248,9 +251,11 @@ internal fun CompareScreenContentImpl(
                     mutableStateOf(false)
                 }
                 Box(
-                    modifier = modifier.tappable {
-                        showSecondImage = !showSecondImage
-                    }
+                    modifier = modifier
+                        .fillMaxSize()
+                        .tappable {
+                            showSecondImage = !showSecondImage
+                        }
                 ) {
                     val first = bitmapPair.first?.image
                     val second = bitmapPair.second?.image
@@ -258,14 +263,16 @@ internal fun CompareScreenContentImpl(
                         Picture(
                             model = first,
                             contentDescription = null,
-                            contentScale = ContentScale.Inside
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     if (showSecondImage && second != null) {
                         Picture(
                             model = second,
                             contentDescription = null,
-                            contentScale = ContentScale.Inside
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     Box(
@@ -278,11 +285,11 @@ internal fun CompareScreenContentImpl(
                             else Alignment.TopStart,
                             enabled = isLabelsEnabled,
                             shape = if (showSecondImage) {
-                                ShapeDefaults.default.only(
+                                ShapeDefaults.small.only(
                                     CornerSides.TopStart
                                 )
                             } else {
-                                ShapeDefaults.default.only(
+                                ShapeDefaults.small.only(
                                     CornerSides.BottomEnd
                                 )
                             }
@@ -293,7 +300,7 @@ internal fun CompareScreenContentImpl(
 
             CompareType.Transparency -> {
                 Box(
-                    modifier = modifier
+                    modifier = modifier.fillMaxSize()
                 ) {
                     val first = bitmapPair.first?.image
                     val second = bitmapPair.second?.image
@@ -301,15 +308,18 @@ internal fun CompareScreenContentImpl(
                         Picture(
                             model = first,
                             contentDescription = null,
-                            contentScale = ContentScale.Inside
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     if (second != null) {
                         Picture(
                             model = second,
                             contentDescription = null,
-                            contentScale = ContentScale.Inside,
-                            modifier = Modifier.alpha(compareProgress / 100f)
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(compareProgress / 100f)
                         )
                     }
                     Box(
@@ -319,7 +329,7 @@ internal fun CompareScreenContentImpl(
                             uri = bitmapPair.first?.uri,
                             alignment = Alignment.TopStart,
                             enabled = isLabelsEnabled,
-                            shape = ShapeDefaults.default.only(
+                            shape = ShapeDefaults.small.only(
                                 CornerSides.BottomEnd
                             )
                         )
@@ -332,7 +342,7 @@ internal fun CompareScreenContentImpl(
                             modifier = Modifier.alpha(compareProgress / 100f),
                             alignment = Alignment.BottomEnd,
                             enabled = isLabelsEnabled,
-                            shape = ShapeDefaults.default.only(
+                            shape = ShapeDefaults.small.only(
                                 CornerSides.TopStart
                             )
                         )
@@ -353,7 +363,7 @@ internal fun CompareScreenContentImpl(
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
-                        modifier = modifier
+                        modifier = modifier.fillMaxSize()
                     ) {
                         if (first != null) {
                             var transformations: List<Transformation> by remember {
@@ -378,11 +388,15 @@ internal fun CompareScreenContentImpl(
                                 onSuccess = {
                                     isLoading = false
                                 },
+                                onError = {
+                                    isLoading = false
+                                },
                                 onLoading = {
                                     isLoading = true
                                 },
                                 contentDescription = null,
-                                contentScale = ContentScale.Inside
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
                             )
                         }
                     }

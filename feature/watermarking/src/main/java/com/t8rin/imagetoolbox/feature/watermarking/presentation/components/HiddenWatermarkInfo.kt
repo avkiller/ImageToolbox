@@ -23,21 +23,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.AddPhotoAlt
+import com.t8rin.imagetoolbox.core.resources.icons.ContentCopy
+import com.t8rin.imagetoolbox.core.resources.icons.Info
 import com.t8rin.imagetoolbox.core.resources.shapes.CloverShape
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItemDefaults
@@ -48,8 +48,6 @@ import com.t8rin.imagetoolbox.feature.watermarking.domain.HiddenWatermark
 internal fun HiddenWatermarkInfo(
     hiddenWatermark: HiddenWatermark?
 ) {
-    val essentials = rememberLocalEssentials()
-
     AnimatedContent(
         targetState = hiddenWatermark,
         modifier = Modifier.fillMaxWidth()
@@ -67,7 +65,7 @@ internal fun HiddenWatermarkInfo(
                     is HiddenWatermark.Image -> stringResource(R.string.this_image_was_hidden)
                 },
                 onClick = if (hidden is HiddenWatermark.Text) {
-                    { essentials.copyToClipboard(hidden.text) }
+                    { Clipboard.copy(hidden.text) }
                 } else null,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f),
@@ -102,7 +100,7 @@ internal fun HiddenWatermarkInfo(
                                             .background(
                                                 color = MaterialTheme.colorScheme.secondaryContainer
                                                     .copy(0.5f)
-                                                    .compositeOver(MaterialTheme.colorScheme.surfaceContainer)
+                                                    .compositeOverSafe(MaterialTheme.colorScheme.surfaceContainer)
                                             )
                                             .padding(8.dp)
                                     )

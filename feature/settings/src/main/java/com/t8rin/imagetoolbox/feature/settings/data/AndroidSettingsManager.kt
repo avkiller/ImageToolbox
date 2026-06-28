@@ -27,8 +27,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.t8rin.imagetoolbox.core.data.utils.isInstalledFromPlayStore
 import com.t8rin.imagetoolbox.core.data.utils.outputStream
-import com.t8rin.imagetoolbox.core.domain.BackupFileExtension
-import com.t8rin.imagetoolbox.core.domain.GlobalStorageName
+import com.t8rin.imagetoolbox.core.domain.BACKUP_FILE_EXT
+import com.t8rin.imagetoolbox.core.domain.GLOBAL_STORAGE_NAME
 import com.t8rin.imagetoolbox.core.domain.coroutines.AppScope
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
@@ -57,8 +57,10 @@ import com.t8rin.imagetoolbox.core.settings.domain.model.ShapeType
 import com.t8rin.imagetoolbox.core.settings.domain.model.SliderType
 import com.t8rin.imagetoolbox.core.settings.domain.model.SnowfallMode
 import com.t8rin.imagetoolbox.core.settings.domain.model.SwitchType
+import com.t8rin.imagetoolbox.core.utils.Logger
 import com.t8rin.imagetoolbox.core.utils.createZip
 import com.t8rin.imagetoolbox.core.utils.filename
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import com.t8rin.imagetoolbox.core.utils.putEntry
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ADD_ORIGINAL_NAME_TO_FILENAME
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ADD_PRESET_TO_FILENAME
@@ -72,6 +74,7 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.ALLOW_BETAS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ALLOW_CRASHLYTICS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ALLOW_IMAGE_MONET
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ALLOW_SKIP_IF_LARGER
+import com.t8rin.imagetoolbox.feature.settings.data.keys.ALWAYS_CLEAR_EXIF
 import com.t8rin.imagetoolbox.feature.settings.data.keys.AMOLED_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.APP_COLOR_TUPLE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.APP_OPEN_COUNT
@@ -98,6 +101,7 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.DEFAULT_RESIZE_TYPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DONATE_DIALOG_OPEN_COUNT
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAG_HANDLE_WIDTH
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_APPBAR_SHADOWS
+import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_BITMAP_BORDER
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_BUTTON_SHADOWS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_CONTAINER_SHADOWS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_FAB_SHADOWS
@@ -105,6 +109,7 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_SLIDER_SHADOWS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DRAW_SWITCH_SHADOWS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.DYNAMIC_COLORS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.EMOJI_COUNT
+import com.t8rin.imagetoolbox.feature.settings.data.keys.ENABLE_BACKGROUND_COLOR_FOR_ALPHA_FORMATS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ENABLE_TOOL_EXIT_CONFIRMATION
 import com.t8rin.imagetoolbox.feature.settings.data.keys.EXIF_WIDGET_INITIAL_STATE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.FAB_ALIGNMENT
@@ -125,21 +130,27 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.IMAGE_PICKER_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IMAGE_SCALE_COLOR_SPACE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IMAGE_SCALE_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.INITIAL_OCR_CODES
+import com.t8rin.imagetoolbox.feature.settings.data.keys.INITIAL_OCR_ENGINE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.INITIAL_OCR_MODE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.INITIAL_PADDLE_OCR_MODEL
 import com.t8rin.imagetoolbox.feature.settings.data.keys.INVERT_THEME
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IS_LAUNCHER_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IS_LINK_PREVIEW_ENABLED
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IS_SYSTEM_BARS_VISIBLE_BY_SWIPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.IS_TELEGRAM_GROUP_OPENED
+import com.t8rin.imagetoolbox.feature.settings.data.keys.KEEP_DATE_TIME
 import com.t8rin.imagetoolbox.feature.settings.data.keys.LOCK_DRAW_ORIENTATION
 import com.t8rin.imagetoolbox.feature.settings.data.keys.MAGNIFIER_ENABLED
 import com.t8rin.imagetoolbox.feature.settings.data.keys.MAIN_SCREEN_TITLE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.MOTION_DURATION_SCALE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.NIGHT_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.ONE_TIME_SAVE_LOCATIONS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.OPEN_EDIT_INSTEAD_OF_PREVIEW
+import com.t8rin.imagetoolbox.feature.settings.data.keys.PERFORMANCE_VERSION
 import com.t8rin.imagetoolbox.feature.settings.data.keys.PRESETS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.RECENT_COLORS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SAVE_FOLDER_URI
+import com.t8rin.imagetoolbox.feature.settings.data.keys.SAVE_TO_ORIGINAL_FOLDER
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SCREENS_WITH_BRIGHTNESS_ENFORCEMENT
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SCREEN_ORDER
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SCREEN_SEARCH_ENABLED
@@ -148,7 +159,11 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.SELECTED_EMOJI_INDEX
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SELECTED_FONT
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SETTINGS_GROUP_VISIBILITY
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SHAPES_TYPE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.SHAPE_BY_INTERACTION_THROTTLE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_FAVORITE_AS_LAST
+import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_FAVORITE_TOOLS_IN_GROUPED_MODE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_SETTINGS_IN_LANDSCAPE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_TOOLS_HISTORY
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SHOW_UPDATE_DIALOG
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SKIP_IMAGE_PICKING
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SLIDER_TYPE
@@ -158,6 +173,7 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.SWITCH_TYPE
 import com.t8rin.imagetoolbox.feature.settings.data.keys.SYSTEM_BARS_VISIBILITY
 import com.t8rin.imagetoolbox.feature.settings.data.keys.THEME_CONTRAST_LEVEL
 import com.t8rin.imagetoolbox.feature.settings.data.keys.THEME_STYLE
+import com.t8rin.imagetoolbox.feature.settings.data.keys.USE_ANIMATED_EMOJIS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.USE_COMPACT_SELECTORS_LAYOUT
 import com.t8rin.imagetoolbox.feature.settings.data.keys.USE_EMOJI_AS_PRIMARY_COLOR
 import com.t8rin.imagetoolbox.feature.settings.data.keys.USE_FORMATTED_TIMESTAMP
@@ -165,8 +181,6 @@ import com.t8rin.imagetoolbox.feature.settings.data.keys.USE_FULLSCREEN_SETTINGS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.USE_RANDOM_EMOJIS
 import com.t8rin.imagetoolbox.feature.settings.data.keys.VIBRATION_STRENGTH
 import com.t8rin.imagetoolbox.feature.settings.data.keys.toSettingsState
-import com.t8rin.logger.Logger
-import com.t8rin.logger.makeLog
 import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -199,6 +213,7 @@ internal class AndroidSettingsManager @Inject constructor(
     }
 
     private val default = SettingsState.Default
+
     private val currentSettings: SettingsState get() = settingsState.value
 
     override suspend fun getSettingsState(): SettingsState = rawFlow().first()
@@ -322,12 +337,22 @@ internal class AndroidSettingsManager @Inject constructor(
         defaultValue = default.groupOptionsByTypes
     )
 
+    override suspend fun toggleShowFavoriteToolsInGroupedMode() = toggle(
+        key = SHOW_FAVORITE_TOOLS_IN_GROUPED_MODE,
+        defaultValue = default.showFavoriteToolsInGroupedMode
+    )
+
+    override suspend fun toggleShowFavoriteAsLast() = toggle(
+        key = SHOW_FAVORITE_AS_LAST,
+        defaultValue = default.showFavoriteAsLast
+    )
+
     override suspend fun toggleRandomizeFilename() = toggleFilenameBehavior(
         behavior = FilenameBehavior.Random()
     )
 
     override suspend fun createBackupFile(): ByteArray =
-        context.obtainDatastoreData(GlobalStorageName)
+        context.obtainDatastoreData(GLOBAL_STORAGE_NAME)
 
     override suspend fun restoreFromBackupFile(
         backupFileUri: String,
@@ -335,7 +360,7 @@ internal class AndroidSettingsManager @Inject constructor(
         onFailure: (Throwable) -> Unit,
     ) = withContext(ioDispatcher) {
         context.restoreDatastore(
-            fileName = GlobalStorageName,
+            fileName = GLOBAL_STORAGE_NAME,
             backupUri = backupFileUri.toUri(),
             onFailure = onFailure,
             onSuccess = {
@@ -348,12 +373,12 @@ internal class AndroidSettingsManager @Inject constructor(
     }
 
     override suspend fun resetSettings() = withContext(defaultDispatcher) {
-        context.resetDatastore(GlobalStorageName)
+        context.resetDatastore(GLOBAL_STORAGE_NAME)
         registerAppOpen()
     }
 
     override fun createBackupFilename(): String =
-        "image_toolbox_${timestamp()}.$BackupFileExtension"
+        "image_toolbox_${timestamp()}.$BACKUP_FILE_EXT"
 
     override suspend fun setFont(font: DomainFontFamily) = edit {
         it[SELECTED_FONT] = font.asString()
@@ -450,6 +475,12 @@ internal class AndroidSettingsManager @Inject constructor(
         behavior = FilenameBehavior.Overwrite()
     )
 
+    override suspend fun toggleSaveToOriginalFolder() = toggle(
+        key = SAVE_TO_ORIGINAL_FOLDER,
+        defaultValue = default.saveToOriginalFolder,
+        predicate = { it.filenameBehavior !is FilenameBehavior.Overwrite }
+    )
+
     override suspend fun setSpotHealMode(mode: Int) = edit {
         it[SPOT_HEAL_MODE] = mode
     }
@@ -466,6 +497,11 @@ internal class AndroidSettingsManager @Inject constructor(
     override suspend fun toggleMagnifierEnabled() = toggle(
         key = MAGNIFIER_ENABLED,
         defaultValue = default.magnifierEnabled
+    )
+
+    override suspend fun toggleDrawBitmapBorder() = toggle(
+        key = DRAW_BITMAP_BORDER,
+        defaultValue = default.drawBitmapBorder
     )
 
     override suspend fun toggleExifWidgetInitialState() = toggle(
@@ -539,6 +575,11 @@ internal class AndroidSettingsManager @Inject constructor(
     override suspend fun toggleUseRandomEmojis() = toggle(
         key = USE_RANDOM_EMOJIS,
         defaultValue = default.useRandomEmojis
+    )
+
+    override suspend fun toggleUseAnimatedEmojis() = toggle(
+        key = USE_ANIMATED_EMOJIS,
+        defaultValue = default.useAnimatedEmojis
     )
 
     override suspend fun setIconShape(iconShape: Int) = edit {
@@ -654,8 +695,17 @@ internal class AndroidSettingsManager @Inject constructor(
     )
 
     override suspend fun adjustPerformance(performanceClass: PerformanceClass) = edit {
+        performanceClass.makeLog("adjustPerformance")
+
+        val performanceVersion = it[PERFORMANCE_VERSION] ?: 0
+
+        if (performanceVersion >= TARGET_PERFORMANCE_VERSION) return@edit
+
+        it[PERFORMANCE_VERSION] = TARGET_PERFORMANCE_VERSION
+
         when (performanceClass) {
             PerformanceClass.Low -> {
+                it[USE_ANIMATED_EMOJIS] = false
                 it[CONFETTI_ENABLED] = false
                 it[DRAW_BUTTON_SHADOWS] = false
                 it[DRAW_SWITCH_SHADOWS] = false
@@ -665,6 +715,7 @@ internal class AndroidSettingsManager @Inject constructor(
             }
 
             PerformanceClass.Average -> {
+                it[USE_ANIMATED_EMOJIS] = true
                 it[CONFETTI_ENABLED] = true
                 it[DRAW_BUTTON_SHADOWS] = false
                 it[DRAW_SWITCH_SHADOWS] = true
@@ -674,6 +725,7 @@ internal class AndroidSettingsManager @Inject constructor(
             }
 
             PerformanceClass.High -> {
+                it[USE_ANIMATED_EMOJIS] = true
                 it[CONFETTI_ENABLED] = true
                 it[DRAW_BUTTON_SHADOWS] = true
                 it[DRAW_SWITCH_SHADOWS] = true
@@ -757,6 +809,14 @@ internal class AndroidSettingsManager @Inject constructor(
 
     override suspend fun setInitialOcrMode(mode: Int) = edit {
         it[INITIAL_OCR_MODE] = mode
+    }
+
+    override suspend fun setInitialOcrEngine(engine: Int) = edit {
+        it[INITIAL_OCR_ENGINE] = engine
+    }
+
+    override suspend fun setInitialPaddleOcrModel(model: Int) = edit {
+        it[INITIAL_PADDLE_OCR_MODEL] = model
     }
 
     override suspend fun toggleUseCompactSelectorsLayout() = toggle(
@@ -923,6 +983,10 @@ internal class AndroidSettingsManager @Inject constructor(
         }
     }
 
+    override suspend fun setShapeByInteractionThrottle(delay: Long) = edit {
+        it[SHAPE_BY_INTERACTION_THROTTLE] = delay.coerceIn(0, 500)
+    }
+
     override suspend fun setFilenamePattern(pattern: String?) = edit {
         it[FILENAME_PATTERN] = pattern.orEmpty()
     }
@@ -935,17 +999,39 @@ internal class AndroidSettingsManager @Inject constructor(
         preferences[HIDDEN_FOR_SHARE_SCREENS] = data.joinToString("/") { it.toString() }
     }
 
+    override suspend fun toggleKeepDateTime() = toggle(
+        key = KEEP_DATE_TIME,
+        defaultValue = default.keepDateTime
+    )
+
+    override suspend fun toggleAlwaysClearExif() = toggle(
+        key = ALWAYS_CLEAR_EXIF,
+        defaultValue = default.isAlwaysClearExif
+    )
+
+    override suspend fun toggleEnableBackgroundColorForAlphaFormats() = toggle(
+        key = ENABLE_BACKGROUND_COLOR_FOR_ALPHA_FORMATS,
+        defaultValue = default.enableBackgroundColorForAlphaFormats
+    )
+
+    override suspend fun toggleShowToolsHistory() = toggle(
+        key = SHOW_TOOLS_HISTORY,
+        defaultValue = default.showToolsHistory
+    )
+
+    override suspend fun setMotionDurationScale(scale: Float) = edit {
+        it[MOTION_DURATION_SCALE] = scale.coerceIn(0f, 5f)
+    }
+
     private suspend fun toggleFilenameBehavior(
         behavior: FilenameBehavior
     ) = edit {
+        if (behavior is FilenameBehavior.Overwrite && currentSettings.saveToOriginalFolder) return@edit
+
         val useToggle = behavior is FilenameBehavior.Checksum
                 || !currentSettings.filenameBehavior::class.isInstance(behavior)
 
         if (useToggle) {
-            if (behavior is FilenameBehavior.Overwrite) {
-                it[IMAGE_PICKER_MODE] = 2
-            }
-
             it[FILENAME_BEHAVIOR] =
                 jsonParser.toJson(behavior, FilenameBehavior::class.java).orEmpty()
         } else {
@@ -964,7 +1050,10 @@ internal class AndroidSettingsManager @Inject constructor(
     private suspend fun toggle(
         key: Preferences.Key<Boolean>,
         defaultValue: Boolean,
+        predicate: (SettingsState) -> Boolean = { true }
     ) = edit {
+        if (!predicate(currentSettings)) return@edit
+
         it.toggle(
             key = key,
             defaultValue = defaultValue
@@ -978,3 +1067,5 @@ internal class AndroidSettingsManager @Inject constructor(
     }
 
 }
+
+private const val TARGET_PERFORMANCE_VERSION = 1

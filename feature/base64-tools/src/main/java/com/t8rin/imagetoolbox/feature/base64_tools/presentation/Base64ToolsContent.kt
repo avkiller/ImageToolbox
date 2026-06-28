@@ -23,9 +23,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -41,14 +41,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.toBitmap
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.BrokenImageAlt
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
+import com.t8rin.imagetoolbox.core.ui.theme.takeColorFromScheme
 import com.t8rin.imagetoolbox.core.ui.theme.takeUnless
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -79,16 +82,12 @@ fun Base64ToolsContent(
 
     val isPortrait by isPortraitOrientationAsState()
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val imagePicker = rememberImagePicker(onSuccess = component::setUri)
     val pickImage = imagePicker::pickImage
 
     val saveBitmap: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmap(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResult
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -126,11 +125,9 @@ fun Base64ToolsContent(
             }
             ShareButton(
                 enabled = component.uri != null,
-                onShare = {
-                    component.shareBitmap(showConfetti)
-                },
+                onShare = component::shareBitmap,
                 onCopy = {
-                    component.cacheCurrentImage(essentials::copyToClipboard)
+                    component.cacheCurrentImage(Clipboard::copy)
                 },
                 onEdit = {
                     component.cacheCurrentImage { uri ->
@@ -178,11 +175,26 @@ fun Base64ToolsContent(
                                 aspectRatio = it.result.image.toBitmap().safeAspectRatio
                             },
                             error = {
-                                Icon(
-                                    imageVector = Icons.Rounded.BrokenImageAlt,
-                                    contentDescription = null,
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                )
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            takeColorFromScheme { isNightMode ->
+                                                errorContainer.copy(
+                                                    if (isNightMode) 0.25f
+                                                    else 1f
+                                                ).compositeOverSafe(surface)
+                                            }
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.BrokenImageAlt,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(0.5f),
+                                        tint = MaterialTheme.colorScheme.onErrorContainer.copy(0.8f)
+                                    )
+                                }
                             },
                             shape = MaterialTheme.shapes.medium,
                             isLoadingFromDifferentPlace = component.isImageLoading

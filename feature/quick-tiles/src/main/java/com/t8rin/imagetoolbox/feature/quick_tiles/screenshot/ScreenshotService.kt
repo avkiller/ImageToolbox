@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.getSystemService
@@ -58,6 +57,7 @@ import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.getScreenExtra
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.postToast
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.putScreenExtra
 import com.t8rin.imagetoolbox.core.ui.utils.helper.IntentUtils.parcelable
+import com.t8rin.imagetoolbox.core.utils.initAppContext
 import com.t8rin.imagetoolbox.feature.erase_background.domain.AutoBackgroundRemover
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -71,7 +71,6 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-@RequiresApi(Build.VERSION_CODES.N)
 @AndroidEntryPoint
 class ScreenshotService : Service() {
 
@@ -101,6 +100,11 @@ class ScreenshotService : Service() {
     private var screenshotJob by smartJob()
 
     private var timeoutJob by smartJob()
+
+    override fun onCreate() {
+        super.onCreate()
+        initAppContext()
+    }
 
     override fun onStartCommand(
         intent: Intent?,

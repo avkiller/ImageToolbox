@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,11 +51,7 @@ internal fun SearchableSettingItem(
     group: SettingsGroup,
     setting: Setting,
     shape: Shape,
-    component: SettingsComponent,
-    onNavigateToEasterEgg: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onNavigateToLibrariesInfo: () -> Unit,
-    isUpdateAvailable: Boolean
+    component: SettingsComponent
 ) {
     Column(
         modifier = modifier.container(
@@ -75,7 +71,6 @@ internal fun SearchableSettingItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconShapeContainer(
-                enabled = true,
                 iconShape = iconShape?.copy(
                     iconSize = 16.dp
                 )
@@ -100,11 +95,7 @@ internal fun SearchableSettingItem(
         ProvideContainerDefaults(itemShape) {
             SettingItem(
                 setting = setting,
-                component = component,
-                isUpdateAvailable = isUpdateAvailable,
-                onNavigateToEasterEgg = onNavigateToEasterEgg,
-                onNavigateToSettings = onNavigateToSettings,
-                onNavigateToLibrariesInfo = onNavigateToLibrariesInfo
+                component = component
             )
         }
         Spacer(Modifier.height(8.dp))

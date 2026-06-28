@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,22 @@ import android.content.ContentValues
 import android.content.Intent
 import android.provider.CalendarContract
 import android.provider.ContactsContract
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.Contacts
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Link
-import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.Phone
-import androidx.compose.material.icons.rounded.Sms
-import androidx.compose.material.icons.rounded.TextFields
-import androidx.compose.material.icons.rounded.Wifi
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.net.toUri
 import com.t8rin.imagetoolbox.core.domain.model.QrType
 import com.t8rin.imagetoolbox.core.domain.model.copy
 import com.t8rin.imagetoolbox.core.domain.model.ifNotEmpty
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.CalendarMonth
+import com.t8rin.imagetoolbox.core.resources.icons.Contacts
+import com.t8rin.imagetoolbox.core.resources.icons.Email
+import com.t8rin.imagetoolbox.core.resources.icons.Link
+import com.t8rin.imagetoolbox.core.resources.icons.LocationOn
+import com.t8rin.imagetoolbox.core.resources.icons.Phone
+import com.t8rin.imagetoolbox.core.resources.icons.Sms
+import com.t8rin.imagetoolbox.core.resources.icons.TextFields
+import com.t8rin.imagetoolbox.core.resources.icons.Wifi
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Contact
 import ezvcard.Ezvcard
 import ezvcard.VCard

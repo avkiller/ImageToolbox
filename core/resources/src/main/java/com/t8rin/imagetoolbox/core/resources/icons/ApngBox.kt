@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 package com.t8rin.imagetoolbox.core.resources.icons
 
-import androidx.compose.material.icons.Icons
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
@@ -27,13 +27,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val Icons.Rounded.ApngBox: ImageVector by lazy {
+val Icons.Outlined.ApngBox: ImageVector by lazy {
     ImageVector.Builder(
         name = "Apng Box", defaultWidth = 24.0.dp, defaultHeight = 24.0.dp,
         viewportWidth = 24.0f, viewportHeight = 24.0f
     ).apply {
         path(
-            fill = SolidColor(Color(0xFF000000)),
+            fill = SolidColor(Color.Black),
             stroke = null,
             strokeLineWidth = 0.0f,
             strokeLineCap = StrokeCap.Butt,
@@ -58,7 +58,7 @@ val Icons.Rounded.ApngBox: ImageVector by lazy {
             close()
         }
         path(
-            fill = SolidColor(Color(0xFF000000)),
+            fill = SolidColor(Color.Black),
             stroke = null,
             strokeLineWidth = 0.0f,
             strokeLineCap = StrokeCap.Butt,
@@ -84,7 +84,7 @@ val Icons.Rounded.ApngBox: ImageVector by lazy {
             horizontalLineTo(17.9844f)
         }
         path(
-            fill = SolidColor(Color(0xFF000000)),
+            fill = SolidColor(Color.Black),
             stroke = null,
             strokeLineWidth = 0.0f,
             strokeLineCap = StrokeCap.Butt,
@@ -110,7 +110,7 @@ val Icons.Rounded.ApngBox: ImageVector by lazy {
             close()
         }
         path(
-            fill = SolidColor(Color(0xFF000000)),
+            fill = SolidColor(Color.Black),
             stroke = null,
             strokeLineWidth = 0.0f,
             strokeLineCap = StrokeCap.Butt,
@@ -138,7 +138,7 @@ val Icons.Rounded.ApngBox: ImageVector by lazy {
             close()
         }
         path(
-            fill = SolidColor(Color(0xFF000000)),
+            fill = SolidColor(Color.Black),
             stroke = null,
             strokeLineWidth = 0.0f,
             strokeLineCap = StrokeCap.Butt,
@@ -170,7 +170,7 @@ val Icons.TwoTone.ApngBox: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
         viewportHeight = 24f
     ).apply {
         path(
-            fill = SolidColor(Color(0xFF000000)),
+            fill = SolidColor(Color.Black),
             fillAlpha = 0.3f,
             strokeAlpha = 0.3f
         ) {
@@ -180,7 +180,7 @@ val Icons.TwoTone.ApngBox: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
             horizontalLineToRelative(-14f)
             close()
         }
-        path(fill = SolidColor(Color(0xFF000000))) {
+        path(fill = SolidColor(Color.Black)) {
             moveTo(19f, 3f)
             horizontalLineTo(5f)
             curveToRelative(-1.11f, 0f, -2f, 0.89f, -2f, 2f)

@@ -41,11 +41,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -55,11 +50,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
@@ -68,11 +63,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.colordetector.util.ColorUtil
+import com.t8rin.colors.parser.ColorWithName
 import com.t8rin.imagetoolbox.color_library.presentation.screenLogic.ColorLibraryComponent
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.icons.Close
+import com.t8rin.imagetoolbox.core.resources.icons.Search
+import com.t8rin.imagetoolbox.core.resources.icons.SearchOff
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ColorCopyFormatSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedFloatingActionButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedLoadingIndicator
@@ -93,27 +93,18 @@ fun ColorLibraryContent(
     component: ColorLibraryComponent
 ) {
     val isKeyboardVisible by isKeyboardVisibleAsState()
-    val essentials = rememberLocalEssentials()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colors = component.colors
     val searchKeyword = component.searchKeyword
     val favoriteColors = component.favoriteColors
     val settingsState = LocalSettingsState.current
 
-    val copyColor: (Color) -> Unit = { color ->
-        essentials.copyToClipboard(
-            text = if (color.alpha == 1f) {
-                ColorUtil.colorToHex(color)
-            } else {
-                ColorUtil.colorToHexAlpha(color)
-            }.uppercase(),
-            message = R.string.color_copied
-        )
-    }
-
     val focus = LocalFocusManager.current
     var isSearching by rememberSaveable {
         mutableStateOf(false)
+    }
+    var colorCopyTarget by remember {
+        mutableStateOf<ColorWithName?>(null)
     }
 
     Scaffold(
@@ -135,7 +126,7 @@ fun ColorLibraryContent(
                         onClick = component.onGoBack
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = Icons.Rounded.ArrowBack,
                             contentDescription = stringResource(R.string.exit)
                         )
                     }
@@ -220,7 +211,7 @@ fun ColorLibraryContent(
                             )
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Search,
+                                imageVector = Icons.Outlined.Search,
                                 contentDescription = null
                             )
                         }
@@ -260,7 +251,9 @@ fun ColorLibraryContent(
                             color = colorWithName.color,
                             name = colorWithName.name,
                             onToggleFavorite = { component.toggleFavoriteColor(colorWithName) },
-                            onCopy = { copyColor(colorWithName.color) },
+                            onCopy = {
+                                colorCopyTarget = colorWithName
+                            },
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -286,7 +279,7 @@ fun ColorLibraryContent(
                         )
                     )
                     Icon(
-                        imageVector = Icons.Rounded.SearchOff,
+                        imageVector = Icons.Outlined.SearchOff,
                         contentDescription = null,
                         modifier = Modifier
                             .weight(2f)
@@ -307,4 +300,9 @@ fun ColorLibraryContent(
             }
         }
     }
+
+    ColorCopyFormatSelectionDialog(
+        target = colorCopyTarget,
+        onDismiss = { colorCopyTarget = null }
+    )
 }

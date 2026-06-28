@@ -20,7 +20,7 @@ package com.t8rin.imagetoolbox.core.domain.saving
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.supervisorScope
 
-interface KeepAliveService {
+interface KeepAliveService : FailureNotifier {
     fun updateOrStart(
         title: String = "",
         description: String = "",
@@ -55,18 +55,21 @@ suspend fun <R> KeepAliveService.track(
     onComplete: KeepAliveService.(isSuccess: Boolean) -> Unit = { stop(true) },
     action: suspend KeepAliveService.() -> R
 ): R? = supervisorScope {
+    var isSuccess = false
+
     try {
         initial()
-        action()
+        action().also {
+            isSuccess = true
+        }
     } catch (e: CancellationException) {
-        onComplete(false)
         onCancel()
         throw e
     } catch (e: Throwable) {
-        onComplete(false)
         onFailure(e)
+        send(e)
         null
     } finally {
-        onComplete(true)
+        onComplete(isSuccess)
     }
 }

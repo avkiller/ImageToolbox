@@ -18,20 +18,21 @@
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.FormatTextdirectionLToR
-import androidx.compose.material.icons.outlined.Timer
+import com.t8rin.imagetoolbox.core.resources.Icons
+import com.t8rin.imagetoolbox.core.resources.icons.Timer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FormatParagraph
 import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRowSwitch
+import com.t8rin.imagetoolbox.core.utils.getString
 
 @Composable
 fun UseFormattedFilenameTimestampSettingItem(
@@ -40,7 +41,6 @@ fun UseFormattedFilenameTimestampSettingItem(
     modifier: Modifier = Modifier.padding(horizontal = 8.dp)
 ) {
     val settingsState = LocalSettingsState.current
-    val essentials = rememberLocalEssentials()
 
     PreferenceRowSwitch(
         shape = shape,
@@ -50,14 +50,14 @@ fun UseFormattedFilenameTimestampSettingItem(
         },
         enabled = settingsState.filenameBehavior is FilenameBehavior.None && settingsState.addTimestampToFilename,
         onDisabledClick = {
-            essentials.showToast(
-                message = essentials.getString(R.string.enable_timestamps_to_format_them),
+            AppToastHost.showToast(
+                message = getString(R.string.enable_timestamps_to_format_them),
                 icon = Icons.Outlined.Timer
             )
         },
         title = stringResource(R.string.formatted_timestamp),
         subtitle = stringResource(R.string.formatted_timestamp_sub),
         checked = settingsState.useFormattedFilenameTimestamp,
-        startIcon = Icons.AutoMirrored.Outlined.FormatTextdirectionLToR
+        startIcon = Icons.Rounded.FormatParagraph
     )
 }

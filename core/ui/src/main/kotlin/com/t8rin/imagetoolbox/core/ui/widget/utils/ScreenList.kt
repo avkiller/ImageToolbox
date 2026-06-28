@@ -83,38 +83,43 @@ internal fun List<Uri>.screenList(
     }
     val pdfAvailableScreens by remember(uris) {
         derivedStateOf {
-            listOf(
-                Screen.PdfTools(
-                    Screen.PdfTools.Type.Preview(
+            val multiplePdf = Screen.PdfTools.Merge(uris.takeIf { it.isNotEmpty() })
+
+            val pdfScreens = if (uris.size == 1) {
+                listOf(
+                    Screen.PdfTools.Preview(
                         uris.firstOrNull()
-                    )
-                ),
-                Screen.PdfTools(
-                    Screen.PdfTools.Type.PdfToImages(
+                    ),
+                    Screen.PdfTools.ExtractPages(
                         uris.firstOrNull()
-                    )
-                ),
-                Screen.PdfTools.Merge(uris.takeIf { it.isNotEmpty() }),
-                Screen.PdfTools.Split(uris.firstOrNull()),
-                Screen.PdfTools.RemovePages(uris.firstOrNull()),
-                Screen.PdfTools.Rotate(uris.firstOrNull()),
-                Screen.PdfTools.Rearrange(uris.firstOrNull()),
-                Screen.PdfTools.Crop(uris.firstOrNull()),
-                Screen.PdfTools.PageNumbers(uris.firstOrNull()),
-                Screen.PdfTools.Watermark(uris.firstOrNull()),
-                Screen.PdfTools.Signature(uris.firstOrNull()),
-                Screen.PdfTools.Compress(uris.firstOrNull()),
-                Screen.PdfTools.Flatten(uris.firstOrNull()),
-                Screen.PdfTools.Print(uris.firstOrNull()),
-                Screen.PdfTools.Grayscale(uris.firstOrNull()),
-                Screen.PdfTools.Repair(uris.firstOrNull()),
-                Screen.PdfTools.Protect(uris.firstOrNull()),
-                Screen.PdfTools.Unlock(uris.firstOrNull()),
-                Screen.PdfTools.Metadata(uris.firstOrNull()),
-                Screen.PdfTools.ExtractImages(uris.firstOrNull()),
-                Screen.PdfTools.OCR(uris.firstOrNull()),
-                Screen.PdfTools.ZipConvert(uris.firstOrNull()),
-            ) + filesAvailableScreens
+                    ),
+                    multiplePdf,
+                    Screen.PdfTools.Split(uris.firstOrNull()),
+                    Screen.PdfTools.RemovePages(uris.firstOrNull()),
+                    Screen.PdfTools.Rotate(uris.firstOrNull()),
+                    Screen.PdfTools.Rearrange(uris.firstOrNull()),
+                    Screen.PdfTools.Crop(uris.firstOrNull()),
+                    Screen.PdfTools.PageNumbers(uris.firstOrNull()),
+                    Screen.PdfTools.Watermark(uris.firstOrNull()),
+                    Screen.PdfTools.Signature(uris.firstOrNull()),
+                    Screen.PdfTools.Compress(uris.firstOrNull()),
+                    Screen.PdfTools.RemoveAnnotations(uris.firstOrNull()),
+                    Screen.PdfTools.Flatten(uris.firstOrNull()),
+                    Screen.PdfTools.Print(uris.firstOrNull()),
+                    Screen.PdfTools.Grayscale(uris.firstOrNull()),
+                    Screen.PdfTools.Repair(uris.firstOrNull()),
+                    Screen.PdfTools.Protect(uris.firstOrNull()),
+                    Screen.PdfTools.Unlock(uris.firstOrNull()),
+                    Screen.PdfTools.Metadata(uris.firstOrNull()),
+                    Screen.PdfTools.ExtractImages(uris.firstOrNull()),
+                    Screen.PdfTools.OCR(uris.firstOrNull()),
+                    Screen.PdfTools.ZipConvert(uris.firstOrNull()),
+                )
+            } else {
+                listOf(multiplePdf)
+            }
+
+            pdfScreens + filesAvailableScreens
         }
     }
     val singleImageScreens by remember(uris) {
@@ -145,9 +150,7 @@ internal fun List<Uri>.screenList(
                 Screen.ImageCutter(uris),
                 Screen.ScanQrCode(uriToAnalyze = uris.firstOrNull()),
                 Screen.GradientMaker(uris),
-                Screen.PdfTools(
-                    Screen.PdfTools.Type.ImagesToPdf(uris)
-                ),
+                Screen.PdfTools.ImagesToPdf(uris),
                 Screen.GifTools(
                     Screen.GifTools.Type.ImageToGif(uris)
                 ),
@@ -204,9 +207,9 @@ internal fun List<Uri>.screenList(
                 ),
             ).apply {
                 add(Screen.ImageStitching(uris))
-                add(Screen.PdfTools(Screen.PdfTools.Type.ImagesToPdf(uris)))
+                add(Screen.PdfTools.ImagesToPdf(uris))
                 if (uris.size == 2) add(Screen.Compare(uris))
-                if (uris.size in 1..10) {
+                if (uris.size in 1..20) {
                     add(Screen.CollageMaker(uris))
                 }
                 add(Screen.AiTools(uris))
@@ -219,6 +222,11 @@ internal fun List<Uri>.screenList(
                 add(
                     Screen.RecognizeText(
                         Screen.RecognizeText.Type.WriteToMetadata(uris)
+                    )
+                )
+                add(
+                    Screen.RecognizeText(
+                        Screen.RecognizeText.Type.WriteToSearchablePdf(uris)
                     )
                 )
                 add(Screen.Watermarking(uris))
@@ -317,6 +325,7 @@ internal fun List<Uri>.screenList(
         derivedStateOf {
             val baseScreens = when (extraDataType) {
                 is ExtraDataType.Backup -> filesAvailableScreens
+                is ExtraDataType.Template -> filesAvailableScreens
                 is ExtraDataType.Text -> textAvailableScreens
                 ExtraDataType.Audio -> audioAvailableScreens
                 ExtraDataType.File -> filesAvailableScreens

@@ -45,10 +45,10 @@ import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ExitWithoutSavingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
@@ -58,7 +58,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.image.AutoFilePicker
 import com.t8rin.imagetoolbox.core.ui.widget.image.ImageNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.image.UrisPreview
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
+import com.t8rin.imagetoolbox.core.ui.widget.image.urisPreview
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
@@ -70,9 +70,6 @@ import com.t8rin.imagetoolbox.image_splitting.presentation.screenLogic.ImageSpli
 fun ImageSplitterContent(
     component: ImageSplitterComponent
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     val imagePicker = rememberImagePicker(onSuccess = component::updateUri)
 
     val pickImage = imagePicker::pickImage
@@ -84,8 +81,7 @@ fun ImageSplitterContent(
 
     val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmaps(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResults
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -123,9 +119,7 @@ fun ImageSplitterContent(
                 uris = component.uris.ifEmpty {
                     listOf(Uri.EMPTY, Uri.EMPTY)
                 },
-                modifier = Modifier
-                    .animateContentSizeNoClip()
-                    .padding(2.dp),
+                modifier = Modifier.urisPreview(isPortrait = isPortrait),
                 isPortrait = true,
                 onRemoveUri = null,
                 onAddUris = null,
@@ -158,11 +152,18 @@ fun ImageSplitterContent(
             var editSheetData by remember {
                 mutableStateOf(listOf<Uri>())
             }
+            if (!isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
             ShareButton(
                 enabled = component.uri != null,
-                onShare = {
-                    component.shareBitmaps(showConfetti)
-                },
+                onShare = component::shareBitmaps,
                 onEdit = {
                     component.cacheImages {
                         editSheetData = it
@@ -177,6 +178,15 @@ fun ImageSplitterContent(
                 },
                 onNavigate = component.onNavigate
             )
+            if (isPortrait) {
+                UndoRedoButtons(
+                    canUndo = component.canUndo,
+                    canRedo = component.canRedo,
+                    onUndo = component::undo,
+                    onRedo = component::redo,
+                    modifier = Modifier.padding(2.dp)
+                )
+            }
         },
         showImagePreviewAsStickyHeader = false,
         imagePreview = {

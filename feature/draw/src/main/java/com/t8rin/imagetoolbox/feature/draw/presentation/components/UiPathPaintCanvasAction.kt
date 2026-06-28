@@ -44,9 +44,11 @@ import androidx.compose.ui.graphics.asComposePaint
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.applyCanvas
 import androidx.core.graphics.createBitmap
@@ -91,7 +93,10 @@ internal fun Canvas.UiPathPaintCanvasAction(
     drawImageBitmap: ImageBitmap,
     drawBitmap: ImageBitmap,
     onClearDrawPath: () -> Unit,
+    onClearWarpDrawPath: (Long) -> Unit,
     onRequestFiltering: suspend (Bitmap, List<Filter<*>>) -> Bitmap?,
+    spotHealCache: Map<Int, Bitmap>,
+    onCacheSpotHealPathResult: (Int, Bitmap) -> Unit,
 ) = with(nativeCanvas) {
     val (nonScaledPath, strokeWidth, brushSoftness, drawColor, isEraserOn, drawMode, size, drawPathMode, drawLineStyle) = uiPathPaint
 
@@ -144,6 +149,8 @@ internal fun Canvas.UiPathPaintCanvasAction(
             )
         }
     } else if (drawMode is DrawMode.SpotHeal && !isEraserOn) {
+        val cacheKey = uiPathPaint.hashCode()
+
         val paint = remember(uiPathPaint, canvasSize) {
             val isSharpEdge = drawPathMode.isSharpEdge
             val isFilled = drawPathMode.isFilled
@@ -175,12 +182,12 @@ internal fun Canvas.UiPathPaintCanvasAction(
             mutableFloatStateOf(0f)
         }
 
-        var shaderSource by remember(backgroundColor) {
-            mutableStateOf<ImageBitmap?>(null)
+        var shaderSource by remember(cacheKey, backgroundColor) {
+            mutableStateOf(spotHealCache[cacheKey]?.asImageBitmap())
         }
         LaunchedEffect(shaderSource, invalidations) {
             withContext(Dispatchers.Default) {
-                if (shaderSource == null || invalidations <= pathsCount) {
+                if (shaderSource == null) {
                     isLoading = true
                     val job = launch {
                         while (progress < 0.5f && isActive && isLoading) {
@@ -210,7 +217,7 @@ internal fun Canvas.UiPathPaintCanvasAction(
                                             drawColor(Color.Black.toArgb())
                                             drawPath(
                                                 path,
-                                                paint.asFrameworkPaint()
+                                                paint.nativePaint
                                             )
                                         }.toImageModel(),
                                         drawMode.mode
@@ -223,6 +230,7 @@ internal fun Canvas.UiPathPaintCanvasAction(
                                 blendMode = BlendMode.Clear
                             }
                         )?.also {
+                            onCacheSpotHealPathResult(cacheKey, it.asAndroidBitmap())
                             it.prepareToDraw()
                             onInvalidate()
                         }
@@ -239,9 +247,9 @@ internal fun Canvas.UiPathPaintCanvasAction(
                 onInvalidate()
             }
             val imagePaint = remember { Paint() }
-            drawImage(
+            drawImageRect(
                 image = shaderSource!!,
-                topLeftOffset = Offset.Zero,
+                dstSize = IntSize(canvasSize.width, canvasSize.height),
                 paint = imagePaint
             )
         }
@@ -262,29 +270,17 @@ internal fun Canvas.UiPathPaintCanvasAction(
             }
         )
     } else if (drawMode is DrawMode.Warp && !isEraserOn) {
-        val paint = remember(uiPathPaint, canvasSize) {
-            val stroke = strokeWidth.toPx(canvasSize)
-
-            Paint().apply {
-                style = PaintingStyle.Stroke
-                this.strokeWidth = stroke
-                strokeCap = StrokeCap.Round
-                strokeJoin = StrokeJoin.Round
-                color = Color.White
-                blendMode = BlendMode.Clear
-            }
-        }
         var warpedBitmap by remember(uiPathPaint, canvasSize) {
             mutableStateOf<ImageBitmap?>(null)
         }
 
         LaunchedEffect(warpedBitmap, invalidations) {
-            withContext(Dispatchers.Default) {
-                if (warpedBitmap == null || invalidations <= pathsCount) {
-                    val source = drawImageBitmap
-                        .overlay(drawBitmap)
-                        .asAndroidBitmap()
+            if (warpedBitmap == null || invalidations <= pathsCount) {
+                val source = drawImageBitmap
+                    .overlay(drawBitmap)
+                    .asAndroidBitmap()
 
+                withContext(Dispatchers.Default) {
                     val engine = WarpEngine(source)
 
                     try {
@@ -309,11 +305,7 @@ internal fun Canvas.UiPathPaintCanvasAction(
 
                         warpedBitmap = engine
                             .render()
-                            .asImageBitmap()
-                            .clipBitmap(
-                                path = path.asComposePath(),
-                                paint = paint
-                            ).also {
+                            .asImageBitmap().also {
                                 it.prepareToDraw()
                                 onInvalidate()
                             }
@@ -326,7 +318,7 @@ internal fun Canvas.UiPathPaintCanvasAction(
 
         warpedBitmap?.let {
             LaunchedEffect(warpedBitmap) {
-                onClearDrawPath()
+                onClearWarpDrawPath(drawMode.previewClearToken)
             }
             val imagePaint = remember { Paint() }
             drawImage(

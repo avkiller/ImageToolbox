@@ -40,11 +40,13 @@ import com.t8rin.imagetoolbox.core.filters.domain.model.params.BloomParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.ChannelMixParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.ClaheParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.CropOrPerspectiveParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.DropShadowParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.EnhancedZoomBlurParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.GlitchParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.KaleidoscopeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.LinearGaussianParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.LinearTiltShiftParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.NtscParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.PinchParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.RadialTiltShiftParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.RubberStampParams
@@ -52,6 +54,7 @@ import com.t8rin.imagetoolbox.core.filters.domain.model.params.SideFadeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.SmearParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.SparkleParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.ToneCurvesParams
+import com.t8rin.imagetoolbox.core.filters.domain.model.params.TornEdgeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.VoronoiCrystallizeParams
 import com.t8rin.imagetoolbox.core.filters.domain.model.params.WaterParams
 import com.t8rin.imagetoolbox.core.settings.domain.model.DomainFontFamily
@@ -312,6 +315,97 @@ internal fun Any.toPair(): Pair<String, String>? {
                 softKnee,
                 exposure,
                 gamma
+            ).joinToString(PROPERTIES_SEPARATOR)
+        }
+
+        is DropShadowParams -> {
+            DropShadowParams::class.simpleName!! to listOf(
+                color.colorInt,
+                offsetX,
+                offsetY,
+                blurRadius
+            ).joinToString(PROPERTIES_SEPARATOR)
+        }
+
+        is TornEdgeParams -> {
+            TornEdgeParams::class.simpleName!! to listOf(
+                toothHeight,
+                horizontalToothRange,
+                verticalToothRange,
+                top,
+                right,
+                bottom,
+                left
+            ).joinToString(PROPERTIES_SEPARATOR)
+        }
+
+        is NtscParams -> {
+            NtscParams::class.simpleName!! to listOf(
+                amount,
+                chromaBleed,
+                tapeWear,
+                noise,
+                tracking,
+                seed,
+                lumaSmear,
+                compositeSharpening,
+                ringing,
+                snow,
+                useField,
+                filterType,
+                inputLumaFilter,
+                chromaLowpassIn,
+                chromaDemodulation,
+                videoScanlinePhaseShift,
+                videoScanlinePhaseShiftOffset,
+                headSwitchingHeight,
+                headSwitchingOffset,
+                headSwitchingHorizontalShift,
+                headSwitchingMidLinePosition,
+                headSwitchingMidLineJitter,
+                trackingNoiseHeight,
+                trackingNoiseWaveIntensity,
+                trackingNoiseSnowIntensity,
+                trackingNoiseSnowAnisotropy,
+                trackingNoiseNoiseIntensity,
+                compositeNoiseFrequency,
+                compositeNoiseIntensity,
+                compositeNoiseDetail,
+                ringingFrequency,
+                ringingPower,
+                lumaNoiseFrequency,
+                lumaNoiseIntensity,
+                lumaNoiseDetail,
+                chromaNoiseFrequency,
+                chromaNoiseIntensity,
+                chromaNoiseDetail,
+                snowIntensity,
+                snowAnisotropy,
+                chromaPhaseNoiseIntensity,
+                chromaPhaseError,
+                chromaDelayHorizontal,
+                chromaDelayVertical,
+                vhsTapeSpeed,
+                vhsChromaLoss,
+                vhsSharpenIntensity,
+                vhsSharpenFrequency,
+                vhsEdgeWaveIntensity,
+                vhsEdgeWaveSpeed,
+                vhsEdgeWaveFrequency,
+                vhsEdgeWaveDetail,
+                chromaLowpassOut,
+                scaleHorizontal,
+                scaleVertical,
+                scaleFactorX,
+                scaleFactorY,
+                headSwitchingEnabled,
+                trackingNoiseEnabled,
+                compositeNoiseEnabled,
+                ringingEnabled,
+                lumaNoiseEnabled,
+                chromaNoiseEnabled,
+                vhsEnabled,
+                scaleEnabled
             ).joinToString(PROPERTIES_SEPARATOR)
         }
 
@@ -661,6 +755,130 @@ internal fun Pair<String, String>.fromPair(): Any? {
                 softKnee = softKnee.toFloat(),
                 exposure = exposure.toFloat(),
                 gamma = gamma.toFloat()
+            )
+        }
+
+        name == DropShadowParams::class.simpleName -> {
+            val (color, offsetX, offsetY, blurRadius) = value.split(
+                PROPERTIES_SEPARATOR
+            )
+
+            DropShadowParams(
+                color = color.toInt().toColorModel(),
+                offsetX = offsetX.toFloat(),
+                offsetY = offsetY.toFloat(),
+                blurRadius = blurRadius.toFloat()
+            )
+        }
+
+        name == TornEdgeParams::class.simpleName -> {
+            val (
+                toothHeight,
+                horizontalToothRange,
+                verticalToothRange,
+                top,
+                right,
+                bottom,
+                left
+            ) = value.split(PROPERTIES_SEPARATOR)
+
+            TornEdgeParams(
+                toothHeight = toothHeight.toInt(),
+                horizontalToothRange = horizontalToothRange.toInt(),
+                verticalToothRange = verticalToothRange.toInt(),
+                top = top.toBoolean(),
+                right = right.toBoolean(),
+                bottom = bottom.toBoolean(),
+                left = left.toBoolean()
+            )
+        }
+
+        name == NtscParams::class.simpleName -> {
+            val parts = value.split(PROPERTIES_SEPARATOR)
+            val default = NtscParams()
+
+            fun floatAt(index: Int, fallback: Float): Float {
+                return parts.getOrNull(index)?.toFloatOrNull() ?: fallback
+            }
+
+            fun intAt(index: Int, fallback: Int): Int {
+                return parts.getOrNull(index)?.toIntOrNull() ?: fallback
+            }
+
+            fun booleanAt(index: Int, fallback: Boolean): Boolean {
+                return when (parts.getOrNull(index)) {
+                    "true" -> true
+                    "false" -> false
+                    else -> fallback
+                }
+            }
+
+            NtscParams(
+                amount = floatAt(0, default.amount),
+                chromaBleed = floatAt(1, default.chromaBleed),
+                tapeWear = floatAt(2, default.tapeWear),
+                noise = floatAt(3, default.noise),
+                tracking = floatAt(4, default.tracking),
+                seed = intAt(5, default.seed),
+                lumaSmear = floatAt(6, default.lumaSmear),
+                compositeSharpening = floatAt(7, default.compositeSharpening),
+                ringing = floatAt(8, default.ringing),
+                snow = floatAt(9, default.snow),
+                useField = intAt(10, default.useField),
+                filterType = intAt(11, default.filterType),
+                inputLumaFilter = intAt(12, default.inputLumaFilter),
+                chromaLowpassIn = intAt(13, default.chromaLowpassIn),
+                chromaDemodulation = intAt(14, default.chromaDemodulation),
+                videoScanlinePhaseShift = intAt(15, default.videoScanlinePhaseShift),
+                videoScanlinePhaseShiftOffset = intAt(16, default.videoScanlinePhaseShiftOffset),
+                headSwitchingEnabled = booleanAt(57, default.headSwitchingEnabled),
+                headSwitchingHeight = intAt(17, default.headSwitchingHeight),
+                headSwitchingOffset = intAt(18, default.headSwitchingOffset),
+                headSwitchingHorizontalShift = floatAt(19, default.headSwitchingHorizontalShift),
+                headSwitchingMidLinePosition = floatAt(20, default.headSwitchingMidLinePosition),
+                headSwitchingMidLineJitter = floatAt(21, default.headSwitchingMidLineJitter),
+                trackingNoiseEnabled = booleanAt(58, default.trackingNoiseEnabled),
+                trackingNoiseHeight = intAt(22, default.trackingNoiseHeight),
+                trackingNoiseWaveIntensity = floatAt(23, default.trackingNoiseWaveIntensity),
+                trackingNoiseSnowIntensity = floatAt(24, default.trackingNoiseSnowIntensity),
+                trackingNoiseSnowAnisotropy = floatAt(25, default.trackingNoiseSnowAnisotropy),
+                trackingNoiseNoiseIntensity = floatAt(26, default.trackingNoiseNoiseIntensity),
+                compositeNoiseEnabled = booleanAt(59, default.compositeNoiseEnabled),
+                compositeNoiseFrequency = floatAt(27, default.compositeNoiseFrequency),
+                compositeNoiseIntensity = floatAt(28, default.compositeNoiseIntensity),
+                compositeNoiseDetail = intAt(29, default.compositeNoiseDetail),
+                ringingEnabled = booleanAt(60, default.ringingEnabled),
+                ringingFrequency = floatAt(30, default.ringingFrequency),
+                ringingPower = floatAt(31, default.ringingPower),
+                lumaNoiseEnabled = booleanAt(61, default.lumaNoiseEnabled),
+                lumaNoiseFrequency = floatAt(32, default.lumaNoiseFrequency),
+                lumaNoiseIntensity = floatAt(33, default.lumaNoiseIntensity),
+                lumaNoiseDetail = intAt(34, default.lumaNoiseDetail),
+                chromaNoiseEnabled = booleanAt(62, default.chromaNoiseEnabled),
+                chromaNoiseFrequency = floatAt(35, default.chromaNoiseFrequency),
+                chromaNoiseIntensity = floatAt(36, default.chromaNoiseIntensity),
+                chromaNoiseDetail = intAt(37, default.chromaNoiseDetail),
+                snowIntensity = floatAt(38, default.snowIntensity),
+                snowAnisotropy = floatAt(39, default.snowAnisotropy),
+                chromaPhaseNoiseIntensity = floatAt(40, default.chromaPhaseNoiseIntensity),
+                chromaPhaseError = floatAt(41, default.chromaPhaseError),
+                chromaDelayHorizontal = floatAt(42, default.chromaDelayHorizontal),
+                chromaDelayVertical = intAt(43, default.chromaDelayVertical),
+                vhsEnabled = booleanAt(63, default.vhsEnabled),
+                vhsTapeSpeed = intAt(44, default.vhsTapeSpeed),
+                vhsChromaLoss = floatAt(45, default.vhsChromaLoss),
+                vhsSharpenIntensity = floatAt(46, default.vhsSharpenIntensity),
+                vhsSharpenFrequency = floatAt(47, default.vhsSharpenFrequency),
+                vhsEdgeWaveIntensity = floatAt(48, default.vhsEdgeWaveIntensity),
+                vhsEdgeWaveSpeed = floatAt(49, default.vhsEdgeWaveSpeed),
+                vhsEdgeWaveFrequency = floatAt(50, default.vhsEdgeWaveFrequency),
+                vhsEdgeWaveDetail = intAt(51, default.vhsEdgeWaveDetail),
+                chromaLowpassOut = intAt(52, default.chromaLowpassOut),
+                scaleEnabled = booleanAt(64, default.scaleEnabled),
+                scaleHorizontal = floatAt(53, default.scaleHorizontal),
+                scaleVertical = floatAt(54, default.scaleVertical),
+                scaleFactorX = floatAt(55, default.scaleFactorX),
+                scaleFactorY = floatAt(56, default.scaleFactorY)
             )
         }
 

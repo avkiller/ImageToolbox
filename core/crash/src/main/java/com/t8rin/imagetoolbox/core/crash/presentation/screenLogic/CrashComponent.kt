@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2025 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,12 @@ import com.arkivanov.decompose.ComponentContext
 import com.t8rin.imagetoolbox.core.crash.presentation.components.CrashInfo
 import com.t8rin.imagetoolbox.core.domain.coroutines.DispatchersHolder
 import com.t8rin.imagetoolbox.core.domain.image.ShareProvider
+import com.t8rin.imagetoolbox.core.domain.utils.runSuspendCatching
 import com.t8rin.imagetoolbox.core.settings.domain.SettingsManager
 import com.t8rin.imagetoolbox.core.settings.domain.model.SettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.BaseComponent
+import com.t8rin.imagetoolbox.core.ui.utils.state.update
+import com.t8rin.imagetoolbox.core.utils.makeLog
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -44,6 +47,9 @@ class CrashComponent @AssistedInject internal constructor(
     private val _settingsState = mutableStateOf(SettingsState.Default)
     val settingsState: SettingsState by _settingsState
 
+    private val _isSendingLogs = mutableStateOf(false)
+    val isSendingLogs by _isSendingLogs
+
     init {
         runBlocking {
             _settingsState.value = settingsManager.getSettingsState()
@@ -51,14 +57,20 @@ class CrashComponent @AssistedInject internal constructor(
         settingsManager.settingsState.onEach {
             _settingsState.value = it
         }.launchIn(componentScope)
+
+        crashInfo.makeLog("CrashComponent")
     }
 
     fun shareLogs() {
         componentScope.launch {
-            shareProvider.shareUri(
-                uri = settingsManager.createLogsExport(),
-                onComplete = {}
-            )
+            _isSendingLogs.update { true }
+            runSuspendCatching {
+                shareProvider.shareUri(
+                    uri = settingsManager.createLogsExport(),
+                    onComplete = {}
+                )
+            }
+            _isSendingLogs.update { false }
         }
     }
 

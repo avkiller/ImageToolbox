@@ -17,7 +17,6 @@
 
 package com.t8rin.imagetoolbox.core.ui.widget.controls.selection
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -35,15 +34,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FitScreen
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,20 +48,29 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.t8rin.imagetoolbox.core.domain.image.model.ImageExportProfile
+import com.t8rin.imagetoolbox.core.domain.image.model.ImageInfo
 import com.t8rin.imagetoolbox.core.domain.image.model.Preset
 import com.t8rin.imagetoolbox.core.domain.model.DomainAspectRatio
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AspectRatio
 import com.t8rin.imagetoolbox.core.resources.icons.EditAlt
+import com.t8rin.imagetoolbox.core.resources.icons.FitScreen
+import com.t8rin.imagetoolbox.core.resources.icons.Info
 import com.t8rin.imagetoolbox.core.resources.icons.Telegram
+import com.t8rin.imagetoolbox.core.resources.utils.compositeOverSafe
+import com.t8rin.imagetoolbox.core.settings.domain.model.FilenameBehavior
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalEditPresetsController
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.utils.ImageExportProfilesHolder
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.SupportingButton
 import com.t8rin.imagetoolbox.core.ui.widget.controls.OOMWarning
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedAlertDialog
@@ -96,7 +101,9 @@ fun PresetSelector(
     includeAspectRatioOption: Boolean = false,
     isBytesResize: Boolean = false,
     showWarning: Boolean = false,
-    onValueChange: (Preset) -> Unit
+    onValueChange: (Preset) -> Unit,
+    imageExportProfilesHolder: ImageExportProfilesHolder? = null,
+    imageInfo: ImageInfo? = null
 ) {
     val settingsState = LocalSettingsState.current
     val editPresetsController = LocalEditPresetsController.current
@@ -113,6 +120,36 @@ fun PresetSelector(
 
     val state = rememberRevealState()
     val scope = rememberCoroutineScope()
+    val imagePresets =
+        imageExportProfilesHolder?.imageProfiles?.collectAsState()?.value ?: emptyList()
+    val currentBackgroundColorForNoAlphaFormats = settingsState
+        .backgroundForNoAlphaImageFormats
+        .toArgb()
+    val selectedProfile by remember(
+        imagePresets,
+        imageInfo,
+        value,
+        imageExportProfilesHolder?.currentProfileKeepExif,
+        currentBackgroundColorForNoAlphaFormats
+    ) {
+        derivedStateOf {
+            imageInfo?.let { currentImageInfo ->
+                imagePresets.firstOrNull {
+                    it.matchesCurrentPreset(
+                        imageInfo = currentImageInfo,
+                        preset = value,
+                        keepExif = imageExportProfilesHolder?.currentProfileKeepExif,
+                        backgroundColorForNoAlphaFormats = currentBackgroundColorForNoAlphaFormats
+                    )
+                }
+            }
+        }
+    }
+    val selectedChipColor = if (selectedProfile == null) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
 
     var showPresetInfoDialog by remember { mutableStateOf(false) }
 
@@ -246,13 +283,13 @@ fun PresetSelector(
                         contentPadding = PaddingValues(horizontal = 8.dp),
                         flingBehavior = enhancedFlingBehavior()
                     ) {
-                        if (includeTelegramOption) {
+                        if (includeTelegramOption && settingsState.filenameBehavior !is FilenameBehavior.Overwrite) {
                             item(key = "tg") {
                                 val selected = value.isTelegram()
                                 EnhancedChip(
                                     selected = selected,
                                     onClick = { onValueChange(Preset.Telegram) },
-                                    selectedColor = MaterialTheme.colorScheme.primary,
+                                    selectedColor = selectedChipColor,
                                     shape = MaterialTheme.shapes.medium
                                 ) {
                                     Icon(
@@ -275,14 +312,25 @@ fun PresetSelector(
                                             )
                                         )
                                     },
-                                    selectedColor = MaterialTheme.colorScheme.primary,
+                                    selectedColor = selectedChipColor,
                                     shape = MaterialTheme.shapes.medium
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.AspectRatio,
+                                        imageVector = Icons.Outlined.AspectRatio,
                                         contentDescription = stringResource(R.string.aspect_ratio)
                                     )
                                 }
+                            }
+                        }
+                        if (imageInfo != null && imageExportProfilesHolder != null) {
+                            item(key = "image_presets") {
+                                ImageExportProfileSelector(
+                                    profiles = imagePresets,
+                                    selectedProfile = selectedProfile,
+                                    imageInfo = imageInfo,
+                                    preset = value,
+                                    imageExportProfilesHolder = imageExportProfilesHolder
+                                )
                             }
                         }
                         items(
@@ -293,7 +341,7 @@ fun PresetSelector(
                             EnhancedChip(
                                 selected = selected,
                                 onClick = { onValueChange(Preset.Percentage(it)) },
-                                selectedColor = MaterialTheme.colorScheme.primary,
+                                selectedColor = selectedChipColor,
                                 shape = MaterialTheme.shapes.medium
                             ) {
                                 AutoSizeText(it.toString())
@@ -338,7 +386,7 @@ fun PresetSelector(
                         ).let {
                             it.copy(
                                 unfocusedIndicatorColor = it.unfocusedIndicatorColor.copy(0.5f)
-                                    .compositeOver(
+                                    .compositeOverSafe(
                                         it.unfocusedContainerColor
                                     )
                             )
@@ -346,7 +394,10 @@ fun PresetSelector(
                     )
                 }
 
-                OOMWarning(visible = showWarning)
+                OOMWarning(
+                    visible = showWarning,
+                    modifier = Modifier.padding(4.dp)
+                )
             }
         },
         revealedContentEnd = {
@@ -402,3 +453,29 @@ fun PresetSelector(
         }
     )
 }
+
+private fun ImageExportProfile.matchesCurrentPreset(
+    imageInfo: ImageInfo,
+    preset: Preset,
+    keepExif: Boolean?,
+    backgroundColorForNoAlphaFormats: Int?
+): Boolean {
+    if (this.preset != preset) return false
+    if (keepExif != null && this.keepExif != null && this.keepExif != keepExif) return false
+    if (
+        this.backgroundColorForNoAlphaFormats != null &&
+        backgroundColorForNoAlphaFormats != null &&
+        this.backgroundColorForNoAlphaFormats != backgroundColorForNoAlphaFormats
+    ) return false
+
+    return this.imageInfo.comparableFor(preset) == imageInfo.comparableFor(preset)
+}
+
+private fun ImageInfo.comparableFor(
+    preset: Preset
+): ImageInfo = copy(
+    width = width.takeIf { preset.isEmpty() } ?: 0,
+    height = height.takeIf { preset.isEmpty() } ?: 0,
+    sizeInBytes = 0,
+    originalUri = null
+)

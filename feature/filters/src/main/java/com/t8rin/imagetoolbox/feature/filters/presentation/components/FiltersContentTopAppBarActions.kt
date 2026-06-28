@@ -1,6 +1,6 @@
 /*
  * ImageToolbox is an image editor for android
- * Copyright (c) 2024 T8RIN (Malik Mukhametzyanov)
+ * Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@
 package com.t8rin.imagetoolbox.feature.filters.presentation.components
 
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Texture
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -30,12 +27,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.AutoFixHigh
 import com.t8rin.imagetoolbox.core.resources.icons.Eyedropper
+import com.t8rin.imagetoolbox.core.resources.icons.Texture
 import com.t8rin.imagetoolbox.core.ui.theme.mixedContainer
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ZoomButton
+import com.t8rin.imagetoolbox.core.ui.widget.controls.UndoRedoButtons
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.saver.ColorSaver
@@ -51,6 +52,15 @@ internal fun RowScope.FiltersContentTopAppBarActions(
     val isPortrait by isPortraitOrientationAsState()
 
     if (component.previewBitmap != null) {
+        if (!isPortrait) {
+            UndoRedoButtons(
+                canUndo = component.canUndo,
+                canRedo = component.canRedo,
+                onUndo = component::undo,
+                onRedo = component::redo
+            )
+        }
+
         var showColorPicker by rememberSaveable { mutableStateOf(false) }
         var tempColor by rememberSaveable(
             showColorPicker,
@@ -114,7 +124,7 @@ internal fun RowScope.FiltersContentTopAppBarActions(
                         onClick = component::showAddFiltersSheet
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Texture,
+                            imageVector = Icons.Outlined.Texture,
                             contentDescription = stringResource(R.string.add_mask)
                         )
                     }

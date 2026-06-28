@@ -59,8 +59,12 @@ internal fun Preferences.toSettingsState(
     emojisCount = this[EMOJI_COUNT] ?: default.emojisCount,
     clearCacheOnLaunch = this[AUTO_CACHE_CLEAR] ?: default.clearCacheOnLaunch,
     groupOptionsByTypes = this[GROUP_OPTIONS_BY_TYPE] ?: default.groupOptionsByTypes,
+    showFavoriteToolsInGroupedMode = this[SHOW_FAVORITE_TOOLS_IN_GROUPED_MODE]
+        ?: default.showFavoriteToolsInGroupedMode,
+    showFavoriteAsLast = this[SHOW_FAVORITE_AS_LAST] ?: default.showFavoriteAsLast,
     addSequenceNumber = this[ADD_SEQ_NUM_TO_FILENAME] ?: default.addSequenceNumber,
     saveFolderUri = this[SAVE_FOLDER_URI],
+    saveToOriginalFolder = this[SAVE_TO_ORIGINAL_FOLDER] ?: default.saveToOriginalFolder,
     presets = Preset.createListFromInts(this[PRESETS]) ?: default.presets,
     colorTupleList = this[COLOR_TUPLES],
     allowChangeColorByImage = this[ALLOW_IMAGE_MONET] ?: default.allowChangeColorByImage,
@@ -101,6 +105,7 @@ internal fun Preferences.toSettingsState(
     filenameSuffix = this[FILENAME_SUFFIX] ?: default.filenameSuffix,
     defaultImageScaleMode = this.toDefaultImageScaleMode(default),
     magnifierEnabled = this[MAGNIFIER_ENABLED] ?: default.magnifierEnabled,
+    drawBitmapBorder = this[DRAW_BITMAP_BORDER] ?: default.drawBitmapBorder,
     exifWidgetInitialState = this[EXIF_WIDGET_INITIAL_STATE]
         ?: default.exifWidgetInitialState,
     initialOcrCodes = this[INITIAL_OCR_CODES]?.split("+") ?: default.initialOcrCodes,
@@ -112,6 +117,7 @@ internal fun Preferences.toSettingsState(
     isConfettiEnabled = this[CONFETTI_ENABLED] ?: default.isConfettiEnabled,
     isSecureMode = this[SECURE_MODE] ?: default.isSecureMode,
     useRandomEmojis = this[USE_RANDOM_EMOJIS] ?: default.useRandomEmojis,
+    useAnimatedEmojis = this[USE_ANIMATED_EMOJIS] ?: default.useAnimatedEmojis,
     iconShape = (this[ICON_SHAPE] ?: default.iconShape)?.takeIf { it >= 0 },
     useEmojiAsPrimaryColor = this[USE_EMOJI_AS_PRIMARY_COLOR]
         ?: default.useEmojiAsPrimaryColor,
@@ -208,6 +214,8 @@ internal fun Preferences.toSettingsState(
     isScreenSelectionLauncherMode = this[IS_LAUNCHER_MODE] ?: default.isScreenSelectionLauncherMode,
     isTelegramGroupOpened = this[IS_TELEGRAM_GROUP_OPENED] ?: default.isTelegramGroupOpened,
     initialOcrMode = this[INITIAL_OCR_MODE] ?: default.initialOcrMode,
+    initialOcrEngine = this[INITIAL_OCR_ENGINE] ?: default.initialOcrEngine,
+    initialPaddleOcrModel = this[INITIAL_PADDLE_OCR_MODEL] ?: default.initialPaddleOcrModel,
     spotHealMode = this[SPOT_HEAL_MODE] ?: default.spotHealMode,
     snowfallMode = this[SNOWFALL_MODE]?.let { SnowfallMode.entries[it] } ?: default.snowfallMode,
     defaultImageFormat = this[DEFAULT_IMAGE_FORMAT].let { title ->
@@ -229,6 +237,8 @@ internal fun Preferences.toSettingsState(
             type = ShapeType::class.java
         )
     } ?: default.shapesType,
+    shapeByInteractionThrottle = (this[SHAPE_BY_INTERACTION_THROTTLE]
+        ?: default.shapeByInteractionThrottle).coerceIn(0, 500),
     filenamePattern = this[FILENAME_PATTERN]?.takeIf { it.isNotBlank() } ?: default.filenamePattern,
     filenameBehavior = this[FILENAME_BEHAVIOR]?.let {
         jsonParser.fromJson(
@@ -244,6 +254,13 @@ internal fun Preferences.toSettingsState(
     )?.mapNotNull {
         it.toIntOrNull()
     } ?: default.hiddenForShareScreens,
+    keepDateTime = this[KEEP_DATE_TIME] ?: default.keepDateTime,
+    isAlwaysClearExif = this[ALWAYS_CLEAR_EXIF] ?: default.isAlwaysClearExif,
+    enableBackgroundColorForAlphaFormats = this[ENABLE_BACKGROUND_COLOR_FOR_ALPHA_FORMATS]
+        ?: default.enableBackgroundColorForAlphaFormats,
+    showToolsHistory = this[SHOW_TOOLS_HISTORY] ?: default.showToolsHistory,
+    motionDurationScale = (this[MOTION_DURATION_SCALE] ?: default.motionDurationScale)
+        .coerceIn(0f, 5f)
 )
 
 private fun Preferences.toDefaultImageScaleMode(default: SettingsState): ImageScaleMode {

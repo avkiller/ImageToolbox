@@ -17,53 +17,37 @@
 
 package com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.TextRotationAngleup
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.smarttoolfactory.colordetector.util.ColorUtil.roundToTwoDigits
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.imagetoolbox.core.domain.model.MimeType
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.TextRotationAngleup
 import com.t8rin.imagetoolbox.core.ui.theme.toColor
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberFilePicker
 import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.rememberPdfPages
-import com.t8rin.imagetoolbox.core.ui.utils.helper.ImageUtils.safeAspectRatio
 import com.t8rin.imagetoolbox.core.ui.widget.controls.page.PageSelectionItem
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.AlphaSelector
 import com.t8rin.imagetoolbox.core.ui.widget.controls.selection.ColorRowSelector
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSliderItem
-import com.t8rin.imagetoolbox.core.ui.widget.image.Picture
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
-import com.t8rin.imagetoolbox.core.ui.widget.modifier.animateContentSizeNoClip
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
-import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.RoundedTextField
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.common.BasePdfToolContent
+import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.components.WatermarkPreview
 import com.t8rin.imagetoolbox.feature.pdf_tools.presentation.watermark.screenLogic.WatermarkPdfToolComponent
 import kotlin.math.roundToInt
 
@@ -87,86 +71,36 @@ fun WatermarkPdfToolContent(
 
     BasePdfToolContent(
         component = component,
-        pdfPicker = rememberFilePicker(
+        contentPicker = rememberFilePicker(
             mimeType = MimeType.Pdf,
             onSuccess = component::setUri
         ),
         isPickedAlready = component.initialUri != null,
         canShowScreenData = component.uri != null,
-        title = stringResource(R.string.watermarking),
+        title = stringResource(R.string.watermark_pdf),
         actions = {},
         imagePreview = {
-            Box(
-                modifier = Modifier
-                    .container()
-                    .padding(4.dp)
-                    .animateContentSizeNoClip(
-                        alignment = Alignment.Center
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                var aspectRatio by rememberSaveable {
-                    mutableFloatStateOf(1f)
-                }
-
-                Box(
-                    modifier = Modifier.aspectRatio(aspectRatio)
-                ) {
-                    Picture(
-                        model = component.uri,
-                        contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.matchParentSize(),
-                        onSuccess = {
-                            aspectRatio = it.result.image.safeAspectRatio
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        isLoadingFromDifferentPlace = component.isImageLoading
-                    )
-
-                    BoxWithConstraints(
-                        modifier = Modifier.matchParentSize()
-                    ) {
-                        val scaledFontSize = remember(
-                            params.fontSize,
-                            maxWidth
-                        ) {
-                            val scaleFactor = maxWidth.value / 300f
-                            (params.fontSize * scaleFactor).sp
-                        }
-
-                        AutoSizeText(
-                            key = { maxWidth },
-                            text = component.watermarkText,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .graphicsLayer {
-                                    rotationZ = params.rotation
-                                    alpha = params.opacity
-                                },
-                            color = Color(params.color),
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontSize = scaledFontSize
-                            )
-                        )
-                    }
-                }
-            }
+            WatermarkPreview(
+                uri = component.uri,
+                params = params,
+                pageCount = pagesCount
+            )
         },
         placeImagePreview = true,
         showImagePreviewAsStickyHeader = true,
         controls = {
-            Spacer(Modifier.height(20.dp))
-
             RoundedTextField(
                 modifier = Modifier
                     .container(
                         shape = MaterialTheme.shapes.large,
                         resultPadding = 8.dp
                     ),
-                value = component.watermarkText,
+                value = params.text,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 singleLine = false,
-                onValueChange = component::updateWatermarkText,
+                onValueChange = {
+                    component.updateParams(params.copy(text = it))
+                },
                 label = {
                     Text(stringResource(R.string.text))
                 }
@@ -177,12 +111,12 @@ fun WatermarkPdfToolContent(
                 onValueChange = {
                     component.updateParams(params.copy(pages = it))
                 },
-                pagesCount = pagesCount
+                pageCount = pagesCount
             )
             Spacer(Modifier.height(8.dp))
             EnhancedSliderItem(
                 value = params.rotation,
-                icon = Icons.Outlined.TextRotationAngleup,
+                icon = Icons.Rounded.TextRotationAngleup,
                 title = stringResource(id = R.string.angle),
                 valueRange = 0f..360f,
                 internalStateTransformation = Float::roundToInt,
@@ -225,8 +159,6 @@ fun WatermarkPdfToolContent(
                 ),
                 allowAlpha = false
             )
-
-            Spacer(Modifier.height(20.dp))
         },
         onFilledPassword = {
             component.setUri(component.uri)

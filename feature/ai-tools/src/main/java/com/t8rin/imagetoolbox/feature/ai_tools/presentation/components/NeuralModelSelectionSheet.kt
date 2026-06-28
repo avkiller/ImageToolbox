@@ -21,13 +21,12 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FilterAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -36,8 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.domain.remote.DownloadProgress
-import com.t8rin.imagetoolbox.core.domain.saving.model.SaveResult
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.FilterAlt
 import com.t8rin.imagetoolbox.core.resources.icons.Neurology
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBadge
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
@@ -57,9 +57,10 @@ internal fun NeuralModelSelectionSheet(
     onDeleteModel: (NeuralModel) -> Unit,
     downloadedModels: List<NeuralModel>,
     notDownloadedModels: List<NeuralModel>,
-    onImportModel: (Uri, (SaveResult) -> Unit) -> Unit,
+    onImportModel: (Uri) -> Unit,
     downloadProgresses: Map<String, DownloadProgress>,
-    occupiedStorageSize: Long
+    occupiedStorageSize: Long,
+    onCancelDownload: (NeuralModel) -> Unit
 ) {
     var typeFilters by rememberSaveable(stateSaver = TypeFiltersSaver) {
         mutableStateOf(emptyList())
@@ -141,17 +142,20 @@ internal fun NeuralModelSelectionSheet(
                 keywordFilter = keywordFilter
             ).value
 
-            NeuralModelsColumn(
-                selectedModel = selectedModel,
-                downloadedModels = filteredDownloadedModels,
-                notDownloadedModels = filteredNotDownloadedModels,
-                onSelectModel = onSelectModel,
-                onDownloadModel = onDownloadModel,
-                onDeleteModel = onDeleteModel,
-                onImportModel = onImportModel,
-                downloadProgresses = downloadProgresses,
-                occupiedStorageSize = occupiedStorageSize
-            )
+            key(typeFilters, speedFilters, keywordFilter) {
+                NeuralModelsColumn(
+                    selectedModel = selectedModel,
+                    downloadedModels = filteredDownloadedModels,
+                    notDownloadedModels = filteredNotDownloadedModels,
+                    onSelectModel = onSelectModel,
+                    onDownloadModel = onDownloadModel,
+                    onDeleteModel = onDeleteModel,
+                    onImportModel = onImportModel,
+                    downloadProgresses = downloadProgresses,
+                    occupiedStorageSize = occupiedStorageSize,
+                    onCancelDownload = onCancelDownload
+                )
+            }
         }
     )
 }

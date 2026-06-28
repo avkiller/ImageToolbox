@@ -25,7 +25,6 @@ import android.net.Uri
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -40,16 +39,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesomeMosaic
-import androidx.compose.material.icons.outlined.PinEnd
-import androidx.compose.material.icons.outlined.SwipeVertical
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.FormatLineSpacing
-import androidx.compose.material.icons.rounded.PhotoSizeSelectSmall
-import androidx.compose.material.icons.rounded.RoundedCorner
-import androidx.compose.material.icons.rounded.SwapHoriz
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -61,6 +50,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -76,21 +66,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.DrawableCompat
-import com.smarttoolfactory.extendedcolors.util.roundToTwoDigits
 import com.t8rin.collages.Collage
 import com.t8rin.collages.CollageTypeSelection
+import com.t8rin.collages.public.CollageConstants
+import com.t8rin.colors.util.roundToTwoDigits
 import com.t8rin.imagetoolbox.collage_maker.presentation.screenLogic.CollageMakerComponent
 import com.t8rin.imagetoolbox.core.domain.image.model.ImageFormatGroup
 import com.t8rin.imagetoolbox.core.domain.model.DomainAspectRatio
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Add
 import com.t8rin.imagetoolbox.core.resources.icons.BackgroundColor
+import com.t8rin.imagetoolbox.core.resources.icons.Collage
 import com.t8rin.imagetoolbox.core.resources.icons.Delete
+import com.t8rin.imagetoolbox.core.resources.icons.FormatLineSpacing
 import com.t8rin.imagetoolbox.core.resources.icons.ImageReset
+import com.t8rin.imagetoolbox.core.resources.icons.PhotoSizeSelectSmall
+import com.t8rin.imagetoolbox.core.resources.icons.PinEnd
+import com.t8rin.imagetoolbox.core.resources.icons.RoundedCorner
+import com.t8rin.imagetoolbox.core.resources.icons.SwapHoriz
+import com.t8rin.imagetoolbox.core.resources.icons.SwipeVertical
+import com.t8rin.imagetoolbox.core.resources.icons.Tune
+import com.t8rin.imagetoolbox.core.resources.utils.animation.animateColorAsState
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.Picker
 import com.t8rin.imagetoolbox.core.ui.utils.content_pickers.rememberImagePicker
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.Clipboard
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.AdaptiveBottomScaffoldLayoutScreen
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.BottomButtonsBlock
 import com.t8rin.imagetoolbox.core.ui.widget.buttons.ShareButton
@@ -102,6 +105,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.dialogs.LoadingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeImagePickingDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.OneTimeSaveLocationSelectionDialog
 import com.t8rin.imagetoolbox.core.ui.widget.dialogs.ResetDialog
+import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedBadge
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedIconButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedSliderItem
 import com.t8rin.imagetoolbox.core.ui.widget.image.AspectRatioSelector
@@ -110,6 +114,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.image.ImageNotPickedWidget
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.container
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.fadingEdges
+import com.t8rin.imagetoolbox.core.ui.widget.modifier.scaleOnTap
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.shimmer
 import com.t8rin.imagetoolbox.core.ui.widget.modifier.transparencyChecker
 import com.t8rin.imagetoolbox.core.ui.widget.other.InfoContainer
@@ -118,6 +123,8 @@ import com.t8rin.imagetoolbox.core.ui.widget.other.TopAppBarEmoji
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceRowSwitch
 import com.t8rin.imagetoolbox.core.ui.widget.sheets.ProcessImagesPreferenceSheet
 import com.t8rin.imagetoolbox.core.ui.widget.text.TopAppBarTitle
+import com.t8rin.imagetoolbox.core.ui.widget.text.marquee
+import com.t8rin.imagetoolbox.core.utils.getString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.engawapg.lib.zoomable.rememberZoomState
@@ -129,36 +136,39 @@ fun CollageMakerContent(
 ) {
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
-
     var isLoading by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(component.initialUris) {
         component.initialUris?.takeIf { it.isNotEmpty() }?.let {
-            if (it.size in 1..10) {
+            if (it.size in 1..CollageConstants.MAX_IMAGE_COUNT) {
                 component.updateUris(it)
             } else {
-                essentials.showToast(
-                    message = essentials.getString(R.string.pick_up_to_ten_images),
-                    icon = Icons.Outlined.AutoAwesomeMosaic
+                AppToastHost.showToast(
+                    message = getString(
+                        R.string.pick_up_to_n_collage_images,
+                        CollageConstants.MAX_IMAGE_COUNT,
+                    ),
+                    icon = Icons.Outlined.Collage
                 )
             }
         }
     }
 
     val imagePicker = rememberImagePicker { uris: List<Uri> ->
-        if (uris.size in 1..10) {
+        if (uris.size in 1..CollageConstants.MAX_IMAGE_COUNT) {
             isLoading = true
             component.updateUris(uris)
         } else {
-            essentials.showToast(
-                message = if (uris.size > 10) {
-                    essentials.getString(R.string.pick_up_to_ten_images)
+            AppToastHost.showToast(
+                message = if (uris.size > CollageConstants.MAX_IMAGE_COUNT) {
+                    getString(
+                        R.string.pick_up_to_n_collage_images,
+                        CollageConstants.MAX_IMAGE_COUNT,
+                    )
                 } else {
-                    essentials.getString(R.string.pick_at_least_two_images)
+                    getString(R.string.pick_at_least_two_images)
                 },
-                icon = Icons.Outlined.AutoAwesomeMosaic
+                icon = Icons.Outlined.Collage
             )
         }
     }
@@ -172,8 +182,7 @@ fun CollageMakerContent(
 
     val saveBitmaps: (oneTimeSaveLocationUri: String?) -> Unit = {
         component.saveBitmap(
-            oneTimeSaveLocationUri = it,
-            onComplete = essentials::parseSaveResult
+            oneTimeSaveLocationUri = it
         )
     }
 
@@ -201,14 +210,46 @@ fun CollageMakerContent(
         resettingTrigger++
     }
 
+    val scope = rememberCoroutineScope()
+
     AdaptiveBottomScaffoldLayoutScreen(
         title = {
-            TopAppBarTitle(
-                title = stringResource(R.string.collage_maker),
-                input = component.uris,
-                isLoading = component.isImageLoading,
-                size = null
-            )
+            AnimatedContent(
+                targetState = component.uris.isNullOrEmpty()
+            ) { noData ->
+                if (noData) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.marquee()
+                    ) {
+                        Text(
+                            text = stringResource(R.string.collage_maker)
+                        )
+                        EnhancedBadge(
+                            content = {
+                                Text(
+                                    text = CollageConstants.layoutCount.toString()
+                                )
+                            },
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary,
+                            modifier = Modifier
+                                .padding(horizontal = 2.dp)
+                                .padding(bottom = 12.dp)
+                                .scaleOnTap {
+                                    AppToastHost.showConfetti()
+                                }
+                        )
+                    }
+                } else {
+                    TopAppBarTitle(
+                        title = stringResource(R.string.collage_maker),
+                        input = component.uris,
+                        isLoading = component.isImageLoading,
+                        size = null
+                    )
+                }
+            }
         },
         onGoBack = onBack,
         shouldDisableBackHandler = !component.haveChanges,
@@ -218,7 +259,7 @@ fun CollageMakerContent(
             }
             EnhancedIconButton(
                 onClick = {
-                    essentials.launch {
+                    scope.launch {
                         if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                             scaffoldState.bottomSheetState.partialExpand()
                         } else {
@@ -233,11 +274,9 @@ fun CollageMakerContent(
                 )
             }
             ShareButton(
-                onShare = {
-                    component.performSharing(showConfetti)
-                },
+                onShare = component::performSharing,
                 onCopy = {
-                    component.cacheImage(essentials::copyToClipboard)
+                    component.cacheImage(Clipboard::copy)
                 },
                 onEdit = {
                     component.cacheImage {
@@ -565,7 +604,7 @@ fun CollageMakerContent(
                             end = 12.dp,
                             bottom = 10.dp
                         ),
-                    icon = Icons.Rounded.PhotoSizeSelectSmall,
+                    icon = Icons.Outlined.PhotoSizeSelectSmall,
                     shape = ShapeDefaults.extraLarge
                 )
                 PreferenceRowSwitch(
@@ -579,7 +618,7 @@ fun CollageMakerContent(
                     title = stringResource(id = R.string.enable_snapping_to_borders),
                     subtitle = stringResource(id = R.string.enable_snapping_to_borders_sub),
                     checked = component.params.enableSnapToBorders,
-                    startIcon = Icons.Outlined.PinEnd,
+                    startIcon = Icons.Rounded.PinEnd,
                     onClick = component::setEnableSnapToBorders
                 )
                 QualitySelector(
@@ -620,7 +659,8 @@ fun CollageMakerContent(
                 },
                 onSecondaryButtonLongClick = {
                     showOneTimeImagePickingDialog = true
-                }
+                },
+                drawBothStrokes = true
             )
             OneTimeSaveLocationSelectionDialog(
                 visible = showFolderSelectionDialog,

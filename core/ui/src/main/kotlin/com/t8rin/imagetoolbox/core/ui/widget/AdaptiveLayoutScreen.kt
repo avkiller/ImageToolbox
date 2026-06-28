@@ -42,8 +42,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -67,6 +66,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.ArrowBack
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
 import com.t8rin.imagetoolbox.core.ui.utils.animation.fancySlideTransition
 import com.t8rin.imagetoolbox.core.ui.utils.helper.isPortraitOrientationAsState
@@ -112,7 +112,9 @@ fun AdaptiveLayoutScreen(
             WindowInsetsSides.Horizontal
         )
     ),
-    listState: LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState(),
+    placeControlsSeparately: Boolean = false,
+    portraitTopPadding: Dp = 0.dp
 ) {
     val isPortrait by isPortraitOrientationAsState()
     val settingsState = LocalSettingsState.current
@@ -156,7 +158,7 @@ fun AdaptiveLayoutScreen(
                                     onClick = onGoBack
                                 ) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                        imageVector = Icons.Rounded.ArrowBack,
                                         contentDescription = stringResource(R.string.exit)
                                     )
                                 }
@@ -214,86 +216,100 @@ fun AdaptiveLayoutScreen(
                                 imagePreview()
                             }
                         }
-                        val internalHeight = rememberAvailableHeight(
-                            imageState = imageState,
-                            expanded = forceImagePreviewToMax
-                        )
-                        val cutout =
-                            if (!placeImagePreview && addHorizontalCutoutPaddingIfNoPreview) {
-                                WindowInsets
-                                    .displayCutout
-                                    .asPaddingValues()
-                                    .calculateStartPadding(direction)
-                            } else 0.dp
 
-                        var isScrolled by rememberSaveable(canShowScreenData) {
-                            mutableStateOf(false)
-                        }
-                        val scope = rememberCoroutineScope {
-                            Dispatchers.Main.immediate
-                        }
+                        if (placeControlsSeparately && controls != null && canShowScreenData) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .clipToBounds()
+                            ) {
+                                controls(listState)
+                            }
+                        } else {
+                            val internalHeight = rememberAvailableHeight(
+                                imageState = imageState,
+                                expanded = forceImagePreviewToMax
+                            )
+                            val cutout =
+                                if (!placeImagePreview && addHorizontalCutoutPaddingIfNoPreview) {
+                                    WindowInsets
+                                        .displayCutout
+                                        .asPaddingValues()
+                                        .calculateStartPadding(direction)
+                                } else 0.dp
 
-                        LazyColumn(
-                            state = listState,
-                            contentPadding = PaddingValues(
-                                bottom = WindowInsets
-                                    .navigationBars
-                                    .union(WindowInsets.ime)
-                                    .asPaddingValues()
-                                    .calculateBottomPadding() + (if (!isPortrait && canShowScreenData) contentPadding else 100.dp),
-                                top = if (!canShowScreenData || !isPortrait) contentPadding else 0.dp,
-                                start = contentPadding + cutout,
-                                end = contentPadding
-                            ),
-                            modifier = Modifier
-                                .weight(
-                                    if (controls == null) 0.01f
-                                    else 1f
-                                )
-                                .fillMaxHeight()
-                                .clipToBounds(),
-                            flingBehavior = enhancedFlingBehavior()
-                        ) {
-                            if (useRegularStickyHeader && isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview) {
-                                stickyHeader {
-                                    imagePreview()
-                                }
-                            } else {
-                                imageStickyHeader(
-                                    visible = isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview,
-                                    internalHeight = internalHeight,
-                                    imageState = imageState,
-                                    onStateChange = { imageState = it },
-                                    imageBlock = imagePreview,
-                                    onGloballyPositioned = {
-                                        if (!isScrolled) {
-                                            scope.launch {
-                                                delay(200)
-                                                listState.animateScrollToItem(0)
-                                                isScrolled = true
+                            var isScrolled by rememberSaveable(canShowScreenData) {
+                                mutableStateOf(false)
+                            }
+                            val scope = rememberCoroutineScope {
+                                Dispatchers.Main.immediate
+                            }
+
+                            LazyColumn(
+                                state = listState,
+                                contentPadding = PaddingValues(
+                                    bottom = WindowInsets
+                                        .navigationBars
+                                        .union(WindowInsets.ime)
+                                        .asPaddingValues()
+                                        .calculateBottomPadding() + (if (!isPortrait && canShowScreenData) contentPadding else 100.dp),
+                                    top = if (!canShowScreenData || !isPortrait) contentPadding else portraitTopPadding,
+                                    start = contentPadding + cutout,
+                                    end = contentPadding
+                                ),
+                                modifier = Modifier
+                                    .weight(
+                                        if (controls == null) 0.01f
+                                        else 1f
+                                    )
+                                    .fillMaxHeight()
+                                    .clipToBounds(),
+                                flingBehavior = enhancedFlingBehavior()
+                            ) {
+                                if (useRegularStickyHeader && isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview) {
+                                    stickyHeader {
+                                        imagePreview()
+                                    }
+                                } else {
+                                    imageStickyHeader(
+                                        visible = isPortrait && canShowScreenData && showImagePreviewAsStickyHeader && placeImagePreview,
+                                        internalHeight = internalHeight,
+                                        imageState = imageState,
+                                        onStateChange = { imageState = it },
+                                        imageBlock = imagePreview,
+                                        onGloballyPositioned = {
+                                            if (!isScrolled) {
+                                                scope.launch {
+                                                    delay(200)
+                                                    listState.animateScrollToItem(0)
+                                                    isScrolled = true
+                                                }
                                             }
                                         }
-                                    }
-                                )
-                            }
-                            item {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    if (canShowScreenData) {
-                                        AnimatedVisibility(
-                                            visible = !showImagePreviewAsStickyHeader && isPortrait && placeImagePreview
-                                        ) {
-                                            imagePreview()
-                                        }
-                                        if (controls != null) controls(listState)
-                                    } else {
-                                        Box(
-                                            modifier = Modifier.windowInsetsPadding(insetsForNoData)
-                                        ) {
-                                            noDataControls()
+                                    )
+                                }
+                                item {
+                                    Column(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        if (canShowScreenData) {
+                                            AnimatedVisibility(
+                                                visible = !showImagePreviewAsStickyHeader && isPortrait && placeImagePreview
+                                            ) {
+                                                imagePreview()
+                                            }
+                                            if (controls != null) controls(listState)
+                                        } else {
+                                            Box(
+                                                modifier = Modifier.windowInsetsPadding(
+                                                    insetsForNoData
+                                                )
+                                            ) {
+                                                noDataControls()
+                                            }
                                         }
                                     }
                                 }

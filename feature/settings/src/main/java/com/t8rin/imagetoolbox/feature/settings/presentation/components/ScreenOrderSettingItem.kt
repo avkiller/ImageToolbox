@@ -26,9 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FormatLineSpacing
-import androidx.compose.material.icons.rounded.DragHandle
+import com.t8rin.imagetoolbox.core.resources.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -46,11 +44,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.t8rin.imagetoolbox.core.resources.R
 import com.t8rin.imagetoolbox.core.resources.icons.BatchPrediction
+import com.t8rin.imagetoolbox.core.resources.icons.DragHandle
+import com.t8rin.imagetoolbox.core.resources.icons.FormatLineSpacing
 import com.t8rin.imagetoolbox.core.resources.icons.MiniEdit
 import com.t8rin.imagetoolbox.core.resources.icons.Stacks
 import com.t8rin.imagetoolbox.core.settings.presentation.provider.LocalSettingsState
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
 import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedButton
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.EnhancedModalBottomSheet
 import com.t8rin.imagetoolbox.core.ui.widget.enhanced.enhancedFlingBehavior
@@ -60,6 +60,7 @@ import com.t8rin.imagetoolbox.core.ui.widget.modifier.ShapeDefaults
 import com.t8rin.imagetoolbox.core.ui.widget.preferences.PreferenceItem
 import com.t8rin.imagetoolbox.core.ui.widget.text.AutoSizeText
 import com.t8rin.imagetoolbox.core.ui.widget.text.TitleItem
+import com.t8rin.imagetoolbox.core.utils.getString
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -87,8 +88,6 @@ fun ScreenOrderSettingItem(
     }
     var showArrangementSheet by rememberSaveable { mutableStateOf(false) }
 
-    val essentials = rememberLocalEssentials()
-
     PreferenceItem(
         shape = shape,
         modifier = modifier,
@@ -96,13 +95,13 @@ fun ScreenOrderSettingItem(
             showArrangementSheet = true
         },
         onDisabledClick = {
-            essentials.showToast(
+            AppToastHost.showToast(
                 icon = Icons.Outlined.BatchPrediction,
-                message = essentials.getString(R.string.cannot_change_arrangement_while_options_grouping_enabled)
+                message = getString(R.string.cannot_change_arrangement_while_options_grouping_enabled)
             )
         },
         enabled = !settingsState.groupOptionsByTypes,
-        startIcon = Icons.Outlined.FormatLineSpacing,
+        startIcon = Icons.Rounded.FormatLineSpacing,
         title = stringResource(R.string.order),
         subtitle = stringResource(R.string.order_sub),
         endIcon = Icons.Rounded.MiniEdit,

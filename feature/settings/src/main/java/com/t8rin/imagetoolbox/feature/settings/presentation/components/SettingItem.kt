@@ -17,26 +17,32 @@
 
 package com.t8rin.imagetoolbox.feature.settings.presentation.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FileDownloadOff
-import androidx.compose.material.icons.rounded.Save
-import androidx.compose.material.icons.rounded.TextFields
+import androidx.activity.compose.LocalActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.t8rin.imagetoolbox.core.resources.Icons
 import com.t8rin.imagetoolbox.core.resources.R
+import com.t8rin.imagetoolbox.core.resources.icons.Save
+import com.t8rin.imagetoolbox.core.resources.icons.TextFields
 import com.t8rin.imagetoolbox.core.settings.presentation.model.Setting
+import com.t8rin.imagetoolbox.core.ui.utils.helper.AppToastHost
+import com.t8rin.imagetoolbox.core.ui.utils.helper.ContextUtils.isInstalledFromPlayStore
+import com.t8rin.imagetoolbox.core.ui.utils.navigation.Screen
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalComponentActivity
 import com.t8rin.imagetoolbox.core.ui.utils.provider.LocalContainerShape
 import com.t8rin.imagetoolbox.core.ui.utils.provider.ProvideContainerDefaults
 import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberCurrentLifecycleEvent
-import com.t8rin.imagetoolbox.core.ui.utils.provider.rememberLocalEssentials
+import com.t8rin.imagetoolbox.core.utils.appContext
+import com.t8rin.imagetoolbox.core.utils.getString
 import com.t8rin.imagetoolbox.feature.settings.presentation.screenLogic.SettingsComponent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -45,14 +51,9 @@ import kotlinx.coroutines.launch
 internal fun SettingItem(
     setting: Setting,
     component: SettingsComponent,
-    onNavigateToEasterEgg: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onNavigateToLibrariesInfo: () -> Unit,
-    isUpdateAvailable: Boolean,
     containerColor: Color = MaterialTheme.colorScheme.surface,
 ) {
-    val essentials = rememberLocalEssentials()
-    val showConfetti: () -> Unit = essentials::showConfetti
+    val isUpdateAvailable by component.isUpdateAvailable.subscribeAsState()
 
     ProvideContainerDefaults(
         color = containerColor,
@@ -68,7 +69,7 @@ internal fun SettingItem(
             }
 
             Setting.AllowBetas -> {
-                if (!essentials.isInstalledFromPlayStore()) {
+                if (!appContext.isInstalledFromPlayStore()) {
                     AllowBetasSettingItem(
                         onClick = {
                             component.toggleAllowBetas()
@@ -94,6 +95,22 @@ internal fun SettingItem(
                 AuthorSettingItem()
             }
 
+            Setting.AppLogs -> {
+                AppLogsSettingItem(
+                    onClick = {
+                        component.onNavigate(Screen.AppLogs)
+                    }
+                )
+            }
+
+            Setting.AppUsageStatistics -> {
+                AppUsageStatisticsSettingItem(
+                    onClick = {
+                        component.onNavigate(Screen.UsageStatistics)
+                    }
+                )
+            }
+
             Setting.AutoCacheClear -> {
                 AutoCacheClearSettingItem(onClick = component::toggleClearCacheOnLaunch)
             }
@@ -105,12 +122,7 @@ internal fun SettingItem(
             Setting.Backup -> {
                 BackupSettingItem(
                     onCreateBackupFilename = component::createBackupFilename,
-                    onCreateBackup = { uri ->
-                        component.createBackup(
-                            uri = uri,
-                            onResult = essentials::parseFileSaveResult
-                        )
-                    }
+                    onCreateBackup = component::createBackup
                 )
             }
 
@@ -128,22 +140,17 @@ internal fun SettingItem(
                     onAddFont = {
                         component.importCustomFont(
                             uri = it,
-                            onSuccess = showConfetti,
+                            onSuccess = AppToastHost::showConfetti,
                             onFailure = {
-                                essentials.showToast(
-                                    message = essentials.getString(R.string.wrong_font),
+                                AppToastHost.showToast(
+                                    message = getString(R.string.wrong_font),
                                     icon = Icons.Rounded.TextFields
                                 )
                             }
                         )
                     },
                     onRemoveFont = component::removeCustomFont,
-                    onExportFonts = { uri ->
-                        component.exportFonts(
-                            uri = uri,
-                            onResult = essentials::parseFileSaveResult
-                        )
-                    }
+                    onExportFonts = component::exportFonts
                 )
             }
 
@@ -182,7 +189,7 @@ internal fun SettingItem(
                 }
                 LaunchedEffect(clicks) {
                     if (clicks >= 3) {
-                        onNavigateToEasterEgg()
+                        component.onNavigate(Screen.EasterEgg)
                         clicks = 0
                     }
 
@@ -190,14 +197,9 @@ internal fun SettingItem(
 
                     if (clicks == 0) return@LaunchedEffect
 
-                    essentials.dismissToasts()
+                    AppToastHost.dismissToasts()
                     if (clicks == 1) {
-                        component.tryGetUpdate(true) {
-                            essentials.showToast(
-                                icon = Icons.Rounded.FileDownloadOff,
-                                message = essentials.getString(R.string.no_updates)
-                            )
-                        }
+                        component.tryGetUpdate(true)
                     }
                 }
 
@@ -253,8 +255,26 @@ internal fun SettingItem(
                 GroupOptionsSettingItem(onClick = component::toggleGroupOptionsByType)
             }
 
+            Setting.FavoriteToolsInGroupedMode -> {
+                FavoriteToolsInGroupedModeSettingItem(
+                    onClick = component::toggleFavoriteToolsInGroupedMode
+                )
+            }
+
+            Setting.ShowFavoriteAsLast -> {
+                ShowFavoriteAsLastSettingItem(onClick = component::toggleFavoriteAsLast)
+            }
+
             Setting.HelpTranslate -> {
                 HelpTranslateSettingItem()
+            }
+
+            Setting.HelpTips -> {
+                HelpTipsSettingItem(
+                    onClick = {
+                        component.onNavigate(Screen.Help())
+                    }
+                )
             }
 
             Setting.ImagePickerMode -> {
@@ -297,24 +317,26 @@ internal fun SettingItem(
             }
 
             Setting.Restore -> {
-                val context = LocalComponentActivity.current
+                val scope = rememberCoroutineScope()
+                val context = LocalActivity.current
+
                 RestoreSettingItem(
                     onObtainBackupFile = { uri ->
                         component.restoreBackupFrom(
                             uri = uri,
                             onSuccess = {
-                                essentials.launch {
-                                    showConfetti()
+                                scope.launch {
+                                    AppToastHost.showConfetti()
                                     //Wait for confetti to appear, then trigger font scale adjustment
                                     delay(300L)
-                                    context.recreate()
+                                    context?.recreate()
                                 }
-                                essentials.showToast(
-                                    message = essentials.getString(R.string.settings_restored),
+                                AppToastHost.showToast(
+                                    message = getString(R.string.settings_restored),
                                     icon = Icons.Rounded.Save
                                 )
                             },
-                            onFailure = essentials::showFailureToast
+                            onFailure = AppToastHost::showFailureToast
                         )
                     }
                 )
@@ -322,6 +344,10 @@ internal fun SettingItem(
 
             Setting.SavingFolder -> {
                 SavingFolderSettingItemGroup(onValueChange = component::setSaveFolderUri)
+            }
+
+            Setting.SaveToOriginalFolder -> {
+                SaveToOriginalFolderSettingItem(onClick = component::toggleSaveToOriginalFolder)
             }
 
             Setting.ScreenOrder -> {
@@ -351,12 +377,7 @@ internal fun SettingItem(
             Setting.CheckUpdatesButton -> {
                 CheckUpdatesButtonSettingItem(
                     onClick = {
-                        component.tryGetUpdate(true) {
-                            essentials.showToast(
-                                icon = Icons.Rounded.FileDownloadOff,
-                                message = essentials.getString(R.string.no_updates)
-                            )
-                        }
+                        component.tryGetUpdate(true)
                     }
                 )
             }
@@ -413,6 +434,10 @@ internal fun SettingItem(
                 MagnifierSettingItem(onClick = component::toggleMagnifierEnabled)
             }
 
+            Setting.DrawBitmapBorder -> {
+                DrawBitmapBorderSettingItem(onClick = component::toggleDrawBitmapBorder)
+            }
+
             Setting.ExifWidgetInitialState -> {
                 ExifWidgetInitialStateSettingItem(onClick = component::toggleExifWidgetInitialState)
             }
@@ -433,6 +458,10 @@ internal fun SettingItem(
                 UseRandomEmojisSettingItem(onClick = component::toggleUseRandomEmojis)
             }
 
+            Setting.UseAnimatedEmojis -> {
+                UseAnimatedEmojisSettingItem(onClick = component::toggleUseAnimatedEmojis)
+            }
+
             Setting.IconShape -> {
                 IconShapeSettingItem(
                     value = component.settingsState.iconShape,
@@ -442,6 +471,12 @@ internal fun SettingItem(
 
             Setting.DragHandleWidth -> {
                 DragHandleWidthSettingItem(onValueChange = component::setDragHandleWidth)
+            }
+
+            Setting.ShapeByInteractionThrottle -> {
+                ShapeByInteractionThrottleSettingItem(
+                    onValueChange = component::setShapeByInteractionThrottle
+                )
             }
 
             Setting.ConfettiType -> {
@@ -475,7 +510,9 @@ internal fun SettingItem(
             Setting.UseFullscreenSettings -> {
                 UseFullscreenSettingsSettingItem(
                     onClick = component::toggleUseFullscreenSettings,
-                    onNavigateToSettings = onNavigateToSettings
+                    onNavigateToSettings = {
+                        component.onNavigate(Screen.Settings())
+                    }
                 )
             }
 
@@ -548,7 +585,11 @@ internal fun SettingItem(
             }
 
             Setting.OpenSourceLicenses -> {
-                OpenSourceLicensesSettingItem(onClick = onNavigateToLibrariesInfo)
+                OpenSourceLicensesSettingItem(
+                    onClick = {
+                        component.onNavigate(Screen.LibrariesInfo)
+                    }
+                )
             }
 
             Setting.FastSettingsSide -> {
@@ -564,7 +605,10 @@ internal fun SettingItem(
             }
 
             Setting.SendLogs -> {
-                SendLogsSettingItem(onClick = component::shareLogs)
+                SendLogsSettingItem(
+                    onClick = component::shareLogs,
+                    isSendingLogs = component.isSendingLogs
+                )
             }
 
             Setting.AddPresetToFilename -> {
@@ -614,8 +658,32 @@ internal fun SettingItem(
                 FlingTypeSettingItem(onValueChange = component::setFlingType)
             }
 
+            Setting.MotionDurationScale -> {
+                MotionDurationScaleSettingItem(onValueChange = component::setMotionDurationScale)
+            }
+
             Setting.ToolsHiddenForShare -> {
                 ToolsHiddenForShareSettingItem(onValueChange = component::setHiddenForShareScreens)
+            }
+
+            Setting.KeepDateTime -> {
+                KeepDateTimeSettingItem(onClick = component::toggleKeepDateTime)
+            }
+
+            Setting.AlwaysClearExif -> {
+                AlwaysClearExifSettingItem(onClick = component::toggleAlwaysClearExif)
+            }
+
+            Setting.EnableBackgroundColorForAlphaFormats -> {
+                EnableBackgroundColorForAlphaFormatsSettingItem(onClick = component::toggleEnableBackgroundColorForAlphaFormats)
+            }
+
+            Setting.DebugMenu -> {
+                DebugMenuSettingItem()
+            }
+
+            Setting.ShowToolsHistory -> {
+                ShowToolsHistorySettingItem(onClick = component::toggleShowToolsHistory)
             }
         }
     }
