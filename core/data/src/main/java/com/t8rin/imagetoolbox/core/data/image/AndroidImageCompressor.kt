@@ -53,23 +53,23 @@ internal class AndroidImageCompressor @Inject constructor(
     private val imageScaler: ImageScaler<Bitmap>,
     private val imageGetter: ImageGetter<Bitmap>,
     private val shareProvider: Lazy<ShareProvider>,
-    settingsProvider: SettingsProvider,
+    private val settingsProvider: SettingsProvider,
     dispatchersHolder: DispatchersHolder
 ) : DispatchersHolder by dispatchersHolder, ImageCompressor<Bitmap> {
 
-    private val _settingsState = settingsProvider.settingsState
-    private val settingsState get() = _settingsState.value
+    private val settingsState get() = settingsProvider.settingsState.value
 
     override suspend fun compress(
         image: Bitmap,
         imageFormat: ImageFormat,
         quality: Quality
     ): ByteArray = withContext(encodingDispatcher) {
+        val coercedQuality = quality.coerceIn(imageFormat)
         val transformedImage = image.toSoftware().let { software ->
             val enableForAlpha = settingsState.enableBackgroundColorForAlphaFormats
             val isNonAlpha = imageFormat !in ImageFormat.alphaContainedEntries
 
-            if (isNonAlpha || quality.isNonAlpha() || enableForAlpha) {
+            if (isNonAlpha || coercedQuality.isNonAlpha() || enableForAlpha) {
                 withContext(defaultDispatcher) {
                     if (isNonAlpha && settingsState.backgroundForNoAlphaImageFormats.colorInt == Color.Black.toArgb()) {
                         software
@@ -91,7 +91,7 @@ internal class AndroidImageCompressor @Inject constructor(
             )
             .compress(
                 image = transformedImage,
-                quality = quality.coerceIn(imageFormat)
+                quality = coercedQuality
             )
     }
 

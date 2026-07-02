@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="app_closing">การปิดแอป</string>
     <string name="stay">อยู่</string>
     <string name="close">ปิด</string>
@@ -3288,4 +3289,77 @@
     <string name="notch_shapes_sub">ก้าวมุมด้วยการตัดสองครั้ง</string>
     <string name="watermark_filename_placeholder">ตัวยึดตำแหน่ง</string>
     <string name="watermark_filename_placeholder_sub">ใช้ {filename} เพื่อแทรกชื่อไฟล์ต้นฉบับโดยไม่มีนามสกุล</string>
+    <string name="flare">แฟลร์</string>
+    <string name="base_amount">จำนวนฐาน</string>
+    <string name="ring_amount">จำนวนแหวน</string>
+    <string name="ray_amount">จำนวนเรย์</string>
+    <string name="ring_width">ความกว้างของแหวน</string>
+    <string name="distort_perspective">บิดเบือนมุมมอง</string>
+    <string name="java_look_and_feel">Java รูปลักษณ์และความรู้สึก</string>
+    <string name="shear">เฉือน</string>
+    <string name="x_angle">มุมเอ็กซ์</string>
+    <string name="y_angle">และมุม</string>
+    <string name="resize">ปรับขนาดเอาต์พุต</string>
+    <string name="water_drop">หยดน้ำ</string>
+    <string name="wavelength">ความยาวคลื่น</string>
+    <string name="phase">เฟส</string>
+    <string name="high_pass">ผ่านสูง</string>
+    <string name="color_mask">หน้ากากสี</string>
+    <string name="chrome">โครเมียม</string>
+    <string name="dissolve">ละลาย</string>
+    <string name="softness">ความนุ่มนวล</string>
+    <string name="feedback">ข้อเสนอแนะ</string>
+    <string name="lens_blur">เลนส์เบลอ</string>
+    <string name="low_input">อินพุตต่ำ</string>
+    <string name="high_input">อินพุตสูง</string>
+    <string name="low_output">ผลผลิตต่ำ</string>
+    <string name="high_output">ผลผลิตสูง</string>
+    <string name="light_effects">เอฟเฟกต์แสง</string>
+    <string name="bump_height">ความสูงของการชน</string>
+    <string name="bump_softness">กันกระแทกนุ่ม</string>
+    <string name="ripple">ระลอกคลื่น</string>
+    <string name="x_amplitude">เอ็กซ์ แอมพลิจูด</string>
+    <string name="y_amplitude">Y แอมพลิจูด</string>
+    <string name="x_wavelength">ความยาวคลื่นเอ็กซ์</string>
+    <string name="y_wavelength">ความยาวคลื่น Y</string>
+    <string name="adaptive_blur">ปรับเบลอ</string>
+    <string name="search_keywords_texture_generation">เครื่องกำเนิดพื้นผิว แปรงโลหะ โซดาไฟ กระดานหมากรุก กระดานหมากรุก หินอ่อน พลาสมา ผ้านวม ไม้</string>
+    <string name="texture_generation">การสร้างพื้นผิว</string>
+    <string name="texture_generation_sub">สร้างพื้นผิวขั้นตอนต่างๆ และบันทึกเป็นรูปภาพ</string>
+    <string name="texture_type">ประเภทพื้นผิว</string>
+    <string name="bias">อคติ</string>
+    <string name="time">เวลา</string>
+    <string name="shine">ส่องแสง</string>
+    <string name="dispersion">การกระจายตัว</string>
+    <string name="samples">ตัวอย่าง</string>
+    <string name="angle_coefficient">ค่าสัมประสิทธิ์มุม</string>
+    <string name="gradient_coefficient">ค่าสัมประสิทธิ์การไล่ระดับสี</string>
+    <string name="grid_type">ประเภทกริด</string>
+    <string name="distance_power">พลังระยะทาง</string>
+    <string name="scale_y">สเกล Y</string>
+    <string name="fuzziness">ความคลุมเครือ</string>
+    <string name="basis_type">ประเภทพื้นฐาน</string>
+    <string name="turbulence_factor">ปัจจัยความปั่นป่วน</string>
+    <string name="scaling">การปรับขนาด</string>
+    <string name="iterations">การวนซ้ำ</string>
+    <string name="rings">แหวน</string>
+    <string name="texture_brushed_metal">แปรงโลหะ</string>
+    <string name="texture_caustics">โซดาไฟ</string>
+    <string name="texture_cellular">เซลล์</string>
+    <string name="texture_checkerboard">กระดานหมากรุก</string>
+    <string name="texture_fbm">เอฟบีเอ็ม</string>
+    <string name="texture_marble">หินอ่อน</string>
+    <string name="texture_plasma">พลาสมา</string>
+    <string name="texture_quilt">ผ้าห่ม</string>
+    <string name="texture_wood">ไม้</string>
+    <string name="grid_random">สุ่ม</string>
+    <string name="grid_square">สี่เหลี่ยม</string>
+    <string name="grid_hexagonal">หกเหลี่ยม</string>
+    <string name="grid_octagonal">แปดเหลี่ยม</string>
+    <string name="grid_triangular">สามเหลี่ยม</string>
+    <string name="fbm_ridged">สัน</string>
+    <string name="fbm_vl_noise">เสียง VL</string>
+    <string name="fbm_sc_noise">เอสซี นอยส์</string>
+    <string name="recent">ล่าสุด</string>
+    <string name="no_recent_filters">ยังไม่มีตัวกรองที่ใช้ล่าสุด</string>
 </resources>

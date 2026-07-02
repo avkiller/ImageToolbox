@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="language">اللغة</string>
     <string name="amoled_mode">وضع Amoled</string>
     <string name="amoled_mode_sub">إذا فُعّل لون الأسطح فسيتم ضبطه على الظلام المطلق في الوضع الليلي</string>
@@ -3293,4 +3294,77 @@
     <string name="notch_shapes_sub">زوايا متدرجة بقطع مزدوج</string>
     <string name="watermark_filename_placeholder">العنصر النائب</string>
     <string name="watermark_filename_placeholder_sub">استخدم {filename} لإدراج اسم الملف الأصلي بدون ملحق</string>
+    <string name="flare">مضيئة</string>
+    <string name="base_amount">المبلغ الأساسي</string>
+    <string name="ring_amount">مبلغ الحلبة</string>
+    <string name="ray_amount">كمية راي</string>
+    <string name="ring_width">عرض الحلقة</string>
+    <string name="distort_perspective">تشويه المنظور</string>
+    <string name="java_look_and_feel">جافا الشكل والمظهر</string>
+    <string name="shear">قص</string>
+    <string name="x_angle">زاوية X</string>
+    <string name="y_angle">والزاوية</string>
+    <string name="resize">تغيير حجم الإخراج</string>
+    <string name="water_drop">قطرة الماء</string>
+    <string name="wavelength">الطول الموجي</string>
+    <string name="phase">مرحلة</string>
+    <string name="high_pass">تمريرة عالية</string>
+    <string name="color_mask">قناع اللون</string>
+    <string name="chrome">الكروم</string>
+    <string name="dissolve">حل</string>
+    <string name="softness">نعومة</string>
+    <string name="feedback">تعليق</string>
+    <string name="lens_blur">طمس العدسة</string>
+    <string name="low_input">مدخلات منخفضة</string>
+    <string name="high_input">مدخلات عالية</string>
+    <string name="low_output">انخفاض الناتج</string>
+    <string name="high_output">ارتفاع الناتج</string>
+    <string name="light_effects">تأثيرات ضوئية</string>
+    <string name="bump_height">ارتفاع نتوء</string>
+    <string name="bump_softness">نعومة عثرة</string>
+    <string name="ripple">تموج</string>
+    <string name="x_amplitude">السعة X</string>
+    <string name="y_amplitude">السعة Y</string>
+    <string name="x_wavelength">الطول الموجي X</string>
+    <string name="y_wavelength">الطول الموجي Y</string>
+    <string name="adaptive_blur">طمس التكيف</string>
+    <string name="search_keywords_texture_generation">مولد الملمس، المعدن المصقول، المواد الكاوية الخلوية، رقعة الشطرنج، الرخام، البلازما، الخشب</string>
+    <string name="texture_generation">جيل الملمس</string>
+    <string name="texture_generation_sub">إنشاء مواد إجرائية متنوعة وحفظها كصور</string>
+    <string name="texture_type">نوع الملمس</string>
+    <string name="bias">تحيز</string>
+    <string name="time">وقت</string>
+    <string name="shine">يشرق</string>
+    <string name="dispersion">تشتت</string>
+    <string name="samples">عينات</string>
+    <string name="angle_coefficient">معامل الزاوية</string>
+    <string name="gradient_coefficient">معامل التدرج</string>
+    <string name="grid_type">نوع الشبكة</string>
+    <string name="distance_power">قوة المسافة</string>
+    <string name="scale_y">مقياس Y</string>
+    <string name="fuzziness">ضبابي</string>
+    <string name="basis_type">نوع الأساس</string>
+    <string name="turbulence_factor">عامل الاضطراب</string>
+    <string name="scaling">التحجيم</string>
+    <string name="iterations">التكرارات</string>
+    <string name="rings">خواتم</string>
+    <string name="texture_brushed_metal">معدن مصقول</string>
+    <string name="texture_caustics">المواد الكاوية</string>
+    <string name="texture_cellular">الخلوية</string>
+    <string name="texture_checkerboard">رقعة الشطرنج</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">رخام</string>
+    <string name="texture_plasma">بلازما</string>
+    <string name="texture_quilt">لحاف</string>
+    <string name="texture_wood">خشب</string>
+    <string name="grid_random">عشوائي</string>
+    <string name="grid_square">مربع</string>
+    <string name="grid_hexagonal">سداسية</string>
+    <string name="grid_octagonal">مثمنة</string>
+    <string name="grid_triangular">الثلاثي</string>
+    <string name="fbm_ridged">مخفف</string>
+    <string name="fbm_vl_noise">الضوضاء VL</string>
+    <string name="fbm_sc_noise">الضوضاء SC</string>
+    <string name="recent">مؤخرًا</string>
+    <string name="no_recent_filters">لا توجد مرشحات مستخدمة مؤخرًا حتى الآن</string>
 </resources>

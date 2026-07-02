@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="size">Mărime %1$s</string>
     <string name="height">Înălțime %1$s</string>
     <string name="quality">Calitatea</string>
@@ -3290,4 +3291,77 @@
     <string name="notch_shapes_sub">Colțuri trepte cu tăietură dublă</string>
     <string name="watermark_filename_placeholder">Substituent</string>
     <string name="watermark_filename_placeholder_sub">Utilizați {filename} pentru a insera numele fișierului original fără extensie</string>
+    <string name="flare">Flare</string>
+    <string name="base_amount">Suma de bază</string>
+    <string name="ring_amount">Suma inelului</string>
+    <string name="ray_amount">Cantitatea de raze</string>
+    <string name="ring_width">Lățimea inelului</string>
+    <string name="distort_perspective">Distorsionează perspectiva</string>
+    <string name="java_look_and_feel">Aspect și simțire Java</string>
+    <string name="shear">Forfecare</string>
+    <string name="x_angle">Unghiul X</string>
+    <string name="y_angle">și unghi</string>
+    <string name="resize">Redimensionați ieșirea</string>
+    <string name="water_drop">Picătură de apă</string>
+    <string name="wavelength">Lungime de undă</string>
+    <string name="phase">Fază</string>
+    <string name="high_pass">High Pass</string>
+    <string name="color_mask">Mască de culoare</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Dizolva</string>
+    <string name="softness">Moliciune</string>
+    <string name="feedback">Feedback</string>
+    <string name="lens_blur">Încețoșarea obiectivului</string>
+    <string name="low_input">Intrare scăzută</string>
+    <string name="high_input">Intrare mare</string>
+    <string name="low_output">Putere scăzută</string>
+    <string name="high_output">Randament ridicat</string>
+    <string name="light_effects">Efecte de lumină</string>
+    <string name="bump_height">Înălțimea denivelării</string>
+    <string name="bump_softness">Moliciunea bumpului</string>
+    <string name="ripple">Clipoci</string>
+    <string name="x_amplitude">X amplitudine</string>
+    <string name="y_amplitude">Amplitudinea Y</string>
+    <string name="x_wavelength">lungime de undă X</string>
+    <string name="y_wavelength">lungime de undă Y</string>
+    <string name="adaptive_blur">Blur adaptiv</string>
+    <string name="search_keywords_texture_generation">generator de textură metal periat caustics celular șah marmură plasmă pilota lemn</string>
+    <string name="texture_generation">Generarea texturii</string>
+    <string name="texture_generation_sub">Generați diverse texturi procedurale și salvați-le ca imagini</string>
+    <string name="texture_type">Tip textura</string>
+    <string name="bias">Părtinire</string>
+    <string name="time">Timp</string>
+    <string name="shine">Strălucire</string>
+    <string name="dispersion">Dispersia</string>
+    <string name="samples">Mostre</string>
+    <string name="angle_coefficient">Coeficientul unghiului</string>
+    <string name="gradient_coefficient">Coeficient de gradient</string>
+    <string name="grid_type">Tip grilă</string>
+    <string name="distance_power">Putere la distanță</string>
+    <string name="scale_y">Scara Y</string>
+    <string name="fuzziness">Neclaritate</string>
+    <string name="basis_type">Tipul de bază</string>
+    <string name="turbulence_factor">Factorul de turbulență</string>
+    <string name="scaling">Scalare</string>
+    <string name="iterations">Iterații</string>
+    <string name="rings">Inele</string>
+    <string name="texture_brushed_metal">Metal periat</string>
+    <string name="texture_caustics">Caustice</string>
+    <string name="texture_cellular">Celular</string>
+    <string name="texture_checkerboard">Tablă de șah</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmură</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Pilota</string>
+    <string name="texture_wood">Lemn</string>
+    <string name="grid_random">aleatoriu</string>
+    <string name="grid_square">Pătrat</string>
+    <string name="grid_hexagonal">Hexagonal</string>
+    <string name="grid_octagonal">Octogonal</string>
+    <string name="grid_triangular">Triunghiular</string>
+    <string name="fbm_ridged">Crestată</string>
+    <string name="fbm_vl_noise">VL Zgomot</string>
+    <string name="fbm_sc_noise">SC Zgomot</string>
+    <string name="recent">Recent</string>
+    <string name="no_recent_filters">Nu există încă filtre utilizate recent</string>
 </resources>

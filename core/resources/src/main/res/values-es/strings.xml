@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Algo salió mal: %1$s</string>
     <string name="size">Tamaño %1$s</string>
     <string name="loading">Cargando…</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Esquinas escalonadas con doble corte.</string>
     <string name="watermark_filename_placeholder">Marcador de posición</string>
     <string name="watermark_filename_placeholder_sub">Utilice {nombre de archivo} para insertar el nombre de archivo original sin extensión</string>
+    <string name="flare">Llamarada</string>
+    <string name="base_amount">Monto base</string>
+    <string name="ring_amount">Cantidad de timbre</string>
+    <string name="ray_amount">cantidad de rayos</string>
+    <string name="ring_width">Ancho del anillo</string>
+    <string name="distort_perspective">Distorsionar la perspectiva</string>
+    <string name="java_look_and_feel">Aspecto y sensación de Java</string>
+    <string name="shear">Cortar</string>
+    <string name="x_angle">ángulo X</string>
+    <string name="y_angle">Y angle</string>
+    <string name="resize">Cambiar el tamaño de la salida</string>
+    <string name="water_drop">Gota de agua</string>
+    <string name="wavelength">Longitud de onda</string>
+    <string name="phase">Fase</string>
+    <string name="high_pass">Pase alto</string>
+    <string name="color_mask">Máscara de color</string>
+    <string name="chrome">Cromo</string>
+    <string name="dissolve">Disolver</string>
+    <string name="softness">Blandura</string>
+    <string name="feedback">Comentario</string>
+    <string name="lens_blur">Desenfoque de lente</string>
+    <string name="low_input">entrada baja</string>
+    <string name="high_input">Entrada alta</string>
+    <string name="low_output">Baja producción</string>
+    <string name="high_output">Alto rendimiento</string>
+    <string name="light_effects">Efectos de luz</string>
+    <string name="bump_height">Altura del bulto</string>
+    <string name="bump_softness">Suavidad de golpes</string>
+    <string name="ripple">Onda</string>
+    <string name="x_amplitude">amplitud X</string>
+    <string name="y_amplitude">amplitud Y</string>
+    <string name="x_wavelength">longitud de onda X</string>
+    <string name="y_wavelength">longitud de onda Y</string>
+    <string name="adaptive_blur">Desenfoque adaptativo</string>
+    <string name="search_keywords_texture_generation">generador de texturas metal cepillado cáusticos celular tablero de ajedrez mármol plasma colcha madera</string>
+    <string name="texture_generation">Generación de texturas</string>
+    <string name="texture_generation_sub">Genere varias texturas procesales y guárdelas como imágenes.</string>
+    <string name="texture_type">Tipo de textura</string>
+    <string name="bias">Inclinación</string>
+    <string name="time">Tiempo</string>
+    <string name="shine">Brillar</string>
+    <string name="dispersion">Dispersión</string>
+    <string name="samples">Muestras</string>
+    <string name="angle_coefficient">Coeficiente de ángulo</string>
+    <string name="gradient_coefficient">Coeficiente de gradiente</string>
+    <string name="grid_type">Tipo de cuadrícula</string>
+    <string name="distance_power">poder de distancia</string>
+    <string name="scale_y">Escala Y</string>
+    <string name="fuzziness">Borrosidad</string>
+    <string name="basis_type">tipo de base</string>
+    <string name="turbulence_factor">factor de turbulencia</string>
+    <string name="scaling">Escalada</string>
+    <string name="iterations">Iteraciones</string>
+    <string name="rings">Anillos</string>
+    <string name="texture_brushed_metal">Metal cepillado</string>
+    <string name="texture_caustics">Cáusticos</string>
+    <string name="texture_cellular">Celular</string>
+    <string name="texture_checkerboard">Tablero de damas</string>
+    <string name="texture_fbm">fbm</string>
+    <string name="texture_marble">Mármol</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Colcha</string>
+    <string name="texture_wood">Madera</string>
+    <string name="grid_random">aleatorio</string>
+    <string name="grid_square">Cuadrado</string>
+    <string name="grid_hexagonal">Hexagonal</string>
+    <string name="grid_octagonal">Octagonal</string>
+    <string name="grid_triangular">Triangular</string>
+    <string name="fbm_ridged">Puntiagudo</string>
+    <string name="fbm_vl_noise">Ruido VL</string>
+    <string name="fbm_sc_noise">Ruido SC</string>
+    <string name="recent">Reciente</string>
+    <string name="no_recent_filters">Aún no hay filtros usados ​​recientemente</string>
 </resources>

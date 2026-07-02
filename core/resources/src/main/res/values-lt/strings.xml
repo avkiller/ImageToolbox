@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="single_edit">Vienas redagavimas</string>
     <string name="create_shortcut_title">Pasirinkite įrankį, kurį prisegti</string>
     <string name="smth_went_wrong">Kažkas nutiko ne taip: %1$s.</string>
@@ -3291,4 +3292,77 @@
     <string name="notch_shapes_sub">Pakopiniai kampai su dvigubu pjūviu</string>
     <string name="watermark_filename_placeholder">Vietos rezervuaras</string>
     <string name="watermark_filename_placeholder_sub">Naudokite {filename}, kad įterptumėte originalų failo pavadinimą be plėtinio</string>
+    <string name="flare">Blyksnis</string>
+    <string name="base_amount">Bazinė suma</string>
+    <string name="ring_amount">Žiedo suma</string>
+    <string name="ray_amount">Spindulių kiekis</string>
+    <string name="ring_width">Žiedo plotis</string>
+    <string name="distort_perspective">Iškreipti perspektyvą</string>
+    <string name="java_look_and_feel">Java išvaizda ir pojūtis</string>
+    <string name="shear">Kirpimas</string>
+    <string name="x_angle">X kampas</string>
+    <string name="y_angle">ir kampas</string>
+    <string name="resize">Pakeisti išvesties dydį</string>
+    <string name="water_drop">Vandens lašas</string>
+    <string name="wavelength">Bangos ilgis</string>
+    <string name="phase">Fazė</string>
+    <string name="high_pass">Aukštas leidimas</string>
+    <string name="color_mask">Spalvota kaukė</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Ištirpinti</string>
+    <string name="softness">Minkštumas</string>
+    <string name="feedback">Atsiliepimai</string>
+    <string name="lens_blur">Objektyvo suliejimas</string>
+    <string name="low_input">Maža įvestis</string>
+    <string name="high_input">Didelė įvestis</string>
+    <string name="low_output">Maža galia</string>
+    <string name="high_output">Didelė išeiga</string>
+    <string name="light_effects">Šviesos efektai</string>
+    <string name="bump_height">Guolio aukštis</string>
+    <string name="bump_softness">Gumbo švelnumas</string>
+    <string name="ripple">Ripple</string>
+    <string name="x_amplitude">X amplitudė</string>
+    <string name="y_amplitude">Y amplitudė</string>
+    <string name="x_wavelength">X bangos ilgis</string>
+    <string name="y_wavelength">Y bangos ilgis</string>
+    <string name="adaptive_blur">Prisitaikantis suliejimas</string>
+    <string name="search_keywords_texture_generation">tekstūros generatorius šlifuotas metalas kaustika korinė šachmatų lenta marmurinė plazminė antklodė mediena</string>
+    <string name="texture_generation">Tekstūros generavimas</string>
+    <string name="texture_generation_sub">Generuokite įvairias procedūrines tekstūras ir išsaugokite jas kaip vaizdus</string>
+    <string name="texture_type">Tekstūros tipas</string>
+    <string name="bias">Šališkumas</string>
+    <string name="time">Laikas</string>
+    <string name="shine">Blizgesys</string>
+    <string name="dispersion">Sklaida</string>
+    <string name="samples">Mėginiai</string>
+    <string name="angle_coefficient">Kampo koeficientas</string>
+    <string name="gradient_coefficient">Gradiento koeficientas</string>
+    <string name="grid_type">Tinklelio tipas</string>
+    <string name="distance_power">Atstumo galia</string>
+    <string name="scale_y">Y skalė</string>
+    <string name="fuzziness">Neryškumas</string>
+    <string name="basis_type">Pagrindo tipas</string>
+    <string name="turbulence_factor">Turbulencijos faktorius</string>
+    <string name="scaling">Mastelio keitimas</string>
+    <string name="iterations">Iteracijos</string>
+    <string name="rings">Žiedai</string>
+    <string name="texture_brushed_metal">Šlifuotas metalas</string>
+    <string name="texture_caustics">Kaustinės medžiagos</string>
+    <string name="texture_cellular">Korinis</string>
+    <string name="texture_checkerboard">Šaškių lenta</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmuras</string>
+    <string name="texture_plasma">Plazma</string>
+    <string name="texture_quilt">Antklodė</string>
+    <string name="texture_wood">Mediena</string>
+    <string name="grid_random">atsitiktinis</string>
+    <string name="grid_square">Kvadratas</string>
+    <string name="grid_hexagonal">Šešiakampis</string>
+    <string name="grid_octagonal">Aštuonkampis</string>
+    <string name="grid_triangular">Trikampis</string>
+    <string name="fbm_ridged">Rieduotas</string>
+    <string name="fbm_vl_noise">VL triukšmas</string>
+    <string name="fbm_sc_noise">SC triukšmas</string>
+    <string name="recent">Neseniai</string>
+    <string name="no_recent_filters">Dar nėra neseniai naudotų filtrų</string>
 </resources>

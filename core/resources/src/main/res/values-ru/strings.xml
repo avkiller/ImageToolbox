@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="smth_went_wrong">Что-то пошло не так: %1$s</string>
     <string name="size">Размер %1$s</string>
     <string name="loading">Загрузка…</string>
@@ -3291,4 +3292,77 @@
     <string name="notch_shapes_sub">Ступенчатые углы с двойным срезом</string>
     <string name="watermark_filename_placeholder">Заполнитель</string>
     <string name="watermark_filename_placeholder_sub">Используйте {filename}, чтобы вставить исходное имя файла без расширения.</string>
+    <string name="flare">Вспышка</string>
+    <string name="base_amount">Базовая сумма</string>
+    <string name="ring_amount">Сумма звонка</string>
+    <string name="ray_amount">Количество лучей</string>
+    <string name="ring_width">Ширина кольца</string>
+    <string name="distort_perspective">Искажение перспективы</string>
+    <string name="java_look_and_feel">Внешний вид Java</string>
+    <string name="shear">Сдвиг</string>
+    <string name="x_angle">Угол X</string>
+    <string name="y_angle">Угол Y</string>
+    <string name="resize">Изменить размер вывода</string>
+    <string name="water_drop">Капля воды</string>
+    <string name="wavelength">Длина волны</string>
+    <string name="phase">Фаза</string>
+    <string name="high_pass">Высокий проход</string>
+    <string name="color_mask">Цветовая маска</string>
+    <string name="chrome">Хром</string>
+    <string name="dissolve">Растворить</string>
+    <string name="softness">Мягкость</string>
+    <string name="feedback">Обратная связь</string>
+    <string name="lens_blur">Размытие объектива</string>
+    <string name="low_input">Низкий входной сигнал</string>
+    <string name="high_input">Высокий вход</string>
+    <string name="low_output">Низкая мощность</string>
+    <string name="high_output">Высокая производительность</string>
+    <string name="light_effects">Световые эффекты</string>
+    <string name="bump_height">Высота выступа</string>
+    <string name="bump_softness">Мягкость удара</string>
+    <string name="ripple">Пульсация</string>
+    <string name="x_amplitude">X-амплитуда</string>
+    <string name="y_amplitude">Амплитуда Y</string>
+    <string name="x_wavelength">длина волны X</string>
+    <string name="y_wavelength">Длина волны Y</string>
+    <string name="adaptive_blur">Адаптивное размытие</string>
+    <string name="search_keywords_texture_generation">генератор текстур матовый металл каустика сотовая шахматная доска мрамор плазма лоскутное одеяло дерево</string>
+    <string name="texture_generation">Генерация текстур</string>
+    <string name="texture_generation_sub">Создавайте различные процедурные текстуры и сохраняйте их как изображения.</string>
+    <string name="texture_type">Тип текстуры</string>
+    <string name="bias">Предвзятость</string>
+    <string name="time">Время</string>
+    <string name="shine">Светить</string>
+    <string name="dispersion">Дисперсия</string>
+    <string name="samples">Образцы</string>
+    <string name="angle_coefficient">Угловой коэффициент</string>
+    <string name="gradient_coefficient">Коэффициент градиента</string>
+    <string name="grid_type">Тип сетки</string>
+    <string name="distance_power">Дистанционная мощность</string>
+    <string name="scale_y">Масштаб Y</string>
+    <string name="fuzziness">Нечеткость</string>
+    <string name="basis_type">Тип основы</string>
+    <string name="turbulence_factor">Фактор турбулентности</string>
+    <string name="scaling">Масштабирование</string>
+    <string name="iterations">Итерации</string>
+    <string name="rings">Кольца</string>
+    <string name="texture_brushed_metal">Матовый металл</string>
+    <string name="texture_caustics">Каустика</string>
+    <string name="texture_cellular">Сотовая связь</string>
+    <string name="texture_checkerboard">Шахматная доска</string>
+    <string name="texture_fbm">ФБМ</string>
+    <string name="texture_marble">Мрамор</string>
+    <string name="texture_plasma">Плазма</string>
+    <string name="texture_quilt">Одеяло</string>
+    <string name="texture_wood">Древесина</string>
+    <string name="grid_random">случайный</string>
+    <string name="grid_square">Квадрат</string>
+    <string name="grid_hexagonal">Шестиугольный</string>
+    <string name="grid_octagonal">Восьмиугольный</string>
+    <string name="grid_triangular">Треугольный</string>
+    <string name="fbm_ridged">Ребристый</string>
+    <string name="fbm_vl_noise">ВЛ Шум</string>
+    <string name="fbm_sc_noise">СК Шум</string>
+    <string name="recent">Недавние</string>
+    <string name="no_recent_filters">Недавно использованных фильтров пока нет.</string>
 </resources>

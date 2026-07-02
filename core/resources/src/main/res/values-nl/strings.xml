@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">Formaat %1$s</string>
     <string name="loading">Laden…</string>
     <string name="pick_image">Kies afbeelding om te starten</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Getrapte hoeken met een dubbele snede</string>
     <string name="watermark_filename_placeholder">Tijdelijke aanduiding</string>
     <string name="watermark_filename_placeholder_sub">Gebruik {filename} om de originele bestandsnaam zonder extensie in te voegen</string>
+    <string name="flare">Gloed</string>
+    <string name="base_amount">Basisbedrag</string>
+    <string name="ring_amount">Ringbedrag</string>
+    <string name="ray_amount">Ray bedrag</string>
+    <string name="ring_width">Ringbreedte</string>
+    <string name="distort_perspective">Perspectief vervormen</string>
+    <string name="java_look_and_feel">Java-look en feel</string>
+    <string name="shear">Scheer</string>
+    <string name="x_angle">X-hoek</string>
+    <string name="y_angle">en hoek</string>
+    <string name="resize">Formaat van uitvoer wijzigen</string>
+    <string name="water_drop">Waterdruppel</string>
+    <string name="wavelength">Golflengte</string>
+    <string name="phase">Fase</string>
+    <string name="high_pass">Hoge pas</string>
+    <string name="color_mask">Kleur masker</string>
+    <string name="chrome">Chroom</string>
+    <string name="dissolve">Oplossen</string>
+    <string name="softness">Zachtheid</string>
+    <string name="feedback">Feedback</string>
+    <string name="lens_blur">Lensvervaging</string>
+    <string name="low_input">Lage invoer</string>
+    <string name="high_input">Hoge invoer</string>
+    <string name="low_output">Lage output</string>
+    <string name="high_output">Hoge output</string>
+    <string name="light_effects">Lichteffecten</string>
+    <string name="bump_height">Hoogte van de bult</string>
+    <string name="bump_softness">Zachtheid van de bult</string>
+    <string name="ripple">Rimpeling</string>
+    <string name="x_amplitude">X-amplitude</string>
+    <string name="y_amplitude">Y-amplitude</string>
+    <string name="x_wavelength">X-golflengte</string>
+    <string name="y_wavelength">Y-golflengte</string>
+    <string name="adaptive_blur">Adaptieve vervaging</string>
+    <string name="search_keywords_texture_generation">textuurgenerator geborsteld metaal bijtende stoffen cellulair dambord marmer plasma quilt hout</string>
+    <string name="texture_generation">Textuur generatie</string>
+    <string name="texture_generation_sub">Genereer verschillende procedurele texturen en sla ze op als afbeeldingen</string>
+    <string name="texture_type">Textuurtype</string>
+    <string name="bias">Vooroordeel</string>
+    <string name="time">Tijd</string>
+    <string name="shine">Glans</string>
+    <string name="dispersion">Dispersie</string>
+    <string name="samples">Monsters</string>
+    <string name="angle_coefficient">Hoekcoëfficiënt</string>
+    <string name="gradient_coefficient">Gradiëntcoëfficiënt</string>
+    <string name="grid_type">Rastertype</string>
+    <string name="distance_power">Afstand macht</string>
+    <string name="scale_y">Schaal Y</string>
+    <string name="fuzziness">Wazigheid</string>
+    <string name="basis_type">Basistype</string>
+    <string name="turbulence_factor">Turbulentiefactor</string>
+    <string name="scaling">Schalen</string>
+    <string name="iterations">Iteraties</string>
+    <string name="rings">Ringen</string>
+    <string name="texture_brushed_metal">Geborsteld metaal</string>
+    <string name="texture_caustics">Bijtende stoffen</string>
+    <string name="texture_cellular">Mobiel</string>
+    <string name="texture_checkerboard">Schaakbord</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmer</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Dekbed</string>
+    <string name="texture_wood">Hout</string>
+    <string name="grid_random">willekeurig</string>
+    <string name="grid_square">Vierkant</string>
+    <string name="grid_hexagonal">Zeshoekig</string>
+    <string name="grid_octagonal">Achthoekig</string>
+    <string name="grid_triangular">Driehoekig</string>
+    <string name="fbm_ridged">Geribbeld</string>
+    <string name="fbm_vl_noise">VL-ruis</string>
+    <string name="fbm_sc_noise">SC-ruis</string>
+    <string name="recent">Recent</string>
+    <string name="no_recent_filters">Nog geen recent gebruikte filters</string>
 </resources>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="size">Größe %1$s</string>
     <string name="height">Höhe %1$s</string>
     <string name="quality">Qualität</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Abgesetzte Ecken mit Doppelschnitt</string>
     <string name="watermark_filename_placeholder">Platzhalter</string>
     <string name="watermark_filename_placeholder_sub">Verwenden Sie {filename}, um den ursprünglichen Dateinamen ohne Erweiterung einzufügen</string>
+    <string name="flare">Fackel</string>
+    <string name="base_amount">Grundbetrag</string>
+    <string name="ring_amount">Ringbetrag</string>
+    <string name="ray_amount">Ray-Menge</string>
+    <string name="ring_width">Ringbreite</string>
+    <string name="distort_perspective">Perspektive verzerren</string>
+    <string name="java_look_and_feel">Java-Look and Feel</string>
+    <string name="shear">Scheren</string>
+    <string name="x_angle">X-Winkel</string>
+    <string name="y_angle">und Winkel</string>
+    <string name="resize">Ausgabegröße ändern</string>
+    <string name="water_drop">Wassertropfen</string>
+    <string name="wavelength">Wellenlänge</string>
+    <string name="phase">Phase</string>
+    <string name="high_pass">Hochpass</string>
+    <string name="color_mask">Farbmaske</string>
+    <string name="chrome">Chrom</string>
+    <string name="dissolve">Lösen</string>
+    <string name="softness">Weichheit</string>
+    <string name="feedback">Rückmeldung</string>
+    <string name="lens_blur">Linsenunschärfe</string>
+    <string name="low_input">Geringer Input</string>
+    <string name="high_input">Hoher Input</string>
+    <string name="low_output">Geringe Leistung</string>
+    <string name="high_output">Hohe Leistung</string>
+    <string name="light_effects">Lichteffekte</string>
+    <string name="bump_height">Stoßhöhe</string>
+    <string name="bump_softness">Beulenweichheit</string>
+    <string name="ripple">Welligkeit</string>
+    <string name="x_amplitude">X-Amplitude</string>
+    <string name="y_amplitude">Y-Amplitude</string>
+    <string name="x_wavelength">X-Wellenlänge</string>
+    <string name="y_wavelength">Y-Wellenlänge</string>
+    <string name="adaptive_blur">Adaptive Unschärfe</string>
+    <string name="search_keywords_texture_generation">Texturgenerator gebürstetes Metall Ätzmittel Zellular Schachbrett Marmor Plasma Steppdecke Holz</string>
+    <string name="texture_generation">Texturgenerierung</string>
+    <string name="texture_generation_sub">Generieren Sie verschiedene prozedurale Texturen und speichern Sie sie als Bilder</string>
+    <string name="texture_type">Texturtyp</string>
+    <string name="bias">Voreingenommenheit</string>
+    <string name="time">Zeit</string>
+    <string name="shine">Glanz</string>
+    <string name="dispersion">Streuung</string>
+    <string name="samples">Proben</string>
+    <string name="angle_coefficient">Winkelkoeffizient</string>
+    <string name="gradient_coefficient">Gradientenkoeffizient</string>
+    <string name="grid_type">Gittertyp</string>
+    <string name="distance_power">Distanzkraft</string>
+    <string name="scale_y">Skala Y</string>
+    <string name="fuzziness">Unschärfe</string>
+    <string name="basis_type">Basistyp</string>
+    <string name="turbulence_factor">Turbulenzfaktor</string>
+    <string name="scaling">Skalierung</string>
+    <string name="iterations">Iterationen</string>
+    <string name="rings">Ringe</string>
+    <string name="texture_brushed_metal">Gebürstetes Metall</string>
+    <string name="texture_caustics">Ätzmittel</string>
+    <string name="texture_cellular">Mobilfunk</string>
+    <string name="texture_checkerboard">Schachbrett</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmor</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Decke</string>
+    <string name="texture_wood">Holz</string>
+    <string name="grid_random">zufällig</string>
+    <string name="grid_square">Quadrat</string>
+    <string name="grid_hexagonal">Sechseckig</string>
+    <string name="grid_octagonal">Achteckig</string>
+    <string name="grid_triangular">Dreieckig</string>
+    <string name="fbm_ridged">Geriffelt</string>
+    <string name="fbm_vl_noise">VL-Rauschen</string>
+    <string name="fbm_sc_noise">SC-Rauschen</string>
+    <string name="recent">Jüngste</string>
+    <string name="no_recent_filters">Noch keine kürzlich verwendeten Filter</string>
 </resources>

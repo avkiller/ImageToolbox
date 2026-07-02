@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Bir şeyler ters gitti: %1$s</string>
     <string name="size">Boyut: %1$s</string>
     <string name="loading">Yükleniyor…</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Çift kesimli basamaklı köşeler</string>
     <string name="watermark_filename_placeholder">Yer tutucu</string>
     <string name="watermark_filename_placeholder_sub">Orijinal dosya adını uzantısız eklemek için {filename} kullanın</string>
+    <string name="flare">parlama</string>
+    <string name="base_amount">Baz tutar</string>
+    <string name="ring_amount">Zil miktarı</string>
+    <string name="ray_amount">Işın miktarı</string>
+    <string name="ring_width">Halka genişliği</string>
+    <string name="distort_perspective">Perspektifi Deforme Et</string>
+    <string name="java_look_and_feel">Java Görünümü ve Hissi</string>
+    <string name="shear">Kırpmak</string>
+    <string name="x_angle">X açısı</string>
+    <string name="y_angle">ve açı</string>
+    <string name="resize">Çıktıyı yeniden boyutlandır</string>
+    <string name="water_drop">Su Damlası</string>
+    <string name="wavelength">Dalgaboyu</string>
+    <string name="phase">Faz</string>
+    <string name="high_pass">Yüksek Geçiş</string>
+    <string name="color_mask">Renk Maskesi</string>
+    <string name="chrome">Krom</string>
+    <string name="dissolve">Çözün</string>
+    <string name="softness">Yumuşaklık</string>
+    <string name="feedback">Geri bildirim</string>
+    <string name="lens_blur">Mercek Bulanıklığı</string>
+    <string name="low_input">Düşük giriş</string>
+    <string name="high_input">Yüksek giriş</string>
+    <string name="low_output">Düşük çıkış</string>
+    <string name="high_output">Yüksek çıkış</string>
+    <string name="light_effects">Işık Efektleri</string>
+    <string name="bump_height">Çarpma yüksekliği</string>
+    <string name="bump_softness">Yumru yumuşaklığı</string>
+    <string name="ripple">Dalgalanma</string>
+    <string name="x_amplitude">X genliği</string>
+    <string name="y_amplitude">Y genliği</string>
+    <string name="x_wavelength">X dalga boyu</string>
+    <string name="y_wavelength">Y dalga boyu</string>
+    <string name="adaptive_blur">Uyarlanabilir Bulanıklaştırma</string>
+    <string name="search_keywords_texture_generation">doku oluşturucu fırçalanmış metal kostik hücresel dama tahtası mermer plazma yorgan ahşap</string>
+    <string name="texture_generation">Doku Üretimi</string>
+    <string name="texture_generation_sub">Çeşitli prosedür dokuları oluşturun ve bunları görüntü olarak kaydedin</string>
+    <string name="texture_type">Doku Türü</string>
+    <string name="bias">Ön yargı</string>
+    <string name="time">Zaman</string>
+    <string name="shine">Parlamak</string>
+    <string name="dispersion">Dağılım</string>
+    <string name="samples">Örnekler</string>
+    <string name="angle_coefficient">Açı katsayısı</string>
+    <string name="gradient_coefficient">Gradyan katsayısı</string>
+    <string name="grid_type">Izgara türü</string>
+    <string name="distance_power">Mesafe gücü</string>
+    <string name="scale_y">Y Ölçeği</string>
+    <string name="fuzziness">bulanıklık</string>
+    <string name="basis_type">Temel türü</string>
+    <string name="turbulence_factor">Türbülans faktörü</string>
+    <string name="scaling">Ölçeklendirme</string>
+    <string name="iterations">Yinelemeler</string>
+    <string name="rings">Yüzükler</string>
+    <string name="texture_brushed_metal">Fırçalanmış Metal</string>
+    <string name="texture_caustics">Kostikler</string>
+    <string name="texture_cellular">Hücresel</string>
+    <string name="texture_checkerboard">Dama Tahtası</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Mermer</string>
+    <string name="texture_plasma">Plazma</string>
+    <string name="texture_quilt">Yorgan</string>
+    <string name="texture_wood">Odun</string>
+    <string name="grid_random">rastgele</string>
+    <string name="grid_square">Kare</string>
+    <string name="grid_hexagonal">Altıgen</string>
+    <string name="grid_octagonal">Sekizgen</string>
+    <string name="grid_triangular">üçgen</string>
+    <string name="fbm_ridged">çıkıntılı</string>
+    <string name="fbm_vl_noise">VL Gürültüsü</string>
+    <string name="fbm_sc_noise">SC Gürültüsü</string>
+    <string name="recent">Son</string>
+    <string name="no_recent_filters">Henüz yakın zamanda kullanılan filtre yok</string>
 </resources>

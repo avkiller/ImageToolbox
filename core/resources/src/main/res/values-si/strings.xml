@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">ගැටලුවක් පවතී: %1$s</string>
     <string name="size">ප්‍රමාණය %1$s</string>
     <string name="loading">මොහොතක් සිටින්න…</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">ද්විත්ව කප්පාදුවක් සහිත පියවර සහිත කොන්</string>
     <string name="watermark_filename_placeholder">ස්ථාන දරන්නා</string>
     <string name="watermark_filename_placeholder_sub">දිගුවකින් තොරව මුල් ගොනු නාමය ඇතුළත් කිරීමට {filename} භාවිතා කරන්න</string>
+    <string name="flare">දැල්ල</string>
+    <string name="base_amount">මූලික මුදල</string>
+    <string name="ring_amount">මුද්ද මුදල</string>
+    <string name="ray_amount">කිරණ ප්රමාණය</string>
+    <string name="ring_width">වළල්ලේ පළල</string>
+    <string name="distort_perspective">ඉදිරිදර්ශනය විකෘති කරන්න</string>
+    <string name="java_look_and_feel">ජාවා පෙනුම සහ හැඟීම</string>
+    <string name="shear">ෂියර්</string>
+    <string name="x_angle">X කෝණය</string>
+    <string name="y_angle">සහ කෝණය</string>
+    <string name="resize">ප්‍රතිදානය ප්‍රතිප්‍රමාණ කරන්න</string>
+    <string name="water_drop">ජල බිංදුව</string>
+    <string name="wavelength">තරංග ආයාමය</string>
+    <string name="phase">අදියර</string>
+    <string name="high_pass">උසස් සමත්</string>
+    <string name="color_mask">වර්ණ මාස්ක්</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">විසුරුවා හරින්න</string>
+    <string name="softness">මෘදු බව</string>
+    <string name="feedback">ප්රතිපෝෂණ</string>
+    <string name="lens_blur">කාච බොඳවීම</string>
+    <string name="low_input">අඩු ආදානය</string>
+    <string name="high_input">ඉහළ ආදානය</string>
+    <string name="low_output">අඩු ප්රතිදානය</string>
+    <string name="high_output">ඉහළ ප්රතිදානය</string>
+    <string name="light_effects">සැහැල්ලු බලපෑම්</string>
+    <string name="bump_height">ගැටිති උස</string>
+    <string name="bump_softness">ගැටිති මෘදු බව</string>
+    <string name="ripple">Ripple</string>
+    <string name="x_amplitude">X විස්තාරය</string>
+    <string name="y_amplitude">Y විස්තාරය</string>
+    <string name="x_wavelength">X තරංග ආයාමය</string>
+    <string name="y_wavelength">Y තරංග ආයාමය</string>
+    <string name="adaptive_blur">අනුවර්තන බොඳවීම</string>
+    <string name="search_keywords_texture_generation">වයනය උත්පාදක බුරුසු ලෝහ කෝස්ටික් සෙලියුලර් චෙක්බෝඩ් කිරිගරුඬ ප්ලාස්මා ඇතිරිලි ලී</string>
+    <string name="texture_generation">Texture Generation</string>
+    <string name="texture_generation_sub">විවිධ ක්‍රියා පටිපාටි වයනය ජනනය කර ඒවා රූප ලෙස සුරකින්න</string>
+    <string name="texture_type">වයනය වර්ගය</string>
+    <string name="bias">පක්ෂග්රාහී</string>
+    <string name="time">කාලය</string>
+    <string name="shine">බැබළෙන්න</string>
+    <string name="dispersion">විසුරුම</string>
+    <string name="samples">සාම්පල</string>
+    <string name="angle_coefficient">කෝණ සංගුණකය</string>
+    <string name="gradient_coefficient">අනුක්‍රමණ සංගුණකය</string>
+    <string name="grid_type">ජාල වර්ගය</string>
+    <string name="distance_power">දුරස්ථ බලය</string>
+    <string name="scale_y">පරිමාණ Y</string>
+    <string name="fuzziness">නොපැහැදිලි බව</string>
+    <string name="basis_type">මූලික වර්ගය</string>
+    <string name="turbulence_factor">කැළඹිලි සාධකය</string>
+    <string name="scaling">පරිමාණ කිරීම</string>
+    <string name="iterations">පුනරාවර්තන</string>
+    <string name="rings">වළලු</string>
+    <string name="texture_brushed_metal">බුරුසු ලෝහ</string>
+    <string name="texture_caustics">කෝස්ටික්</string>
+    <string name="texture_cellular">සෛලීය</string>
+    <string name="texture_checkerboard">පිරික්සුම් පුවරුව</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">කිරිගරුඬ</string>
+    <string name="texture_plasma">ප්ලාස්මා</string>
+    <string name="texture_quilt">ඇඳ ඇතිරිලි</string>
+    <string name="texture_wood">ලී</string>
+    <string name="grid_random">අහඹු</string>
+    <string name="grid_square">චතුරස්රය</string>
+    <string name="grid_hexagonal">ෂඩාස්රාකාර</string>
+    <string name="grid_octagonal">අෂ්ටාංගික</string>
+    <string name="grid_triangular">ත්රිකෝණාකාර</string>
+    <string name="fbm_ridged">රිජ්ඩ්</string>
+    <string name="fbm_vl_noise">VL ශබ්දය</string>
+    <string name="fbm_sc_noise">SC ශබ්දය</string>
+    <string name="recent">මෑත</string>
+    <string name="no_recent_filters">මෑතදී භාවිත කළ පෙරහන් තවමත් නැත</string>
 </resources>

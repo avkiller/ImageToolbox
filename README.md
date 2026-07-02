@@ -20,7 +20,7 @@
   </br>
   </br>
   
- <img src="https://img.shields.io/badge/391.2K-aeff4d?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgICA8cGF0aCBkPSJNMTIuODksM0wxNC44NSwzLjRMMTEuMTEsMjFMOS4xNSwyMC42TDEyLjg5LDNNMTkuNTksMTJMMTYsOC40MVY1LjU4TDIyLjQyLDEyTDE2LDE4LjQxVjE1LjU4TDE5LjU5LDEyTTEuNTgsMTJMOCw1LjU4VjguNDFMNC40MSwxMkw4LDE1LjU4VjE4LjQxTDEuNTgsMTJaIgogICAgICAgIGZpbGw9IndoaXRlIiAvPgo8L3N2Zz4%3D&label=Lines%20of%20code&labelColor=4b731a"/>
+ <img src="https://img.shields.io/badge/397.8K-aeff4d?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgICA8cGF0aCBkPSJNMTIuODksM0wxNC44NSwzLjRMMTEuMTEsMjFMOS4xNSwyMC42TDEyLjg5LDNNMTkuNTksMTJMMTYsOC40MVY1LjU4TDIyLjQyLDEyTDE2LDE4LjQxVjE1LjU4TDE5LjU5LDEyTTEuNTgsMTJMOCw1LjU4VjguNDFMNC40MSwxMkw4LDE1LjU4VjE4LjQxTDEuNTgsMTJaIgogICAgICAgIGZpbGw9IndoaXRlIiAvPgo8L3N2Zz4%3D&label=Lines%20of%20code&labelColor=4b731a"/>
 
 <img src="https://img.shields.io/github/commits-since/t8rin/ImageToolbox/v1.0?color=palegreen&label=Commits&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnNvdXJjZS1jb21taXQ8L3RpdGxlPjxwYXRoIGQ9Ik0xNywxMkMxNywxNC40MiAxNS4yOCwxNi40NCAxMywxNi45VjIxSDExVjE2LjlDOC43MiwxNi40NCA3LDE0LjQyIDcsMTJDNyw5LjU4IDguNzIsNy41NiAxMSw3LjFWM0gxM1Y3LjFDMTUuMjgsNy41NiAxNyw5LjU4IDE3LDEyTTEyLDlBMywzIDAgMCwwIDksMTJBMywzIDAgMCwwIDEyLDE1QTMsMyAwIDAsMCAxNSwxMkEzLDMgMCAwLDAgMTIsOVoiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg==&labelColor=07ab4e&v=2">
  
@@ -181,7 +181,7 @@ or click one of the badges below.
 # ✨ Features
 
 - Batch processing
-- Applying filter chains (More than 310 various filters)
+- Applying filter chains (More than 330 various filters)
 
   <details>
   <summary>Available filters</summary>
@@ -500,6 +500,22 @@ or click one of the badges below.
     - [x] Shader
     - [x] Torn Edge
     - [x] Drop Shadow 
+    - [x] Flare
+    - [x] Distort Perspective
+    - [x] Java Look And Feel
+    - [x] Shear
+    - [x] Water Drop
+    - [x] High Pass
+    - [x] Color Mask
+    - [x] Adaptive Blur
+    - [x] Chrome
+    - [x] Dissolve
+    - [x] Feedback
+    - [x] Lens Blur
+    - [x] Levels
+    - [x] Light Effects
+    - [x] Rays
+    - [x] Ripple
 
 
   </details>
@@ -508,6 +524,16 @@ or click one of the badges below.
     - You can create filter from any filter chain
     - Share created filters by QR code
     - Scan filters from the app to get them on your device
+- Texture generation:
+    - Brushed Metal
+    - Caustics
+    - Cellular
+    - Checkerboard
+    - FBM
+    - Marble
+    - Plasma
+    - Quilt
+    - Wood
 - Files encryption and decryption with 100+ different algorithms available
 - Adding Stickers and Text (Markup Layers Mode)
 - Extract Text From Images (OCR)

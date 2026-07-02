@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="width">Leveys %1$s</string>
     <string name="height">Korkeus %1$s</string>
     <string name="quality">Laatu</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Porrastetut kulmat kaksoisleikkauksella</string>
     <string name="watermark_filename_placeholder">Paikkamerkki</string>
     <string name="watermark_filename_placeholder_sub">Käytä {filename} lisätäksesi alkuperäisen tiedostonimen ilman päätettä</string>
+    <string name="flare">Leimahdus</string>
+    <string name="base_amount">Perusmäärä</string>
+    <string name="ring_amount">Sormuksen määrä</string>
+    <string name="ray_amount">Säteen määrä</string>
+    <string name="ring_width">Renkaan leveys</string>
+    <string name="distort_perspective">Vääristää perspektiiviä</string>
+    <string name="java_look_and_feel">Java ulkoasu ja tuntuma</string>
+    <string name="shear">Leikkaus</string>
+    <string name="x_angle">X kulma</string>
+    <string name="y_angle">ja kulma</string>
+    <string name="resize">Muuta tulosteen kokoa</string>
+    <string name="water_drop">Vesipisara</string>
+    <string name="wavelength">Aallonpituus</string>
+    <string name="phase">Vaihe</string>
+    <string name="high_pass">High Pass</string>
+    <string name="color_mask">Värillinen naamio</string>
+    <string name="chrome">Kromi</string>
+    <string name="dissolve">Liuota</string>
+    <string name="softness">Pehmeys</string>
+    <string name="feedback">Palaute</string>
+    <string name="lens_blur">Linssin sumennus</string>
+    <string name="low_input">Matala syöttö</string>
+    <string name="high_input">Korkea syöttö</string>
+    <string name="low_output">Matala teho</string>
+    <string name="high_output">Korkea teho</string>
+    <string name="light_effects">Valotehosteet</string>
+    <string name="bump_height">Puskurin korkeus</string>
+    <string name="bump_softness">Pehmeyttä</string>
+    <string name="ripple">Ripple</string>
+    <string name="x_amplitude">X amplitudi</string>
+    <string name="y_amplitude">Y amplitudi</string>
+    <string name="x_wavelength">X aallonpituus</string>
+    <string name="y_wavelength">Y aallonpituus</string>
+    <string name="adaptive_blur">Mukautuva sumennus</string>
+    <string name="search_keywords_texture_generation">tekstuurigeneraattori harjattu metalli kaustiikka solu shakkilauta marmori plasmapeitto puu</string>
+    <string name="texture_generation">Tekstuurien luominen</string>
+    <string name="texture_generation_sub">Luo erilaisia ​​proseduureja ja tallenna ne kuvina</string>
+    <string name="texture_type">Tekstuurityyppi</string>
+    <string name="bias">Bias</string>
+    <string name="time">Aika</string>
+    <string name="shine">Loistaa</string>
+    <string name="dispersion">Dispersio</string>
+    <string name="samples">Näytteitä</string>
+    <string name="angle_coefficient">Kulmakerroin</string>
+    <string name="gradient_coefficient">Gradienttikerroin</string>
+    <string name="grid_type">Ruudukkotyyppi</string>
+    <string name="distance_power">Etäisyys teho</string>
+    <string name="scale_y">Asteikko Y</string>
+    <string name="fuzziness">Sumeus</string>
+    <string name="basis_type">Perustyyppi</string>
+    <string name="turbulence_factor">Turbulenssitekijä</string>
+    <string name="scaling">Skaalaus</string>
+    <string name="iterations">Iteraatiot</string>
+    <string name="rings">Sormukset</string>
+    <string name="texture_brushed_metal">Harjattua metallia</string>
+    <string name="texture_caustics">Kaustiset aineet</string>
+    <string name="texture_cellular">Mobiili</string>
+    <string name="texture_checkerboard">Shakkilauta</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmori</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Peitto</string>
+    <string name="texture_wood">Puu</string>
+    <string name="grid_random">satunnainen</string>
+    <string name="grid_square">Neliö</string>
+    <string name="grid_hexagonal">Kuusikulmainen</string>
+    <string name="grid_octagonal">Kahdeksankulmainen</string>
+    <string name="grid_triangular">Kolmion muotoinen</string>
+    <string name="fbm_ridged">Uurteinen</string>
+    <string name="fbm_vl_noise">VL Melu</string>
+    <string name="fbm_sc_noise">SC Melu</string>
+    <string name="recent">Viimeaikaiset</string>
+    <string name="no_recent_filters">Ei vielä äskettäin käytettyjä suodattimia</string>
 </resources>

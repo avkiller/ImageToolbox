@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Có gì đó sai: %1$s</string>
     <string name="size">Kích thước %1$s</string>
     <string name="loading">Đang tải…</string>
@@ -3288,4 +3289,77 @@
     <string name="notch_shapes_sub">Các góc bậc thang có đường cắt đôi</string>
     <string name="watermark_filename_placeholder">Trình giữ chỗ</string>
     <string name="watermark_filename_placeholder_sub">Sử dụng {filename} để chèn tên tệp gốc không có phần mở rộng</string>
+    <string name="flare">Bùng phát</string>
+    <string name="base_amount">Số tiền cơ bản</string>
+    <string name="ring_amount">Số lượng chuông</string>
+    <string name="ray_amount">Lượng tia</string>
+    <string name="ring_width">Chiều rộng vòng</string>
+    <string name="distort_perspective">Quan điểm bóp méo</string>
+    <string name="java_look_and_feel">Giao diện Java</string>
+    <string name="shear">cắt</string>
+    <string name="x_angle">góc X</string>
+    <string name="y_angle">và góc</string>
+    <string name="resize">Thay đổi kích thước đầu ra</string>
+    <string name="water_drop">Giọt Nước</string>
+    <string name="wavelength">Bước sóng</string>
+    <string name="phase">Giai đoạn</string>
+    <string name="high_pass">Đèo cao</string>
+    <string name="color_mask">Mặt nạ màu</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">hòa tan</string>
+    <string name="softness">sự mềm mại</string>
+    <string name="feedback">Nhận xét</string>
+    <string name="lens_blur">Làm mờ ống kính</string>
+    <string name="low_input">Đầu vào thấp</string>
+    <string name="high_input">Đầu vào cao</string>
+    <string name="low_output">Sản lượng thấp</string>
+    <string name="high_output">Sản lượng cao</string>
+    <string name="light_effects">Hiệu ứng ánh sáng</string>
+    <string name="bump_height">Chiều cao va chạm</string>
+    <string name="bump_softness">va chạm mềm mại</string>
+    <string name="ripple">gợn sóng</string>
+    <string name="x_amplitude">Biên độ X</string>
+    <string name="y_amplitude">Biên độ Y</string>
+    <string name="x_wavelength">Bước sóng X</string>
+    <string name="y_wavelength">Bước sóng Y</string>
+    <string name="adaptive_blur">Làm mờ thích ứng</string>
+    <string name="search_keywords_texture_generation">kết cấu máy phát điện kim loại chải chất ăn da di động bàn cờ đá cẩm thạch plasma chăn gỗ</string>
+    <string name="texture_generation">Tạo kết cấu</string>
+    <string name="texture_generation_sub">Tạo các kết cấu thủ tục khác nhau và lưu chúng dưới dạng hình ảnh</string>
+    <string name="texture_type">Loại kết cấu</string>
+    <string name="bias">thiên vị</string>
+    <string name="time">Thời gian</string>
+    <string name="shine">Chiếu sáng</string>
+    <string name="dispersion">phân tán</string>
+    <string name="samples">Mẫu</string>
+    <string name="angle_coefficient">hệ số góc</string>
+    <string name="gradient_coefficient">hệ số độ dốc</string>
+    <string name="grid_type">Loại lưới</string>
+    <string name="distance_power">Khoảng cách điện</string>
+    <string name="scale_y">Thang đo Y</string>
+    <string name="fuzziness">Hơi quăn</string>
+    <string name="basis_type">Loại cơ sở</string>
+    <string name="turbulence_factor">Hệ số nhiễu loạn</string>
+    <string name="scaling">Chia tỷ lệ</string>
+    <string name="iterations">Lặp lại</string>
+    <string name="rings">Nhẫn</string>
+    <string name="texture_brushed_metal">kim loại chải</string>
+    <string name="texture_caustics">chất ăn da</string>
+    <string name="texture_cellular">Di động</string>
+    <string name="texture_checkerboard">Bàn cờ</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Đá cẩm thạch</string>
+    <string name="texture_plasma">Huyết tương</string>
+    <string name="texture_quilt">Chăn</string>
+    <string name="texture_wood">Gỗ</string>
+    <string name="grid_random">ngẫu nhiên</string>
+    <string name="grid_square">Quảng trường</string>
+    <string name="grid_hexagonal">lục giác</string>
+    <string name="grid_octagonal">hình bát giác</string>
+    <string name="grid_triangular">tam giác</string>
+    <string name="fbm_ridged">có đường gờ</string>
+    <string name="fbm_vl_noise">Tiếng ồn VL</string>
+    <string name="fbm_sc_noise">SC tiếng ồn</string>
+    <string name="recent">Gần đây</string>
+    <string name="no_recent_filters">Chưa có bộ lọc nào được sử dụng gần đây</string>
 </resources>

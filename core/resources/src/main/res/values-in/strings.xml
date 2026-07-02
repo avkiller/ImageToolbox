@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="smth_went_wrong">Ada yang tidak beres: %1$s</string>
     <string name="size">Ukuran %1$s</string>
     <string name="copied">Disalin ke papan klip</string>
@@ -3288,4 +3289,77 @@
     <string name="notch_shapes_sub">Sudut berundak dengan potongan ganda</string>
     <string name="watermark_filename_placeholder">Penampung</string>
     <string name="watermark_filename_placeholder_sub">Gunakan {filename} untuk memasukkan nama file asli tanpa ekstensi</string>
+    <string name="flare">Suar</string>
+    <string name="base_amount">Jumlah dasar</string>
+    <string name="ring_amount">Jumlah dering</string>
+    <string name="ray_amount">jumlah sinar</string>
+    <string name="ring_width">Lebar cincin</string>
+    <string name="distort_perspective">Mendistorsi Perspektif</string>
+    <string name="java_look_and_feel">Tampilan dan Nuansa Jawa</string>
+    <string name="shear">Mencukur</string>
+    <string name="x_angle">sudut X</string>
+    <string name="y_angle">dan sudut</string>
+    <string name="resize">Ubah ukuran keluaran</string>
+    <string name="water_drop">Tetesan Air</string>
+    <string name="wavelength">Panjang gelombang</string>
+    <string name="phase">Fase</string>
+    <string name="high_pass">Lulus Tinggi</string>
+    <string name="color_mask">Masker Warna</string>
+    <string name="chrome">krom</string>
+    <string name="dissolve">Larut</string>
+    <string name="softness">Kelembutan</string>
+    <string name="feedback">Masukan</string>
+    <string name="lens_blur">Lensa Buram</string>
+    <string name="low_input">Masukan rendah</string>
+    <string name="high_input">Masukan tinggi</string>
+    <string name="low_output">Keluaran rendah</string>
+    <string name="high_output">Keluaran tinggi</string>
+    <string name="light_effects">Efek Cahaya</string>
+    <string name="bump_height">Tinggi benjolan</string>
+    <string name="bump_softness">Kelembutan benjolan</string>
+    <string name="ripple">Riak</string>
+    <string name="x_amplitude">amplitudo X</string>
+    <string name="y_amplitude">amplitudo Y</string>
+    <string name="x_wavelength">X panjang gelombang</string>
+    <string name="y_wavelength">panjang gelombang Y</string>
+    <string name="adaptive_blur">Buram Adaptif</string>
+    <string name="search_keywords_texture_generation">generator tekstur logam yang disikat kaustik kotak-kotak seluler marmer kayu selimut plasma</string>
+    <string name="texture_generation">Generasi Tekstur</string>
+    <string name="texture_generation_sub">Hasilkan berbagai tekstur prosedural dan simpan sebagai gambar</string>
+    <string name="texture_type">Tipe Tekstur</string>
+    <string name="bias">Bias</string>
+    <string name="time">Waktu</string>
+    <string name="shine">Bersinar</string>
+    <string name="dispersion">Penyebaran</string>
+    <string name="samples">Sampel</string>
+    <string name="angle_coefficient">Koefisien sudut</string>
+    <string name="gradient_coefficient">Koefisien gradien</string>
+    <string name="grid_type">Tipe kisi</string>
+    <string name="distance_power">Kekuatan jarak</string>
+    <string name="scale_y">Skala Y</string>
+    <string name="fuzziness">Ketidakjelasan</string>
+    <string name="basis_type">Tipe dasar</string>
+    <string name="turbulence_factor">Faktor turbulensi</string>
+    <string name="scaling">Penskalaan</string>
+    <string name="iterations">Iterasi</string>
+    <string name="rings">Cincin</string>
+    <string name="texture_brushed_metal">Logam yang Disikat</string>
+    <string name="texture_caustics">kaustik</string>
+    <string name="texture_cellular">Seluler</string>
+    <string name="texture_checkerboard">Papan main dam</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmer</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Selimut</string>
+    <string name="texture_wood">Kayu</string>
+    <string name="grid_random">acak</string>
+    <string name="grid_square">Persegi</string>
+    <string name="grid_hexagonal">heksagonal</string>
+    <string name="grid_octagonal">Bersegi delapan</string>
+    <string name="grid_triangular">Segitiga</string>
+    <string name="fbm_ridged">Berpuncak runcing</string>
+    <string name="fbm_vl_noise">Kebisingan VL</string>
+    <string name="fbm_sc_noise">Kebisingan SC</string>
+    <string name="recent">Terkini</string>
+    <string name="no_recent_filters">Belum ada filter yang digunakan baru-baru ini</string>
 </resources>

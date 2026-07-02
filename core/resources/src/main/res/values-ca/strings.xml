@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">Alguna cosa ha anat malament: %1$s</string>
     <string name="size">Mida %1$s</string>
     <string name="pick_image">Trieu la imatge per començar</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Cantonades esglaonades amb doble tall</string>
     <string name="watermark_filename_placeholder">Marcador de posició</string>
     <string name="watermark_filename_placeholder_sub">Utilitzeu {filename} per inserir el nom de fitxer original sense extensió</string>
+    <string name="flare">Flare</string>
+    <string name="base_amount">Import base</string>
+    <string name="ring_amount">Import de l\'anell</string>
+    <string name="ray_amount">Quantitat de raigs</string>
+    <string name="ring_width">Ample de l\'anell</string>
+    <string name="distort_perspective">Distorsionar la perspectiva</string>
+    <string name="java_look_and_feel">Aspecte i sensació de Java</string>
+    <string name="shear">Cisalla</string>
+    <string name="x_angle">angle X</string>
+    <string name="y_angle">I angle</string>
+    <string name="resize">Canvia la mida de la sortida</string>
+    <string name="water_drop">Gota d\'aigua</string>
+    <string name="wavelength">Longitud d\'ona</string>
+    <string name="phase">Fase</string>
+    <string name="high_pass">Pas alt</string>
+    <string name="color_mask">Màscara de color</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Dissoldre</string>
+    <string name="softness">Suavitat</string>
+    <string name="feedback">Feedback</string>
+    <string name="lens_blur">Desenfocament de la lent</string>
+    <string name="low_input">Entrada baixa</string>
+    <string name="high_input">Entrada alta</string>
+    <string name="low_output">Sortida baixa</string>
+    <string name="high_output">Alt rendiment</string>
+    <string name="light_effects">Efectes de llum</string>
+    <string name="bump_height">Alçada de cop</string>
+    <string name="bump_softness">Suavitat de cops</string>
+    <string name="ripple">Onda</string>
+    <string name="x_amplitude">X amplitud</string>
+    <string name="y_amplitude">Amplitud Y</string>
+    <string name="x_wavelength">X longitud d\'ona</string>
+    <string name="y_wavelength">Longitud d\'ona Y</string>
+    <string name="adaptive_blur">Desenfocament adaptatiu</string>
+    <string name="search_keywords_texture_generation">generador de textures metall raspallat càustics cel·lular tauler d\'escacs marbre plasma edredó fusta</string>
+    <string name="texture_generation">Generació de textures</string>
+    <string name="texture_generation_sub">Genereu diverses textures procedimentals i deseu-les com a imatges</string>
+    <string name="texture_type">Tipus de textura</string>
+    <string name="bias">Biaix</string>
+    <string name="time">Temps</string>
+    <string name="shine">Brilla</string>
+    <string name="dispersion">Dispersió</string>
+    <string name="samples">Mostres</string>
+    <string name="angle_coefficient">Coeficient d\'angle</string>
+    <string name="gradient_coefficient">Coeficient de gradient</string>
+    <string name="grid_type">Tipus de quadrícula</string>
+    <string name="distance_power">Potència de distància</string>
+    <string name="scale_y">Escala Y</string>
+    <string name="fuzziness">Borrosa</string>
+    <string name="basis_type">Tipus de base</string>
+    <string name="turbulence_factor">Factor de turbulència</string>
+    <string name="scaling">Escalat</string>
+    <string name="iterations">Iteracions</string>
+    <string name="rings">Anells</string>
+    <string name="texture_brushed_metal">Metall raspallat</string>
+    <string name="texture_caustics">Càustiques</string>
+    <string name="texture_cellular">Cel·lular</string>
+    <string name="texture_checkerboard">Tauler d\'escacs</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marbre</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Edredó</string>
+    <string name="texture_wood">Fusta</string>
+    <string name="grid_random">aleatòria</string>
+    <string name="grid_square">Plaçada</string>
+    <string name="grid_hexagonal">Hexagonal</string>
+    <string name="grid_octagonal">Octagonal</string>
+    <string name="grid_triangular">Triangular</string>
+    <string name="fbm_ridged">Crestada</string>
+    <string name="fbm_vl_noise">VL Soroll</string>
+    <string name="fbm_sc_noise">SC Soroll</string>
+    <string name="recent">Recent</string>
+    <string name="no_recent_filters">Encara no hi ha cap filtre utilitzat recentment</string>
 </resources>

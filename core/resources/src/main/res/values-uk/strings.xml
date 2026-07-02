@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="image_too_large_preview">Зображення завелике для попереднього перегляду, але спроба збереження все одно буде здійснена</string>
     <string name="pick_image">Виберіть зображення для початку</string>
     <string name="resize_type">Тип масштабування</string>
@@ -3291,4 +3292,77 @@
     <string name="notch_shapes_sub">Ступінчасті кути з подвійним зрізом</string>
     <string name="watermark_filename_placeholder">Заповнювач</string>
     <string name="watermark_filename_placeholder_sub">Використовуйте {filename}, щоб вставити вихідну назву файлу без розширення</string>
+    <string name="flare">Відблиск</string>
+    <string name="base_amount">Базова сума</string>
+    <string name="ring_amount">Сума кільця</string>
+    <string name="ray_amount">Сума променя</string>
+    <string name="ring_width">Ширина кільця</string>
+    <string name="distort_perspective">Спотворити перспективу</string>
+    <string name="java_look_and_feel">Вигляд і відчуття Java</string>
+    <string name="shear">Зсув</string>
+    <string name="x_angle">Кут X</string>
+    <string name="y_angle">і кут</string>
+    <string name="resize">Змінити розмір виведення</string>
+    <string name="water_drop">Крапля води</string>
+    <string name="wavelength">Довжина хвилі</string>
+    <string name="phase">Фаза</string>
+    <string name="high_pass">Високий пас</string>
+    <string name="color_mask">Кольорова маска</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Розчинити</string>
+    <string name="softness">М\'якість</string>
+    <string name="feedback">Зворотній зв\'язок</string>
+    <string name="lens_blur">Розмиття</string>
+    <string name="low_input">Низький вхід</string>
+    <string name="high_input">Високий вхід</string>
+    <string name="low_output">Низька продуктивність</string>
+    <string name="high_output">Високий вихід</string>
+    <string name="light_effects">світлові ефекти</string>
+    <string name="bump_height">Висота шишки</string>
+    <string name="bump_softness">М\'якість ударів</string>
+    <string name="ripple">пульсація</string>
+    <string name="x_amplitude">Амплітуда X</string>
+    <string name="y_amplitude">Амплітуда Y</string>
+    <string name="x_wavelength">довжина хвилі X</string>
+    <string name="y_wavelength">Довжина хвилі Y</string>
+    <string name="adaptive_blur">Адаптивне розмиття</string>
+    <string name="search_keywords_texture_generation">генератор текстури шліфований метал каустика стільниковий шашка мармур плазма ковдра деревина</string>
+    <string name="texture_generation">Генерація текстур</string>
+    <string name="texture_generation_sub">Створюйте різноманітні процедурні текстури та зберігайте їх як зображення</string>
+    <string name="texture_type">Тип текстури</string>
+    <string name="bias">Упередженість</string>
+    <string name="time">час</string>
+    <string name="shine">Блиск</string>
+    <string name="dispersion">дисперсія</string>
+    <string name="samples">Зразки</string>
+    <string name="angle_coefficient">Кутовий коефіцієнт</string>
+    <string name="gradient_coefficient">Коефіцієнт градієнта</string>
+    <string name="grid_type">Тип сітки</string>
+    <string name="distance_power">Дистанційна потужність</string>
+    <string name="scale_y">Масштаб Y</string>
+    <string name="fuzziness">нечіткість</string>
+    <string name="basis_type">Тип основи</string>
+    <string name="turbulence_factor">Фактор турбулентності</string>
+    <string name="scaling">Масштабування</string>
+    <string name="iterations">Ітерації</string>
+    <string name="rings">Кільця</string>
+    <string name="texture_brushed_metal">Матовий метал</string>
+    <string name="texture_caustics">їдкі речовини</string>
+    <string name="texture_cellular">Стільниковий</string>
+    <string name="texture_checkerboard">Шахова дошка</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Мармур</string>
+    <string name="texture_plasma">плазма</string>
+    <string name="texture_quilt">Ковдра</string>
+    <string name="texture_wood">Деревина</string>
+    <string name="grid_random">випадковий</string>
+    <string name="grid_square">Квадратний</string>
+    <string name="grid_hexagonal">Шестикутний</string>
+    <string name="grid_octagonal">Восьмикутна</string>
+    <string name="grid_triangular">Трикутний</string>
+    <string name="fbm_ridged">Гребеневий</string>
+    <string name="fbm_vl_noise">В. Л. Шум</string>
+    <string name="fbm_sc_noise">SC Шум</string>
+    <string name="recent">Останні</string>
+    <string name="no_recent_filters">Нещодавно використаних фільтрів ще немає</string>
 </resources>

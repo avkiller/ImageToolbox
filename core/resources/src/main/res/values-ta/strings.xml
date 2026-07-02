@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="pick_image">தொடங்குவதற்கு படத்தைத் தேர்ந்தெடுக்கவும்</string>
     <string name="flexible">நெகிழ்வான</string>
     <string name="stay">இருங்கள்</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">இரட்டை வெட்டு கொண்ட மூலைகள்</string>
     <string name="watermark_filename_placeholder">ப்ளேஸ்ஹோல்டர்</string>
     <string name="watermark_filename_placeholder_sub">அசல் கோப்பு பெயரை நீட்டிப்பு இல்லாமல் செருக {filename} ஐப் பயன்படுத்தவும்</string>
+    <string name="flare">ஃப்ளேர்</string>
+    <string name="base_amount">அடிப்படை தொகை</string>
+    <string name="ray_amount">கதிர் அளவு</string>
+    <string name="ring_width">வளைய அகலம்</string>
+    <string name="distort_perspective">பார்வையை சிதைக்கவும்</string>
+    <string name="java_look_and_feel">ஜாவா லுக் அண்ட் ஃபீல்</string>
+    <string name="shear">வெட்டு</string>
+    <string name="y_angle">மற்றும் கோணம்</string>
+    <string name="resize">வெளியீட்டின் அளவை மாற்றவும்</string>
+    <string name="water_drop">நீர் துளி</string>
+    <string name="wavelength">அலைநீளம்</string>
+    <string name="phase">கட்டம்</string>
+    <string name="high_pass">உயர் பாஸ்</string>
+    <string name="ring_amount">மோதிர அளவு</string>
+    <string name="x_angle">எக்ஸ் கோணம்</string>
+    <string name="color_mask">வண்ண முகமூடி</string>
+    <string name="chrome">குரோம்</string>
+    <string name="dissolve">கரைக்கவும்</string>
+    <string name="softness">மென்மை</string>
+    <string name="feedback">பின்னூட்டம்</string>
+    <string name="lens_blur">லென்ஸ் தெளிவின்மை</string>
+    <string name="low_input">குறைந்த உள்ளீடு</string>
+    <string name="high_input">உயர் உள்ளீடு</string>
+    <string name="low_output">குறைந்த வெளியீடு</string>
+    <string name="high_output">அதிக வெளியீடு</string>
+    <string name="light_effects">ஒளி விளைவுகள்</string>
+    <string name="bump_height">பம்ப் உயரம்</string>
+    <string name="bump_softness">பம்ப் மென்மை</string>
+    <string name="ripple">சிற்றலை</string>
+    <string name="x_amplitude">X வீச்சு</string>
+    <string name="y_amplitude">Y அலைவீச்சு</string>
+    <string name="x_wavelength">X அலைநீளம்</string>
+    <string name="y_wavelength">Y அலைநீளம்</string>
+    <string name="adaptive_blur">அடாப்டிவ் மங்கல்</string>
+    <string name="search_keywords_texture_generation">டெக்ஸ்சர் ஜெனரேட்டர் பிரஷ்டு மெட்டல் காஸ்டிக்ஸ் செல்லுலார் செக்கர்போர்டு மார்பிள் பிளாஸ்மா க்வில்ட் மரம்</string>
+    <string name="texture_generation">அமைப்பு உருவாக்கம்</string>
+    <string name="texture_generation_sub">பல்வேறு செயல்முறை அமைப்புகளை உருவாக்கி அவற்றை படங்களாக சேமிக்கவும்</string>
+    <string name="texture_type">அமைப்பு வகை</string>
+    <string name="bias">சார்பு</string>
+    <string name="time">நேரம்</string>
+    <string name="shine">பிரகாசிக்கவும்</string>
+    <string name="dispersion">சிதறல்</string>
+    <string name="samples">மாதிரிகள்</string>
+    <string name="angle_coefficient">கோண குணகம்</string>
+    <string name="gradient_coefficient">சாய்வு குணகம்</string>
+    <string name="grid_type">கட்டம் வகை</string>
+    <string name="distance_power">தூர சக்தி</string>
+    <string name="scale_y">அளவு Y</string>
+    <string name="fuzziness">தெளிவின்மை</string>
+    <string name="basis_type">அடிப்படை வகை</string>
+    <string name="turbulence_factor">கொந்தளிப்பு காரணி</string>
+    <string name="scaling">அளவிடுதல்</string>
+    <string name="iterations">மறு செய்கைகள்</string>
+    <string name="rings">மோதிரங்கள்</string>
+    <string name="texture_brushed_metal">பிரஷ்டு உலோகம்</string>
+    <string name="texture_caustics">காஸ்டிக்ஸ்</string>
+    <string name="texture_cellular">செல்லுலார்</string>
+    <string name="texture_checkerboard">செக்கர்போர்டு</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">பளிங்கு</string>
+    <string name="texture_plasma">பிளாஸ்மா</string>
+    <string name="texture_quilt">குயில்</string>
+    <string name="texture_wood">மரம்</string>
+    <string name="grid_random">சீரற்ற</string>
+    <string name="grid_square">சதுரம்</string>
+    <string name="grid_hexagonal">அறுகோணமானது</string>
+    <string name="grid_octagonal">எண்கோணமானது</string>
+    <string name="grid_triangular">முக்கோணமானது</string>
+    <string name="fbm_ridged">முகடு</string>
+    <string name="fbm_vl_noise">VL சத்தம்</string>
+    <string name="fbm_sc_noise">எஸ்சி சத்தம்</string>
+    <string name="recent">சமீபத்திய</string>
+    <string name="no_recent_filters">இதுவரை எந்த வடிப்பான்களும் சமீபத்தில் பயன்படுத்தப்படவில்லை</string>
 </resources>

@@ -599,6 +599,28 @@ class FiltersComponent @AssistedInject internal constructor(
         commitHistoryFrom(beforeSnapshot)
     }
 
+    fun duplicateFilterAtIndex(index: Int) {
+        finalizePendingHistoryTransaction()
+        val beforeSnapshot = currentHistorySnapshot()
+        _basicFilterState.update {
+            it.copy(
+                filters = it.filters.toMutableList().apply {
+                    val filter = get(index)
+                    add(
+                        index = index + 1,
+                        element = filter.copy(filter.value).apply {
+                            isVisible = filter.isVisible
+                        }
+                    )
+                }
+            )
+        }
+        updateCanSave()
+        filterJob = null
+        updatePreview()
+        commitHistoryFrom(beforeSnapshot)
+    }
+
     fun canShow(): Boolean = bitmap?.let { imagePreviewCreator.canShow(it) } == true
 
     fun performSharing() {
@@ -616,8 +638,11 @@ class FiltersComponent @AssistedInject internal constructor(
                                 transformations = _basicFilterState.value.filters.map {
                                     filterProvider.filterToTransformation(it)
                                 }
-                            )?.let {
-                                it.image to it.imageInfo
+                            )?.let { imageData ->
+                                imageData.image to imageData.imageInfo.copy(
+                                    imageFormat = imageInfo.imageFormat,
+                                    quality = imageInfo.quality
+                                )
                             }
                         },
                         onProgressChange = {
@@ -900,10 +925,13 @@ class FiltersComponent @AssistedInject internal constructor(
                         transformations = _basicFilterState.value.filters.map {
                             filterProvider.filterToTransformation(it)
                         }
-                    )?.let { (image, imageInfo) ->
+                    )?.let { (image, sourceImageInfo) ->
                         shareProvider.cacheImage(
                             image = image,
-                            imageInfo = imageInfo
+                            imageInfo = sourceImageInfo.copy(
+                                imageFormat = imageInfo.imageFormat,
+                                quality = imageInfo.quality
+                            )
                         )?.let {
                             onComplete(it.toUri())
                         }
@@ -967,10 +995,13 @@ class FiltersComponent @AssistedInject internal constructor(
                             transformations = _basicFilterState.value.filters.map {
                                 filterProvider.filterToTransformation(it)
                             }
-                        )?.let { (image, imageInfo) ->
+                        )?.let { (image, sourceImageInfo) ->
                             shareProvider.cacheImage(
                                 image = image,
-                                imageInfo = imageInfo
+                                imageInfo = sourceImageInfo.copy(
+                                    imageFormat = imageInfo.imageFormat,
+                                    quality = imageInfo.quality
+                                )
                             )?.let {
                                 list.add(it.toUri())
                             }

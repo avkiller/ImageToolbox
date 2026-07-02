@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="smth_went_wrong">問題が発生しました: %1$s</string>
     <string name="check_source_code_sub">最新のアップデートを入手し、問題を議論するなど</string>
     <string name="color_red">赤</string>
@@ -3288,4 +3289,77 @@
     <string name="notch_shapes_sub">ダブルカットの段付きコーナー</string>
     <string name="watermark_filename_placeholder">プレースホルダー</string>
     <string name="watermark_filename_placeholder_sub">拡張子なしの元のファイル名を挿入するには、{filename} を使用します</string>
+    <string name="flare">フレア</string>
+    <string name="base_amount">基本額</string>
+    <string name="ring_amount">リング金額</string>
+    <string name="ray_amount">光線量</string>
+    <string name="ring_width">リング幅</string>
+    <string name="distort_perspective">遠近感を歪める</string>
+    <string name="java_look_and_feel">Java のルック アンド フィール</string>
+    <string name="shear">剪断</string>
+    <string name="x_angle">X角度</string>
+    <string name="y_angle">と角度</string>
+    <string name="resize">出力のサイズを変更する</string>
+    <string name="water_drop">ウォータードロップ</string>
+    <string name="wavelength">波長</string>
+    <string name="phase">段階</string>
+    <string name="high_pass">ハイパス</string>
+    <string name="color_mask">カラーマスク</string>
+    <string name="chrome">クロム</string>
+    <string name="dissolve">溶解する</string>
+    <string name="softness">柔らかさ</string>
+    <string name="feedback">フィードバック</string>
+    <string name="lens_blur">レンズのぼやけ</string>
+    <string name="low_input">低入力</string>
+    <string name="high_input">高入力</string>
+    <string name="low_output">低出力</string>
+    <string name="high_output">高出力</string>
+    <string name="light_effects">光の効果</string>
+    <string name="bump_height">バンプ高さ</string>
+    <string name="bump_softness">バンプの柔らかさ</string>
+    <string name="ripple">リップル</string>
+    <string name="x_amplitude">X振幅</string>
+    <string name="y_amplitude">Y振幅</string>
+    <string name="x_wavelength">X波長</string>
+    <string name="y_wavelength">Y波長</string>
+    <string name="adaptive_blur">適応ブラー</string>
+    <string name="search_keywords_texture_generation">テクスチャジェネレーター ブラッシュメタルコースティクス 携帯チェッカーボード 大理石 プラズマキルト 木材</string>
+    <string name="texture_generation">テクスチャの生成</string>
+    <string name="texture_generation_sub">さまざまなプロシージャル テクスチャを生成し、画像として保存します</string>
+    <string name="texture_type">テクスチャの種類</string>
+    <string name="bias">バイアス</string>
+    <string name="time">時間</string>
+    <string name="shine">輝く</string>
+    <string name="dispersion">分散</string>
+    <string name="samples">サンプル</string>
+    <string name="angle_coefficient">角度係数</string>
+    <string name="gradient_coefficient">勾配係数</string>
+    <string name="grid_type">グリッドタイプ</string>
+    <string name="distance_power">長距離パワー</string>
+    <string name="scale_y">スケールY</string>
+    <string name="fuzziness">曖昧さ</string>
+    <string name="basis_type">基準タイプ</string>
+    <string name="turbulence_factor">乱流係数</string>
+    <string name="scaling">スケーリング</string>
+    <string name="iterations">反復</string>
+    <string name="rings">指輪</string>
+    <string name="texture_brushed_metal">つや消しメタル</string>
+    <string name="texture_caustics">コースティクス</string>
+    <string name="texture_cellular">携帯電話</string>
+    <string name="texture_checkerboard">チェッカーボード</string>
+    <string name="texture_fbm">FBm</string>
+    <string name="texture_marble">大理石</string>
+    <string name="texture_plasma">プラズマ</string>
+    <string name="texture_quilt">キルト</string>
+    <string name="texture_wood">木材</string>
+    <string name="grid_random">ランダム</string>
+    <string name="grid_square">四角</string>
+    <string name="grid_hexagonal">六角</string>
+    <string name="grid_octagonal">八角形</string>
+    <string name="grid_triangular">三角</string>
+    <string name="fbm_ridged">うねのある</string>
+    <string name="fbm_vl_noise">VLノイズ</string>
+    <string name="fbm_sc_noise">SCノイズ</string>
+    <string name="recent">最近の</string>
+    <string name="no_recent_filters">最近使用したフィルタはまだありません</string>
 </resources>

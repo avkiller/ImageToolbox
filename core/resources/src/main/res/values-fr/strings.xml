@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="smth_went_wrong">Quelque chose s\'est mal passé: %1$s</string>
     <string name="size">Dimension %1$s</string>
     <string name="loading">Chargement…</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Coins étagés avec une double coupe</string>
     <string name="watermark_filename_placeholder">Espace réservé</string>
     <string name="watermark_filename_placeholder_sub">Utilisez {filename} pour insérer le nom de fichier d\'origine sans extension</string>
+    <string name="flare">Éclater</string>
+    <string name="base_amount">Montant de base</string>
+    <string name="ring_amount">Montant de la bague</string>
+    <string name="ray_amount">Quantité de rayons</string>
+    <string name="ring_width">Largeur de l\'anneau</string>
+    <string name="distort_perspective">Perspective de distorsion</string>
+    <string name="java_look_and_feel">Apparence et convivialité Java</string>
+    <string name="shear">Tondre</string>
+    <string name="x_angle">Angle X</string>
+    <string name="y_angle">et angle</string>
+    <string name="resize">Redimensionner la sortie</string>
+    <string name="water_drop">Goutte d\'eau</string>
+    <string name="wavelength">Longueur d\'onde</string>
+    <string name="phase">Phase</string>
+    <string name="high_pass">Passe-haut</string>
+    <string name="color_mask">Masque de couleur</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Dissoudre</string>
+    <string name="softness">Douceur</string>
+    <string name="feedback">Retour</string>
+    <string name="lens_blur">Flou de l\'objectif</string>
+    <string name="low_input">Faible entrée</string>
+    <string name="high_input">Entrée élevée</string>
+    <string name="low_output">Faible rendement</string>
+    <string name="high_output">Haut rendement</string>
+    <string name="light_effects">Effets de lumière</string>
+    <string name="bump_height">Hauteur de bosse</string>
+    <string name="bump_softness">Douceur des chocs</string>
+    <string name="ripple">Ondulation</string>
+    <string name="x_amplitude">Amplitude X</string>
+    <string name="y_amplitude">Amplitude Y</string>
+    <string name="x_wavelength">Longueur d\'onde X</string>
+    <string name="y_wavelength">Longueur d\'onde Y</string>
+    <string name="adaptive_blur">Flou adaptatif</string>
+    <string name="search_keywords_texture_generation">générateur de texture métal brossé caustiques cellulaire damier marbre plasma courtepointe bois</string>
+    <string name="texture_generation">Génération de textures</string>
+    <string name="texture_generation_sub">Générez diverses textures procédurales et enregistrez-les sous forme d\'images</string>
+    <string name="texture_type">Type de texture</string>
+    <string name="bias">Biais</string>
+    <string name="time">Temps</string>
+    <string name="shine">Briller</string>
+    <string name="dispersion">Dispersion</string>
+    <string name="samples">Échantillons</string>
+    <string name="angle_coefficient">Coefficient d\'angle</string>
+    <string name="gradient_coefficient">Coefficient de gradient</string>
+    <string name="grid_type">Type de grille</string>
+    <string name="distance_power">Puissance à distance</string>
+    <string name="scale_y">Échelle Y</string>
+    <string name="fuzziness">Flou</string>
+    <string name="basis_type">Type de base</string>
+    <string name="turbulence_factor">Facteur de turbulence</string>
+    <string name="scaling">Mise à l\'échelle</string>
+    <string name="iterations">Itérations</string>
+    <string name="rings">Anneaux</string>
+    <string name="texture_brushed_metal">Métal brossé</string>
+    <string name="texture_caustics">Caustiques</string>
+    <string name="texture_cellular">Cellulaire</string>
+    <string name="texture_checkerboard">Damier</string>
+    <string name="texture_fbm">fBM</string>
+    <string name="texture_marble">Marbre</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Édredon</string>
+    <string name="texture_wood">Bois</string>
+    <string name="grid_random">aléatoire</string>
+    <string name="grid_square">Carré</string>
+    <string name="grid_hexagonal">Hexagonal</string>
+    <string name="grid_octagonal">Octogonal</string>
+    <string name="grid_triangular">Triangulaire</string>
+    <string name="fbm_ridged">Strié</string>
+    <string name="fbm_vl_noise">Bruit VL</string>
+    <string name="fbm_sc_noise">Bruit SC</string>
+    <string name="recent">Récent</string>
+    <string name="no_recent_filters">Aucun filtre récemment utilisé pour l\'instant</string>
 </resources>

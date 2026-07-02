@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="size">Laki %1$s</string>
     <string name="loading">Ikinakarga…</string>
     <string name="pick_image">Pumili ng larawan para magsimula</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Mga stepped corner na may double cut</string>
     <string name="watermark_filename_placeholder">Placeholder</string>
     <string name="watermark_filename_placeholder_sub">Gamitin ang {filename} upang ipasok ang orihinal na filename nang walang extension</string>
+    <string name="flare">Sumiklab</string>
+    <string name="base_amount">Base na halaga</string>
+    <string name="ring_amount">halaga ng singsing</string>
+    <string name="ray_amount">Ang dami ni Ray</string>
+    <string name="ring_width">Lapad ng singsing</string>
+    <string name="distort_perspective">Baluktutin ang Pananaw</string>
+    <string name="java_look_and_feel">Java Look at Feel</string>
+    <string name="shear">Gupitin</string>
+    <string name="x_angle">X anggulo</string>
+    <string name="y_angle">at anggulo</string>
+    <string name="resize">Baguhin ang laki ng output</string>
+    <string name="water_drop">Patak ng Tubig</string>
+    <string name="wavelength">Haba ng daluyong</string>
+    <string name="phase">Phase</string>
+    <string name="high_pass">Mataas na Pass</string>
+    <string name="color_mask">Kulay Mask</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Matunaw</string>
+    <string name="softness">Kalambutan</string>
+    <string name="feedback">Feedback</string>
+    <string name="lens_blur">Malabo ang Lens</string>
+    <string name="low_input">Mababang input</string>
+    <string name="high_input">Mataas na input</string>
+    <string name="low_output">Mababang output</string>
+    <string name="high_output">Mataas na output</string>
+    <string name="light_effects">Mga Light Effect</string>
+    <string name="bump_height">Taas ng bump</string>
+    <string name="bump_softness">Bump lambot</string>
+    <string name="ripple">Ripple</string>
+    <string name="x_amplitude">X amplitude</string>
+    <string name="y_amplitude">Y amplitude</string>
+    <string name="x_wavelength">X wavelength</string>
+    <string name="y_wavelength">Y wavelength</string>
+    <string name="adaptive_blur">Adaptive Blur</string>
+    <string name="search_keywords_texture_generation">texture generator brushed metal caustics cellular checkerboard marble plasma quilt wood</string>
+    <string name="texture_generation">Pagbuo ng Texture</string>
+    <string name="texture_generation_sub">Bumuo ng iba\'t ibang mga texture ng pamamaraan at i-save ang mga ito bilang mga imahe</string>
+    <string name="texture_type">Uri ng Texture</string>
+    <string name="bias">Bias</string>
+    <string name="time">Oras</string>
+    <string name="shine">Shine</string>
+    <string name="dispersion">Pagpapakalat</string>
+    <string name="samples">Mga sample</string>
+    <string name="angle_coefficient">Koepisyent ng anggulo</string>
+    <string name="gradient_coefficient">Koepisyent ng gradient</string>
+    <string name="grid_type">Uri ng grid</string>
+    <string name="distance_power">Kapangyarihan ng distansya</string>
+    <string name="scale_y">Scale Y</string>
+    <string name="fuzziness">Pagkalabo</string>
+    <string name="basis_type">Uri ng batayan</string>
+    <string name="turbulence_factor">Salik ng kaguluhan</string>
+    <string name="scaling">Pagsusukat</string>
+    <string name="iterations">Mga pag-ulit</string>
+    <string name="rings">Mga singsing</string>
+    <string name="texture_brushed_metal">Brushed Metal</string>
+    <string name="texture_caustics">Caustics</string>
+    <string name="texture_cellular">Cellular</string>
+    <string name="texture_checkerboard">Checkerboard</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmol</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">kubrekama</string>
+    <string name="texture_wood">Kahoy</string>
+    <string name="grid_random">random</string>
+    <string name="grid_square">Square</string>
+    <string name="grid_hexagonal">Heksagonal</string>
+    <string name="grid_octagonal">May walong sulok</string>
+    <string name="grid_triangular">tatsulok</string>
+    <string name="fbm_ridged">Ridged</string>
+    <string name="fbm_vl_noise">Ingay ng VL</string>
+    <string name="fbm_sc_noise">SC Ingay</string>
+    <string name="recent">Kamakailan</string>
+    <string name="no_recent_filters">Wala pang kamakailang ginamit na mga filter</string>
 </resources>

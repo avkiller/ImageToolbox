@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="flexible">Fleksibel</string>
     <string name="ok">OK</string>
     <string name="crop">Beskær</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Aftrappede hjørner med dobbelt snit</string>
     <string name="watermark_filename_placeholder">Pladsholder</string>
     <string name="watermark_filename_placeholder_sub">Brug {filnavn} til at indsætte det originale filnavn uden filtypenavn</string>
+    <string name="flare">Flare</string>
+    <string name="base_amount">Grundbeløb</string>
+    <string name="ring_amount">Ring beløb</string>
+    <string name="ray_amount">Ray mængde</string>
+    <string name="ring_width">Ringbredde</string>
+    <string name="distort_perspective">Forvrænget perspektiv</string>
+    <string name="java_look_and_feel">Java Look and Feel</string>
+    <string name="shear">Klippe</string>
+    <string name="x_angle">X vinkel</string>
+    <string name="y_angle">og vinkel</string>
+    <string name="resize">Ændr størrelse på output</string>
+    <string name="water_drop">Vanddråbe</string>
+    <string name="wavelength">Bølgelængde</string>
+    <string name="phase">Fase</string>
+    <string name="high_pass">Højpas</string>
+    <string name="color_mask">Farve maske</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Opløse</string>
+    <string name="softness">Blødhed</string>
+    <string name="feedback">Feedback</string>
+    <string name="lens_blur">Linse sløring</string>
+    <string name="low_input">Lav input</string>
+    <string name="high_input">Høj input</string>
+    <string name="low_output">Lavt output</string>
+    <string name="high_output">Høj output</string>
+    <string name="light_effects">Lyseffekter</string>
+    <string name="bump_height">Bump højde</string>
+    <string name="bump_softness">Bump blødhed</string>
+    <string name="ripple">Ripple</string>
+    <string name="x_amplitude">X amplitude</string>
+    <string name="y_amplitude">Y amplitude</string>
+    <string name="x_wavelength">X bølgelængde</string>
+    <string name="y_wavelength">Y bølgelængde</string>
+    <string name="adaptive_blur">Adaptiv sløring</string>
+    <string name="search_keywords_texture_generation">tekstur generator børstet metal kaustics cellulært skakternet marmor plasma quilt træ</string>
+    <string name="texture_generation">Teksturgenerering</string>
+    <string name="texture_generation_sub">Generer forskellige proceduremæssige teksturer og gem dem som billeder</string>
+    <string name="texture_type">Tekstur type</string>
+    <string name="bias">Bias</string>
+    <string name="time">Tid</string>
+    <string name="shine">Skinne</string>
+    <string name="dispersion">Spredning</string>
+    <string name="samples">Prøver</string>
+    <string name="angle_coefficient">Vinkelkoefficient</string>
+    <string name="gradient_coefficient">Gradientkoefficient</string>
+    <string name="grid_type">Grid type</string>
+    <string name="distance_power">Afstandskraft</string>
+    <string name="scale_y">Skala Y</string>
+    <string name="fuzziness">Uklarhed</string>
+    <string name="basis_type">Basistype</string>
+    <string name="turbulence_factor">Turbulensfaktor</string>
+    <string name="scaling">Skalering</string>
+    <string name="iterations">Gentagelser</string>
+    <string name="rings">Ringe</string>
+    <string name="texture_brushed_metal">Børstet metal</string>
+    <string name="texture_caustics">Ætsende</string>
+    <string name="texture_cellular">Cellulær</string>
+    <string name="texture_checkerboard">Skaktern</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Marmor</string>
+    <string name="texture_plasma">Plasma</string>
+    <string name="texture_quilt">Dyne</string>
+    <string name="texture_wood">Træ</string>
+    <string name="grid_random">tilfældig</string>
+    <string name="grid_square">Firkant</string>
+    <string name="grid_hexagonal">Sekskantet</string>
+    <string name="grid_octagonal">Ottekantet</string>
+    <string name="grid_triangular">Trekantet</string>
+    <string name="fbm_ridged">Rammet</string>
+    <string name="fbm_vl_noise">VL Støj</string>
+    <string name="fbm_sc_noise">SC Støj</string>
+    <string name="recent">Nylig</string>
+    <string name="no_recent_filters">Ingen nyligt brugte filtre endnu</string>
 </resources>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="loading">লোড হচ্ছে…</string>
     <string name="image_too_large_preview">ছবিটি প্রিভিউ করার জন্য খুব বড়, তবে সেভ করার চেষ্টা করা হবে।</string>
     <string name="pick_image">শুরু করার জন্য ছবি বেছে নিন</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">একটি ডবল কাটা সঙ্গে ধাপ কোণ</string>
     <string name="watermark_filename_placeholder">স্থানধারক</string>
     <string name="watermark_filename_placeholder_sub">এক্সটেনশন ছাড়াই আসল ফাইলের নাম সন্নিবেশ করতে {filename} ব্যবহার করুন</string>
+    <string name="flare">ফ্লেয়ার</string>
+    <string name="base_amount">ভিত্তি পরিমাণ</string>
+    <string name="ring_width">রিং প্রস্থ</string>
+    <string name="shear">শিয়ার</string>
+    <string name="y_angle">এবং কোণ</string>
+    <string name="water_drop">জলের ফোঁটা</string>
+    <string name="wavelength">তরঙ্গদৈর্ঘ্য</string>
+    <string name="phase">পর্যায়</string>
+    <string name="high_pass">হাই পাস</string>
+    <string name="ring_amount">রিং পরিমাণ</string>
+    <string name="ray_amount">রে পরিমাণ</string>
+    <string name="distort_perspective">দৃষ্টিকোণ বিকৃত করুন</string>
+    <string name="java_look_and_feel">জাভা লুক অ্যান্ড ফিল</string>
+    <string name="x_angle">X কোণ</string>
+    <string name="resize">আউটপুটের আকার পরিবর্তন করুন</string>
+    <string name="color_mask">কালার মাস্ক</string>
+    <string name="chrome">ক্রোম</string>
+    <string name="dissolve">দ্রবীভূত করা</string>
+    <string name="softness">কোমলতা</string>
+    <string name="feedback">প্রতিক্রিয়া</string>
+    <string name="lens_blur">লেন্স ব্লার</string>
+    <string name="low_input">কম ইনপুট</string>
+    <string name="high_input">উচ্চ ইনপুট</string>
+    <string name="low_output">কম আউটপুট</string>
+    <string name="high_output">উচ্চ আউটপুট</string>
+    <string name="light_effects">হালকা প্রভাব</string>
+    <string name="bump_height">বাম্প উচ্চতা</string>
+    <string name="bump_softness">বাম্প স্নিগ্ধতা</string>
+    <string name="ripple">লহর</string>
+    <string name="x_amplitude">এক্স প্রশস্ততা</string>
+    <string name="y_amplitude">Y প্রশস্ততা</string>
+    <string name="x_wavelength">X তরঙ্গদৈর্ঘ্য</string>
+    <string name="y_wavelength">Y তরঙ্গদৈর্ঘ্য</string>
+    <string name="adaptive_blur">অভিযোজিত ঝাপসা</string>
+    <string name="search_keywords_texture_generation">টেক্সচার জেনারেটর ব্রাশ করা ধাতব কস্টিক সেলুলার চেকারবোর্ড মার্বেল প্লাজমা কুইল্ট কাঠ</string>
+    <string name="texture_generation">টেক্সচার জেনারেশন</string>
+    <string name="texture_generation_sub">বিভিন্ন পদ্ধতিগত টেক্সচার তৈরি করুন এবং ছবি হিসাবে সেভ করুন</string>
+    <string name="texture_type">টেক্সচার টাইপ</string>
+    <string name="bias">পক্ষপাত</string>
+    <string name="time">সময়</string>
+    <string name="shine">চকচকে</string>
+    <string name="dispersion">বিচ্ছুরণ</string>
+    <string name="samples">নমুনা</string>
+    <string name="angle_coefficient">কোণ সহগ</string>
+    <string name="gradient_coefficient">গ্রেডিয়েন্ট সহগ</string>
+    <string name="grid_type">গ্রিডের ধরন</string>
+    <string name="distance_power">দূরত্ব শক্তি</string>
+    <string name="scale_y">স্কেল Y</string>
+    <string name="fuzziness">অস্পষ্টতা</string>
+    <string name="basis_type">ভিত্তি প্রকার</string>
+    <string name="turbulence_factor">টার্বুলেন্স ফ্যাক্টর</string>
+    <string name="scaling">স্কেলিং</string>
+    <string name="iterations">পুনরাবৃত্তি</string>
+    <string name="rings">রিং</string>
+    <string name="texture_brushed_metal">ব্রাশড মেটাল</string>
+    <string name="texture_caustics">কস্টিকস</string>
+    <string name="texture_cellular">সেলুলার</string>
+    <string name="texture_checkerboard">চেকারবোর্ড</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">মার্বেল</string>
+    <string name="texture_plasma">প্লাজমা</string>
+    <string name="texture_quilt">কোল্ট</string>
+    <string name="texture_wood">কাঠ</string>
+    <string name="grid_random">এলোমেলো</string>
+    <string name="grid_square">বর্গক্ষেত্র</string>
+    <string name="grid_hexagonal">ষড়ভুজ</string>
+    <string name="grid_octagonal">অষ্টভুজাকার</string>
+    <string name="grid_triangular">ত্রিভুজাকার</string>
+    <string name="fbm_ridged">রিজড</string>
+    <string name="fbm_vl_noise">ভিএল নয়েজ</string>
+    <string name="fbm_sc_noise">এসসি গোলমাল</string>
+    <string name="recent">সাম্প্রতিক</string>
+    <string name="no_recent_filters">কোনো সম্প্রতি ব্যবহৃত ফিল্টার এখনো</string>
 </resources>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources>
+  -->
+
+<resources>
     <string name="zoom">Priblíženie obrázka</string>
     <string name="smth_went_wrong">Niečo sa pokazilo: %1$s</string>
     <string name="size">Veľkosť %1$s</string>
@@ -3291,4 +3292,77 @@
     <string name="notch_shapes_sub">Stupňovité rohy s dvojitým rezom</string>
     <string name="watermark_filename_placeholder">Zástupný symbol</string>
     <string name="watermark_filename_placeholder_sub">Použite {filename} na vloženie pôvodného súboru bez prípony</string>
+    <string name="flare">Vzplanutie</string>
+    <string name="base_amount">Základná suma</string>
+    <string name="ring_amount">Množstvo prsteňa</string>
+    <string name="ray_amount">Množstvo lúča</string>
+    <string name="ring_width">Šírka prsteňa</string>
+    <string name="distort_perspective">Skreslená perspektíva</string>
+    <string name="java_look_and_feel">Vzhľad a dojem Java</string>
+    <string name="shear">Strih</string>
+    <string name="x_angle">X uhol</string>
+    <string name="y_angle">a uhol</string>
+    <string name="resize">Zmeňte veľkosť výstupu</string>
+    <string name="water_drop">Kvapka vody</string>
+    <string name="wavelength">Vlnová dĺžka</string>
+    <string name="phase">Fáza</string>
+    <string name="high_pass">Vysoký priesmyk</string>
+    <string name="color_mask">Farebná maska</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Rozpustiť</string>
+    <string name="softness">Mäkkosť</string>
+    <string name="feedback">Spätná väzba</string>
+    <string name="lens_blur">Rozostrenie objektívu</string>
+    <string name="low_input">Nízky vstup</string>
+    <string name="high_input">Vysoký vstup</string>
+    <string name="low_output">Nízky výkon</string>
+    <string name="high_output">Vysoký výkon</string>
+    <string name="light_effects">Svetelné efekty</string>
+    <string name="bump_height">Výška nárazu</string>
+    <string name="bump_softness">Nárazová mäkkosť</string>
+    <string name="ripple">Zvlnenie</string>
+    <string name="x_amplitude">X amplitúda</string>
+    <string name="y_amplitude">Y amplitúda</string>
+    <string name="x_wavelength">X vlnová dĺžka</string>
+    <string name="y_wavelength">Y vlnová dĺžka</string>
+    <string name="adaptive_blur">Adaptívne rozostrenie</string>
+    <string name="search_keywords_texture_generation">generátor textúr kartáčovaný kov žieraviny bunková šachovnica mramorová plazmová deka drevo</string>
+    <string name="texture_generation">Generovanie textúry</string>
+    <string name="texture_generation_sub">Vytvorte rôzne procedurálne textúry a uložte ich ako obrázky</string>
+    <string name="texture_type">Typ textúry</string>
+    <string name="bias">Zaujatosť</string>
+    <string name="time">Čas</string>
+    <string name="shine">Lesknite sa</string>
+    <string name="dispersion">Disperzia</string>
+    <string name="samples">Vzorky</string>
+    <string name="angle_coefficient">Koeficient uhla</string>
+    <string name="gradient_coefficient">Gradientový koeficient</string>
+    <string name="grid_type">Typ mriežky</string>
+    <string name="distance_power">Výkon na diaľku</string>
+    <string name="scale_y">Mierka Y</string>
+    <string name="fuzziness">Fuzziness</string>
+    <string name="basis_type">Typ základu</string>
+    <string name="turbulence_factor">Faktor turbulencie</string>
+    <string name="scaling">Škálovanie</string>
+    <string name="iterations">Iterácie</string>
+    <string name="rings">Prstene</string>
+    <string name="texture_brushed_metal">Brúsený kov</string>
+    <string name="texture_caustics">Žieraviny</string>
+    <string name="texture_cellular">Bunkový</string>
+    <string name="texture_checkerboard">Šachovnica</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">Mramor</string>
+    <string name="texture_plasma">Plazma</string>
+    <string name="texture_quilt">Prikrývka</string>
+    <string name="texture_wood">Drevo</string>
+    <string name="grid_random">náhodný</string>
+    <string name="grid_square">Štvorcový</string>
+    <string name="grid_hexagonal">Šesťhranné</string>
+    <string name="grid_octagonal">Osemhranné</string>
+    <string name="grid_triangular">Trojuholníkový</string>
+    <string name="fbm_ridged">Ridged</string>
+    <string name="fbm_vl_noise">Hluk VL</string>
+    <string name="fbm_sc_noise">SC Hluk</string>
+    <string name="recent">Nedávne</string>
+    <string name="no_recent_filters">Zatiaľ žiadne nedávno použité filtre</string>
 </resources>

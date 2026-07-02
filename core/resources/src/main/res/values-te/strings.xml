@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="size">పరిమాణం %1$s</string>
     <string name="app_closing">యాప్‌ను మూసివేస్తోంది</string>
     <string name="pick_image_alt">చిత్రాన్ని ఎంచుకోండి</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">డబుల్ కట్‌తో స్టెప్డ్ మూలలు</string>
     <string name="watermark_filename_placeholder">ప్లేస్‌హోల్డర్</string>
     <string name="watermark_filename_placeholder_sub">పొడిగింపు లేకుండా అసలు ఫైల్ పేరుని చొప్పించడానికి {filename}ని ఉపయోగించండి</string>
+    <string name="flare">మంట</string>
+    <string name="base_amount">బేస్ మొత్తం</string>
+    <string name="ring_amount">రింగ్ మొత్తం</string>
+    <string name="ray_amount">రే మొత్తం</string>
+    <string name="ring_width">రింగ్ వెడల్పు</string>
+    <string name="distort_perspective">దృక్కోణాన్ని వక్రీకరించండి</string>
+    <string name="java_look_and_feel">జావా లుక్ అండ్ ఫీల్</string>
+    <string name="shear">కోత</string>
+    <string name="x_angle">X కోణం</string>
+    <string name="y_angle">మరియు కోణం</string>
+    <string name="resize">అవుట్‌పుట్ పరిమాణాన్ని మార్చండి</string>
+    <string name="water_drop">నీటి చుక్క</string>
+    <string name="wavelength">తరంగదైర్ఘ్యం</string>
+    <string name="phase">దశ</string>
+    <string name="high_pass">హై పాస్</string>
+    <string name="color_mask">రంగు ముసుగు</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">కరిగించండి</string>
+    <string name="softness">మృదుత్వం</string>
+    <string name="feedback">అభిప్రాయం</string>
+    <string name="lens_blur">లెన్స్ బ్లర్</string>
+    <string name="low_input">తక్కువ ఇన్‌పుట్</string>
+    <string name="high_input">అధిక ఇన్పుట్</string>
+    <string name="low_output">తక్కువ అవుట్‌పుట్</string>
+    <string name="high_output">అధిక అవుట్‌పుట్</string>
+    <string name="light_effects">కాంతి ప్రభావాలు</string>
+    <string name="bump_height">బంప్ ఎత్తు</string>
+    <string name="bump_softness">బంప్ మృదుత్వం</string>
+    <string name="ripple">అలలు</string>
+    <string name="x_amplitude">X వ్యాప్తి</string>
+    <string name="y_amplitude">Y వ్యాప్తి</string>
+    <string name="x_wavelength">X తరంగదైర్ఘ్యం</string>
+    <string name="y_wavelength">Y తరంగదైర్ఘ్యం</string>
+    <string name="adaptive_blur">అడాప్టివ్ బ్లర్</string>
+    <string name="search_keywords_texture_generation">ఆకృతి జనరేటర్ బ్రష్డ్ మెటల్ కాస్టిక్స్ సెల్యులార్ చెకర్‌బోర్డ్ మార్బుల్ ప్లాస్మా మెత్తని చెక్క</string>
+    <string name="texture_generation">ఆకృతి జనరేషన్</string>
+    <string name="texture_generation_sub">వివిధ విధానపరమైన అల్లికలను రూపొందించండి మరియు వాటిని చిత్రాలుగా సేవ్ చేయండి</string>
+    <string name="texture_type">ఆకృతి రకం</string>
+    <string name="bias">పక్షపాతం</string>
+    <string name="time">సమయం</string>
+    <string name="shine">ప్రకాశించు</string>
+    <string name="dispersion">చెదరగొట్టడం</string>
+    <string name="samples">నమూనాలు</string>
+    <string name="angle_coefficient">కోణ గుణకం</string>
+    <string name="gradient_coefficient">గ్రేడియంట్ కోఎఫీషియంట్</string>
+    <string name="grid_type">గ్రిడ్ రకం</string>
+    <string name="distance_power">దూర శక్తి</string>
+    <string name="scale_y">స్కేల్ Y</string>
+    <string name="fuzziness">అస్పష్టత</string>
+    <string name="basis_type">ఆధార రకం</string>
+    <string name="turbulence_factor">టర్బులెన్స్ ఫ్యాక్టర్</string>
+    <string name="scaling">స్కేలింగ్</string>
+    <string name="iterations">పునరావృత్తులు</string>
+    <string name="rings">రింగ్స్</string>
+    <string name="texture_brushed_metal">బ్రష్డ్ మెటల్</string>
+    <string name="texture_caustics">కాస్టిక్స్</string>
+    <string name="texture_cellular">సెల్యులార్</string>
+    <string name="texture_checkerboard">చెక్కర్‌బోర్డ్</string>
+    <string name="texture_fbm">fBm</string>
+    <string name="texture_marble">మార్బుల్</string>
+    <string name="texture_plasma">ప్లాస్మా</string>
+    <string name="texture_quilt">మెత్తని బొంత</string>
+    <string name="texture_wood">చెక్క</string>
+    <string name="grid_random">యాదృచ్ఛికంగా</string>
+    <string name="grid_square">చతురస్రం</string>
+    <string name="grid_hexagonal">షట్కోణాకారం</string>
+    <string name="grid_octagonal">అష్టభుజి</string>
+    <string name="grid_triangular">త్రిభుజాకారం</string>
+    <string name="fbm_ridged">రిడ్జ్డ్</string>
+    <string name="fbm_vl_noise">VL శబ్దం</string>
+    <string name="fbm_sc_noise">SC శబ్దం</string>
+    <string name="recent">ఇటీవలి</string>
+    <string name="no_recent_filters">ఇంకా ఇటీవల ఉపయోగించిన ఫిల్టర్‌లు లేవు</string>
 </resources>

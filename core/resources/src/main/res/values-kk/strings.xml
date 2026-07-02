@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ ImageToolbox is an image editor for android
   ~ Copyright (c) 2026 T8RIN (Malik Mukhametzyanov)
   ~
@@ -14,7 +13,9 @@
   ~
   ~ You should have received a copy of the Apache License
   ~ along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
-  --><resources xmlns:tools="http://schemas.android.com/tools">
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="updates">Жаңартулар</string>
     <string name="palette">Палитра</string>
     <string name="image_not_saved_sub">Қазір шықсаңыз, барлық сақталмаған өңдеме жоғалады</string>
@@ -3289,4 +3290,77 @@
     <string name="notch_shapes_sub">Қосарланған кесілген бұрыштар</string>
     <string name="watermark_filename_placeholder">Толтырғыш</string>
     <string name="watermark_filename_placeholder_sub">Түпнұсқа файл атауын кеңейтусіз енгізу үшін {filename} пайдаланыңыз</string>
+    <string name="flare">Алау</string>
+    <string name="base_amount">Негізгі сома</string>
+    <string name="ring_amount">Қоңырау сомасы</string>
+    <string name="ray_amount">Сәуле мөлшері</string>
+    <string name="ring_width">Сақина ені</string>
+    <string name="distort_perspective">Перспективаны бұрмалау</string>
+    <string name="java_look_and_feel">Java көрінісі мен сезімі</string>
+    <string name="shear">Қырқу</string>
+    <string name="x_angle">X бұрышы</string>
+    <string name="y_angle">және бұрыш</string>
+    <string name="resize">Шығарылым өлшемін өзгерту</string>
+    <string name="water_drop">Су тамшысы</string>
+    <string name="wavelength">Толқын ұзындығы</string>
+    <string name="phase">Кезең</string>
+    <string name="high_pass">Жоғары асу</string>
+    <string name="color_mask">Түс маскасы</string>
+    <string name="chrome">Chrome</string>
+    <string name="dissolve">Ерітіңіз</string>
+    <string name="softness">Жұмсақтық</string>
+    <string name="feedback">Кері байланыс</string>
+    <string name="lens_blur">Lens Blur</string>
+    <string name="low_input">Төмен кіріс</string>
+    <string name="high_input">Жоғары кіріс</string>
+    <string name="low_output">Төмен шығыс</string>
+    <string name="high_output">Жоғары өнімділік</string>
+    <string name="light_effects">Жарық әсерлері</string>
+    <string name="bump_height">Төбенің биіктігі</string>
+    <string name="bump_softness">Соққы жұмсақтығы</string>
+    <string name="ripple">Ripple</string>
+    <string name="x_amplitude">X амплитудасы</string>
+    <string name="y_amplitude">Y амплитудасы</string>
+    <string name="x_wavelength">X толқын ұзындығы</string>
+    <string name="y_wavelength">Y толқын ұзындығы</string>
+    <string name="adaptive_blur">Бейімделетін бұлыңғыр</string>
+    <string name="search_keywords_texture_generation">текстура генераторы щеткалы металл каустика ұялы шахмат мәрмәр плазмалық көрпе ағаш</string>
+    <string name="texture_generation">Текстура генерациясы</string>
+    <string name="texture_generation_sub">Әртүрлі процедуралық текстураларды жасаңыз және оларды кескін ретінде сақтаңыз</string>
+    <string name="texture_type">Текстура түрі</string>
+    <string name="bias">Біржақтылық</string>
+    <string name="time">Уақыт</string>
+    <string name="shine">Жылтыр</string>
+    <string name="dispersion">Дисперсия</string>
+    <string name="samples">Үлгілер</string>
+    <string name="angle_coefficient">Бұрыш коэффициенті</string>
+    <string name="gradient_coefficient">Градиент коэффициенті</string>
+    <string name="grid_type">Тор түрі</string>
+    <string name="distance_power">Қашықтық қуаты</string>
+    <string name="scale_y">Y шкаласы</string>
+    <string name="fuzziness">Бұлыңғырлық</string>
+    <string name="basis_type">Базалық түрі</string>
+    <string name="turbulence_factor">Турбуленттілік факторы</string>
+    <string name="scaling">Масштабтау</string>
+    <string name="iterations">Итерациялар</string>
+    <string name="rings">Сақиналар</string>
+    <string name="texture_brushed_metal">Қылқалам металл</string>
+    <string name="texture_caustics">Каустика</string>
+    <string name="texture_cellular">Ұялы</string>
+    <string name="texture_checkerboard">Шахмат тақтасы</string>
+    <string name="texture_fbm">фБм</string>
+    <string name="texture_marble">Мәрмәр</string>
+    <string name="texture_plasma">Плазма</string>
+    <string name="texture_quilt">Көрпе</string>
+    <string name="texture_wood">Ағаш</string>
+    <string name="grid_random">кездейсоқ</string>
+    <string name="grid_square">Шаршы</string>
+    <string name="grid_hexagonal">Алтыбұрышты</string>
+    <string name="grid_octagonal">Сегізбұрышты</string>
+    <string name="grid_triangular">Үшбұрышты</string>
+    <string name="fbm_ridged">Жоталы</string>
+    <string name="fbm_vl_noise">VL шуы</string>
+    <string name="fbm_sc_noise">SC шуы</string>
+    <string name="recent">Соңғы</string>
+    <string name="no_recent_filters">Жақында пайдаланылған сүзгілер әлі жоқ</string>
 </resources>
